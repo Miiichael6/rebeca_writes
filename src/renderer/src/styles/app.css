@@ -536,6 +536,7 @@
 }
 
 .settings-placeholder {
+  margin-top: var(--space-6);
   color: var(--text-2);
 }
 

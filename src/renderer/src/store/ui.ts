@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
+import type { UiLanguageSetting } from '@shared/i18n'
 import type { ResolvedTheme, ThemeMode } from '@shared/theme'
 import { AUTO_LANGUAGE } from '@shared/whisper'
+import i18n, { resolveUiLanguage } from '@renderer/i18n'
 
 export type View = 'main' | 'settings'
 
@@ -16,6 +18,10 @@ interface UiState {
   resolvedTheme: ResolvedTheme
   setThemeMode: (mode: ThemeMode) => void
   setResolvedTheme: (theme: ResolvedTheme) => void
+
+  /** Idioma de la interfaz elegido. Se persistirá en settings.json (tarea 12). */
+  uiLanguage: UiLanguageSetting
+  setUiLanguage: (language: UiLanguageSetting) => void
 
   view: View
   setView: (view: View) => void
@@ -53,6 +59,13 @@ export const useUiStore = create<UiState>()((set) => ({
     window.api.theme.setMode(mode).then((theme) => set({ resolvedTheme: theme }))
   },
   setResolvedTheme: (theme) => set({ resolvedTheme: theme }),
+
+  uiLanguage: 'system',
+  setUiLanguage: (uiLanguage) => {
+    set({ uiLanguage })
+    // react-i18next vuelve a pintar todo lo que usa `t`: no hace falta reiniciar.
+    i18n.changeLanguage(resolveUiLanguage(uiLanguage))
+  },
 
   view: 'main',
   setView: (view) => set({ view }),

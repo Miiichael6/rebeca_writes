@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import BottomBar from './components/BottomBar'
 import Player from './components/Player'
 import QueuePanel from './components/QueuePanel'
@@ -31,6 +32,7 @@ function MainView(): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+  const { t } = useTranslation()
   useThemeSync()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
@@ -40,7 +42,7 @@ function App(): React.JSX.Element {
       <TitleBar>
         {UiDemo && (
           <Button size="sm" variant="ghost" onClick={() => setShowDemo((v) => !v)}>
-            {showDemo ? 'Volver' : 'Componentes'}
+            {showDemo ? t('common.back') : t('dev.components')}
           </Button>
         )}
       </TitleBar>

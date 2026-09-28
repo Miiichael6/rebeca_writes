@@ -123,8 +123,6 @@ export const mockQueue: QueueJob[] = [
   job('q2', 'Tutorial de React 19.mov', 'pending'),
   job('q3', 'Webinar arquitectura hexagonal.mp4', 'pending', { model: 'medium' }),
   job('q4', 'Reunión de equipo - planificación Q4.mkv', 'completed'),
-  job('q5', 'Clase 05 - Derivadas parciales.mp4', 'error', {
-    error: 'El archivo no tiene pista de audio.'
-  }),
+  job('q5', 'Clase 05 - Derivadas parciales.mp4', 'error', { error: 'noAudioStream' }),
   job('q6', 'Audiolibro capítulo 1.flac', 'cancelled', { language: 'auto' })
 ]

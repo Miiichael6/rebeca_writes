@@ -6,7 +6,6 @@ import {
   Copy,
   Cpu,
   Filter,
-  Languages,
   Pencil,
   Plus,
   RectangleHorizontal,
@@ -44,7 +43,6 @@ function UiDemo(): React.JSX.Element {
   const [normalize, setNormalize] = useState(true)
   const [cc, setCc] = useState(true)
   const [height, setHeight] = useState(300)
-  const [uiLang, setUiLang] = useState('system')
   const [joinLines, setJoinLines] = useState(true)
   const [autoScroll, setAutoScroll] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -161,23 +159,6 @@ function UiDemo(): React.JSX.Element {
             min={300}
             max={600}
             step={10}
-          />
-        </SettingRow>
-        <SettingRow
-          icon={<Languages size={20} strokeWidth={1.5} />}
-          title="Idioma de la interfaz"
-          description="Seleccione el idioma de la aplicación."
-        >
-          <Select
-            aria-label="Idioma de la interfaz"
-            value={uiLang}
-            onChange={setUiLang}
-            options={[
-              { value: 'system', label: 'Usar el idioma de Windows' },
-              { value: 'es', label: 'Español' },
-              { value: 'en', label: 'English' },
-              { value: 'pt-BR', label: 'Português (Brasil)' }
-            ]}
           />
         </SettingRow>
       </SettingsSection>

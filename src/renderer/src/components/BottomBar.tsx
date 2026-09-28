@@ -1,24 +1,14 @@
 import { Copy, Download } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatTimestamp } from '@renderer/lib/time'
 import { toast } from '@renderer/store/toast'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Checkbox, Menu, type MenuItem } from './ui'
 
-// Los exportadores reales son de la tarea 20.
-const notYet = (): void => toast('Exportar llegará en una próxima versión')
-
-const exportItems: MenuItem[] = [
-  { label: 'como .txt con marcas de tiempo...', onSelect: notYet },
-  { label: 'como .txt...', onSelect: notYet },
-  { label: 'como .vtt...', onSelect: notYet },
-  { label: 'como .lrc...', onSelect: notYet },
-  { label: 'como .srt...', onSelect: notYet },
-  { label: 'Guardar .srt junto al archivo', onSelect: notYet, separator: true }
-]
-
 function BottomBar(): React.JSX.Element {
+  const { t } = useTranslation()
   const joinLines = useUiStore((s) => s.joinLines)
   const autoScroll = useUiStore((s) => s.autoScroll)
   const { setJoinLines, setAutoScroll } = useUiStore.getState()
@@ -27,28 +17,41 @@ function BottomBar(): React.JSX.Element {
   const closeExport = useCallback(() => setExportOpen(false), [])
   const empty = segments.length === 0
 
+  const exportItems = useMemo((): MenuItem[] => {
+    // Los exportadores reales son de la tarea 20.
+    const notYet = (): void => toast(t('bottomBar.exportComingSoon'))
+    return [
+      { label: t('bottomBar.exportTxtTimestamps'), onSelect: notYet },
+      { label: t('bottomBar.exportTxt'), onSelect: notYet },
+      { label: t('bottomBar.exportVtt'), onSelect: notYet },
+      { label: t('bottomBar.exportLrc'), onSelect: notYet },
+      { label: t('bottomBar.exportSrt'), onSelect: notYet },
+      { label: t('bottomBar.saveSrtNextToFile'), onSelect: notYet, separator: true }
+    ]
+  }, [t])
+
   // Copia simple, un segmento por línea. "Unir líneas" se aplica en la tarea 15.
   const copy = async (): Promise<void> => {
     const text = segments.map((s) => `[${formatTimestamp(s.start)}] ${s.text}`).join('\n')
     await navigator.clipboard.writeText(text)
-    toast('Copiado')
+    toast(t('bottomBar.copied'))
   }
 
   return (
     <footer className="bottombar">
       <Button
         size="sm"
-        aria-label="Copiar transcripción"
+        aria-label={t('bottomBar.copy')}
         icon={<Copy size={15} strokeWidth={1.5} />}
         disabled={empty}
         onClick={copy}
       />
       <Checkbox checked={joinLines} onChange={setJoinLines}>
-        Unir líneas
+        {t('bottomBar.joinLines')}
       </Checkbox>
       <span className="divider" />
       <Checkbox checked={autoScroll} onChange={setAutoScroll}>
-        Desplaz. auto
+        {t('bottomBar.autoScroll')}
       </Checkbox>
       <span className="spacer" />
       <div className="menu-anchor">
@@ -60,14 +63,14 @@ function BottomBar(): React.JSX.Element {
           disabled={empty}
           onClick={() => setExportOpen((o) => !o)}
         >
-          Exportar
+          {t('bottomBar.export')}
         </Button>
         <Menu
           open={exportOpen}
           onClose={closeExport}
           items={exportItems}
           placement="top-end"
-          aria-label="Exportar"
+          aria-label={t('bottomBar.export')}
         />
       </div>
     </footer>

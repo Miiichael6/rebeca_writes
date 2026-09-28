@@ -1,5 +1,6 @@
 import { Music, Pause, Play, SquarePlay, Volume2, VolumeX } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import { mediaKindOf } from '@shared/media'
 import { formatClock } from '@renderer/lib/time'
 import { useTranscriptStore } from '@renderer/store/transcript'
@@ -15,6 +16,7 @@ const speedOptions = SPEEDS.map((s) => ({ value: s, label: `${s}x` }))
  * y la sincronización con la transcripción llegan en las tareas 09 y 10.
  */
 function Player(): React.JSX.Element {
+  const { t } = useTranslation()
   const entry = useTranscriptStore((s) => s.entry)
   const videoVisible = useUiStore((s) => s.videoVisible)
   const videoHeight = useUiStore((s) => s.videoHeight)
@@ -50,8 +52,8 @@ function Player(): React.JSX.Element {
       <div className="player-controls">
         <button
           className="player-btn play"
-          aria-label={playing ? 'Pausar' : 'Reproducir'}
-          title={playing ? 'Pausar' : 'Reproducir'}
+          aria-label={playing ? t('player.pause') : t('player.play')}
+          title={playing ? t('player.pause') : t('player.play')}
           disabled={disabled}
           onClick={() => setPlaying((p) => !p)}
         >
@@ -60,7 +62,7 @@ function Player(): React.JSX.Element {
         <span className="player-time">{formatClock(time)}</span>
         <div className="player-seek">
           <Slider
-            aria-label="Posición"
+            aria-label={t('player.seek')}
             min={0}
             max={Math.max(duration, 1)}
             value={time}
@@ -72,8 +74,8 @@ function Player(): React.JSX.Element {
 
         <button
           className="player-btn"
-          aria-label={muted ? 'Activar sonido' : 'Silenciar'}
-          title={muted ? 'Activar sonido' : 'Silenciar'}
+          aria-label={muted ? t('player.unmute') : t('player.mute')}
+          title={muted ? t('player.unmute') : t('player.mute')}
           disabled={disabled}
           onClick={() => setMuted((m) => !m)}
         >
@@ -85,7 +87,7 @@ function Player(): React.JSX.Element {
         </button>
         <div className="player-volume">
           <Slider
-            aria-label="Volumen"
+            aria-label={t('player.volume')}
             min={0}
             max={100}
             value={muted ? 0 : volume}
@@ -97,7 +99,7 @@ function Player(): React.JSX.Element {
           />
         </div>
         <Select
-          aria-label="Velocidad"
+          aria-label={t('player.speed')}
           value={speed}
           options={speedOptions}
           disabled={disabled}

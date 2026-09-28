@@ -40,7 +40,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 01 | [Setup del proyecto](done/01_setup_proyecto.md) | 1 Base | — | ✅ Terminada |
 | 02 | [Tema y ventana frameless](done/02_tema_y_ventana.md) | 1 Base | 01 | ✅ Terminada |
 | 03 | [Layout principal](done/03_layout_principal.md) | 1 Base | 02 | ✅ Terminada |
-| 04 | [Internacionalización](pending/04_i18n.md) | 1 Base | 03 | ⬜ Pendiente |
+| 04 | [Internacionalización](done/04_i18n.md) | 1 Base | 03 | ✅ Terminada |
 | 05 | [Binarios y backend](pending/05_binarios_y_backend.md) | 2 Motor | 01 | ⬜ Pendiente |
 | 06 | [Descarga de modelos](pending/06_descarga_modelos.md) | 2 Motor | 01 | ⬜ Pendiente |
 | 07 | [Servicio ffmpeg](pending/07_servicio_ffmpeg.md) | 2 Motor | 01 | ⬜ Pendiente |

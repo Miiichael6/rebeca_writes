@@ -3,6 +3,7 @@ import type { ResolvedTheme, ThemeMode } from './theme'
 /** Canales IPC. El renderer nunca los usa directamente: pasa por `window.api`. */
 export const IpcChannel = {
   AppGetVersion: 'app:get-version',
+  AppGetPreferredLanguages: 'app:get-preferred-languages',
   ThemeGetResolved: 'theme:get-resolved',
   ThemeSetMode: 'theme:set-mode',
   ThemeChanged: 'theme:changed'
@@ -13,6 +14,7 @@ export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
 /** Firma de cada canal `invoke` (renderer → main): argumentos y valor de retorno. */
 export interface IpcInvokeMap {
   [IpcChannel.AppGetVersion]: { args: []; result: string }
+  [IpcChannel.AppGetPreferredLanguages]: { args: []; result: string[] }
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
   [IpcChannel.ThemeSetMode]: { args: [mode: ThemeMode]; result: ResolvedTheme }
 }
@@ -26,6 +28,8 @@ export interface IpcEventMap {
 export interface TranscribaApi {
   app: {
     getVersion: () => Promise<string>
+    /** Idiomas preferidos de Windows (BCP 47), del más al menos preferido. */
+    getPreferredLanguages: () => Promise<string[]>
   }
   theme: {
     getResolved: () => Promise<ResolvedTheme>

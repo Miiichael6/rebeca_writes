@@ -1,0 +1,109 @@
+{
+  "common": {
+    "accept": "OK",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "on": "On",
+    "off": "Off",
+    "increase": "Increase",
+    "decrease": "Decrease",
+    "percent": "{{value}}%"
+  },
+  "dev": {
+    "components": "Components"
+  },
+  "sidebar": {
+    "openFile": "Open file",
+    "clearHistory": "Clear history",
+    "filterPlaceholder": "Filter by...",
+    "filterLabel": "Filter history",
+    "history": "History",
+    "empty": "History is empty",
+    "noResults": "No results",
+    "transcribing": "Transcribing {{value}}%",
+    "error": "Transcription failed",
+    "queue": "Queue",
+    "pending_one": "{{count}} pending",
+    "pending_other": "{{count}} pending",
+    "clearTitle": "Clear history?",
+    "clearConfirm": "Clear",
+    "clearBody": "All saved transcriptions will be deleted. Original files and exported .srt files are not touched."
+  },
+  "historyGroups": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "week": "This week",
+    "month": "This month",
+    "older": "Older"
+  },
+  "toolbar": {
+    "model": "Whisper model:",
+    "moreModels": "Download more models...",
+    "language": "Language:",
+    "autoDetect": "Detect automatically",
+    "translate": "Translate to English",
+    "hideVideo": "Hide video panel",
+    "showVideo": "Show video panel",
+    "settings": "Settings",
+    "transcribe": "Transcribe"
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "seek": "Position",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "volume": "Volume",
+    "speed": "Speed"
+  },
+  "transcript": {
+    "title": "Transcription",
+    "previousResult": "Previous result",
+    "nextResult": "Next result",
+    "searchPlaceholder": "Search...",
+    "searchLabel": "Search the transcription",
+    "progressLabel": "Transcription progress",
+    "remaining": "~{{time}} left",
+    "emptyIdle": "Open a file to get started",
+    "emptyReady": "Press Transcribe to start",
+    "emptyWaiting": "Waiting for the first segments..."
+  },
+  "bottomBar": {
+    "copy": "Copy transcription",
+    "copied": "Copied",
+    "joinLines": "Join lines",
+    "autoScroll": "Auto-scroll",
+    "export": "Export",
+    "exportComingSoon": "Export is coming in a future version",
+    "exportTxtTimestamps": "as .txt with timestamps...",
+    "exportTxt": "as .txt...",
+    "exportVtt": "as .vtt...",
+    "exportLrc": "as .lrc...",
+    "exportSrt": "as .srt...",
+    "saveSrtNextToFile": "Save .srt next to the file"
+  },
+  "queue": {
+    "title": "Queue",
+    "empty": "The queue is empty",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "error": "Error",
+      "cancelled": "Cancelled"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "placeholder": "Models, storage and about arrive in task 21.",
+    "interface": "Interface",
+    "uiLanguage": "Interface language",
+    "uiLanguageDescription": "Choose the language of the app.",
+    "uiLanguageSystem": "Use the Windows language"
+  },
+  "errors": {
+    "noAudioStream": "The file has no audio track.",
+    "unknown": "An unexpected error occurred."
+  }
+}

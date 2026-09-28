@@ -31,6 +31,12 @@ export interface HistoryEntry {
 
 export type Backend = 'cuda' | 'vulkan' | 'cpu'
 
+/**
+ * Errores que el main comunica al renderer. Viajan como código y el renderer los traduce
+ * (`errors.<code>` en los locales), así el mensaje sigue el idioma de la interfaz.
+ */
+export type ErrorCode = 'noAudioStream' | 'unknown'
+
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'error' | 'cancelled'
 
 /** Trabajo de la cola (spec §4.2). Guarda el modelo e idioma elegidos al encolarlo. */
@@ -43,7 +49,7 @@ export interface QueueJob {
   status: JobStatus
   /** 0–100, solo mientras `status === 'processing'`. */
   progress?: number
-  error?: string
+  error?: ErrorCode
 }
 
 /** Estado del archivo abierto en el panel de transcripción. */

@@ -21,7 +21,8 @@ function on<C extends keyof IpcEventMap>(
 // Solo funciones concretas: el renderer nunca recibe `ipcRenderer`.
 const api: TranscribaApi = {
   app: {
-    getVersion: () => invoke(IpcChannel.AppGetVersion)
+    getVersion: () => invoke(IpcChannel.AppGetVersion),
+    getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages)
   },
   theme: {
     getResolved: () => invoke(IpcChannel.ThemeGetResolved),

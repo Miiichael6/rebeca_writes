@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from './Button'
 
 export interface ConfirmDialogProps {
@@ -21,12 +22,13 @@ export function ConfirmDialog({
   open,
   title,
   children,
-  confirmLabel = 'Aceptar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   danger,
   onConfirm,
   onCancel
 }: ConfirmDialogProps): React.JSX.Element {
+  const { t } = useTranslation()
   const ref = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
@@ -60,10 +62,10 @@ export function ConfirmDialog({
       </div>
       <div className="dialog-actions">
         <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm}>
-          {confirmLabel}
+          {confirmLabel ?? t('common.accept')}
         </Button>
         <Button ref={cancelRef} onClick={onCancel}>
-          {cancelLabel}
+          {cancelLabel ?? t('common.cancel')}
         </Button>
       </div>
     </dialog>

@@ -15,6 +15,10 @@ const THEME_MODES = new Set(['light', 'dark', 'system'])
 
 export function registerIpcHandlers(): void {
   handle(IpcChannel.AppGetVersion, () => app.getVersion())
+  handle(IpcChannel.AppGetPreferredLanguages, () => {
+    const languages = app.getPreferredSystemLanguages()
+    return languages.length > 0 ? languages : [app.getLocale()]
+  })
 
   handle(IpcChannel.ThemeGetResolved, () => resolvedTheme())
   handle(IpcChannel.ThemeSetMode, (_event, mode) => {

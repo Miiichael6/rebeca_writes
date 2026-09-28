@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, FolderOpen, Search } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatClock, formatTimestamp } from '@renderer/lib/time'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { Button } from './ui'
@@ -11,12 +12,13 @@ function ProgressBar({
   progress: number
   etaSec: number | null
 }): React.JSX.Element {
+  const { t } = useTranslation()
   return (
     <div className="transcript-progress">
       <div
         className="transcript-progress-bar"
         role="progressbar"
-        aria-label="Progreso de la transcripción"
+        aria-label={t('transcript.progressLabel')}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progress}
@@ -24,32 +26,34 @@ function ProgressBar({
         <div style={{ width: `${progress}%` }} />
       </div>
       <span className="transcript-progress-text">
-        {progress} %{etaSec !== null && ` · quedan ~${formatClock(etaSec)}`}
+        {t('common.percent', { value: progress })}
+        {etaSec !== null && ` · ${t('transcript.remaining', { time: formatClock(etaSec) })}`}
       </span>
     </div>
   )
 }
 
 function EmptyState(): React.JSX.Element | null {
+  const { t } = useTranslation()
   const status = useTranscriptStore((s) => s.status)
   switch (status) {
     case 'idle':
       return (
         <div className="empty">
           <FolderOpen size={32} strokeWidth={1.25} aria-hidden />
-          <p>Abre un archivo para empezar</p>
+          <p>{t('transcript.emptyIdle')}</p>
         </div>
       )
     case 'ready':
       return (
         <div className="empty">
-          <p>Pulsa Transcribir para empezar</p>
+          <p>{t('transcript.emptyReady')}</p>
         </div>
       )
     case 'transcribing':
       return (
         <div className="empty">
-          <p>Esperando los primeros segmentos...</p>
+          <p>{t('transcript.emptyWaiting')}</p>
         </div>
       )
     default:
@@ -58,6 +62,7 @@ function EmptyState(): React.JSX.Element | null {
 }
 
 function TranscriptView(): React.JSX.Element {
+  const { t } = useTranslation()
   const entry = useTranscriptStore((s) => s.entry)
   const segments = useTranscriptStore((s) => s.segments)
   const status = useTranscriptStore((s) => s.status)
@@ -68,20 +73,20 @@ function TranscriptView(): React.JSX.Element {
   const [query, setQuery] = useState('')
 
   return (
-    <section className="transcript" aria-label="Transcripción">
+    <section className="transcript" aria-label={t('transcript.title')}>
       <div className="transcript-header">
-        <h2 title={entry?.fileName}>{entry?.fileName ?? 'Transcripción'}</h2>
+        <h2 title={entry?.fileName}>{entry?.fileName ?? t('transcript.title')}</h2>
         <Button
           variant="ghost"
           size="sm"
-          aria-label="Resultado anterior"
+          aria-label={t('transcript.previousResult')}
           icon={<ChevronUp size={18} strokeWidth={1.5} />}
           disabled={!query}
         />
         <Button
           variant="ghost"
           size="sm"
-          aria-label="Resultado siguiente"
+          aria-label={t('transcript.nextResult')}
           icon={<ChevronDown size={18} strokeWidth={1.5} />}
           disabled={!query}
         />
@@ -89,8 +94,8 @@ function TranscriptView(): React.JSX.Element {
           <input
             className="input"
             type="search"
-            placeholder="Buscar..."
-            aria-label="Buscar en la transcripción"
+            placeholder={t('transcript.searchPlaceholder')}
+            aria-label={t('transcript.searchLabel')}
             value={query}
             disabled={segments.length === 0}
             onChange={(e) => setQuery(e.target.value)}

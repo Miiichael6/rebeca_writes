@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export interface NumberInputProps {
   value: number
@@ -25,6 +26,7 @@ export function NumberInput({
   disabled,
   ...rest
 }: NumberInputProps): React.JSX.Element {
+  const { t } = useTranslation()
   // Texto en edición; null = mostrar `value`. Permite estados intermedios como "" o "-".
   const [draft, setDraft] = useState<string | null>(null)
 
@@ -55,7 +57,7 @@ export function NumberInput({
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Aumentar"
+          aria-label={t('common.increase')}
           disabled={disabled || value >= max}
           onClick={() => commit(value + step)}
         >
@@ -64,7 +66,7 @@ export function NumberInput({
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Disminuir"
+          aria-label={t('common.decrease')}
           disabled={disabled || value <= min}
           onClick={() => commit(value - step)}
         >

@@ -1,0 +1,110 @@
+{
+  "common": {
+    "accept": "OK",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "on": "Ativado",
+    "off": "Desativado",
+    "increase": "Aumentar",
+    "decrease": "Diminuir",
+    "percent": "{{value}}%"
+  },
+  "dev": {
+    "components": "Componentes"
+  },
+  "sidebar": {
+    "openFile": "Abrir arquivo",
+    "clearHistory": "Limpar histórico",
+    "filterPlaceholder": "Filtrar por...",
+    "filterLabel": "Filtrar histórico",
+    "history": "Histórico",
+    "empty": "O histórico está vazio",
+    "noResults": "Nenhum resultado",
+    "transcribing": "Transcrevendo {{value}}%",
+    "error": "Erro ao transcrever",
+    "queue": "Fila",
+    "pending_one": "{{count}} pendente",
+    "pending_many": "{{count}} pendentes",
+    "pending_other": "{{count}} pendentes",
+    "clearTitle": "Limpar o histórico?",
+    "clearConfirm": "Limpar",
+    "clearBody": "Todas as transcrições salvas serão excluídas. Os arquivos originais e os .srt exportados não são alterados."
+  },
+  "historyGroups": {
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "week": "Esta semana",
+    "month": "Este mês",
+    "older": "Anteriores"
+  },
+  "toolbar": {
+    "model": "Modelo Whisper:",
+    "moreModels": "Baixar mais modelos...",
+    "language": "Idioma:",
+    "autoDetect": "Detectar automaticamente",
+    "translate": "Traduzir para o inglês",
+    "hideVideo": "Ocultar painel de vídeo",
+    "showVideo": "Mostrar painel de vídeo",
+    "settings": "Configurações",
+    "transcribe": "Transcrever"
+  },
+  "player": {
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "seek": "Posição",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "volume": "Volume",
+    "speed": "Velocidade"
+  },
+  "transcript": {
+    "title": "Transcrição",
+    "previousResult": "Resultado anterior",
+    "nextResult": "Próximo resultado",
+    "searchPlaceholder": "Pesquisar...",
+    "searchLabel": "Pesquisar na transcrição",
+    "progressLabel": "Progresso da transcrição",
+    "remaining": "faltam ~{{time}}",
+    "emptyIdle": "Abra um arquivo para começar",
+    "emptyReady": "Clique em Transcrever para começar",
+    "emptyWaiting": "Aguardando os primeiros segmentos..."
+  },
+  "bottomBar": {
+    "copy": "Copiar transcrição",
+    "copied": "Copiado",
+    "joinLines": "Unir linhas",
+    "autoScroll": "Rolagem auto.",
+    "export": "Exportar",
+    "exportComingSoon": "Exportar chegará em uma próxima versão",
+    "exportTxtTimestamps": "como .txt com marcações de tempo...",
+    "exportTxt": "como .txt...",
+    "exportVtt": "como .vtt...",
+    "exportLrc": "como .lrc...",
+    "exportSrt": "como .srt...",
+    "saveSrtNextToFile": "Salvar .srt junto ao arquivo"
+  },
+  "queue": {
+    "title": "Fila",
+    "empty": "Não há trabalhos na fila",
+    "status": {
+      "pending": "Pendente",
+      "processing": "Processando",
+      "completed": "Concluído",
+      "error": "Erro",
+      "cancelled": "Cancelado"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "placeholder": "Modelos, armazenamento e sobre chegam na tarefa 21.",
+    "interface": "Interface",
+    "uiLanguage": "Idioma da interface",
+    "uiLanguageDescription": "Selecione o idioma do aplicativo.",
+    "uiLanguageSystem": "Usar o idioma do Windows"
+  },
+  "errors": {
+    "noAudioStream": "O arquivo não tem faixa de áudio.",
+    "unknown": "Ocorreu um erro inesperado."
+  }
+}
