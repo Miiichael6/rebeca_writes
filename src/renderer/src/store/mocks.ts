@@ -47,7 +47,9 @@ export const mockHistory: HistoryEntry[] = [
     'done',
     5420
   ),
-  entry('h8', 'Audiolibro capítulo 1.flac', ago(62), 'cancelled', 2380)
+  entry('h8', 'Audiolibro capítulo 1.flac', ago(62), 'cancelled', 2380),
+  // Para probar la lista virtualizada con una transcripción de horas (tarea 13).
+  entry('h9', 'Prueba de rendimiento (3 h, 10 000 segmentos).mp4', ago(70), 'done', 10_800)
 ]
 
 const lines = [
@@ -100,6 +102,28 @@ export const mockSegments: Segment[] = (() => {
     return { start, end, text }
   })
 })()
+
+/** 10 000 segmentos que cubren 3 h, con textos de largo variable para medir alturas distintas. */
+function longSegments(): Segment[] {
+  const count = 10_000
+  const step = 10_800 / count
+  return Array.from({ length: count }, (_, i) => {
+    const text =
+      i % 7 === 0
+        ? `${lines[i % lines.length]} ${lines[(i + 3) % lines.length]}`
+        : lines[i % lines.length]
+    return { start: i * step, end: i * step + step * 0.9, text: `${i + 1}. ${text}` }
+  })
+}
+
+let longCache: Segment[] | null = null
+
+/** Segmentos de ejemplo de una entrada terminada. */
+export function mockSegmentsFor(entryId: string): Segment[] {
+  if (entryId !== 'h9') return mockSegments
+  longCache ??= longSegments()
+  return longCache
+}
 
 function job(
   id: string,

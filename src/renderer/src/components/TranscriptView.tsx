@@ -1,22 +1,31 @@
-import { ChevronDown, ChevronUp, FolderOpen, Search } from 'lucide-react'
-import { useState } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { ChevronDown, ChevronUp, CircleAlert, FolderOpen, Search } from 'lucide-react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { Segment } from '@shared/types'
 import { findActiveSegment } from '@renderer/lib/segments'
 import { formatClock, formatTimestamp } from '@renderer/lib/time'
+import { registerTranscriptScroller } from '@renderer/lib/transcriptScroll'
 import { usePlayerStore } from '@renderer/store/player'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { Button } from './ui'
 
-function ProgressBar({
-  progress,
-  etaSec
-}: {
-  progress: number
-  etaSec: number | null
-}): React.JSX.Element {
+/** Altura estimada de un segmento de una línea; la real se mide al pintarlo. */
+const ESTIMATED_ROW_PX = 26
+
+/** Barra fina bajo el encabezado mientras se transcribe el archivo abierto. */
+function ProgressBar(): React.JSX.Element | null {
   const { t } = useTranslation()
+  const job = useTranscriptStore((s) => (s.job?.entryId === s.entry?.id ? s.job : null))
+  if (!job) return null
+  const progress = Math.round(job.progress)
   return (
     <div className="transcript-progress">
+      <span className="transcript-progress-phase">
+        {job.phase === 'preparing'
+          ? t('transcript.phasePreparing')
+          : t('transcript.phaseTranscribing')}
+      </span>
       <div
         className="transcript-progress-bar"
         role="progressbar"
@@ -29,8 +38,23 @@ function ProgressBar({
       </div>
       <span className="transcript-progress-text">
         {t('common.percent', { value: progress })}
-        {etaSec !== null && ` · ${t('transcript.remaining', { time: formatClock(etaSec) })}`}
+        {job.etaSec !== null &&
+          ` · ${t('transcript.remaining', { time: formatClock(job.etaSec) })}`}
       </span>
+    </div>
+  )
+}
+
+/** Aviso fijo cuando la última transcripción del archivo abierto falló. */
+function ErrorBanner(): React.JSX.Element | null {
+  const { t } = useTranslation()
+  const status = useTranscriptStore((s) => s.status)
+  const error = useTranscriptStore((s) => s.error)
+  if (status !== 'error') return null
+  return (
+    <div className="transcript-error" role="alert">
+      <CircleAlert size={16} strokeWidth={1.5} aria-hidden />
+      <span>{error ? t(`errors.${error}`) : t('transcript.failed')}</span>
     </div>
   )
 }
@@ -63,18 +87,103 @@ function EmptyState(): React.JSX.Element | null {
   }
 }
 
-function TranscriptView(): React.JSX.Element {
-  const { t } = useTranslation()
-  const entry = useTranscriptStore((s) => s.entry)
-  const segments = useTranscriptStore((s) => s.segments)
-  const status = useTranscriptStore((s) => s.status)
-  const progress = useTranscriptStore((s) => s.progress)
-  const etaSec = useTranscriptStore((s) => s.etaSec)
-  // El selector devuelve un índice: la vista solo se vuelve a pintar al cambiar de segmento.
+interface SegmentRowProps {
+  segment: Segment
+  index: number
+  active: boolean
+  start: number
+  measure: (el: Element | null) => void
+  onSeek: (t: number) => void
+}
+
+/**
+ * Un segmento de la lista virtualizada. Memorizado: al avanzar el video solo se vuelven a
+ * pintar el que deja de estar activo y el nuevo.
+ */
+const SegmentRow = memo(function SegmentRow({
+  segment,
+  index,
+  active,
+  start,
+  measure,
+  onSeek
+}: SegmentRowProps): React.JSX.Element {
+  return (
+    <p
+      ref={measure}
+      data-index={index}
+      className={`segment${active ? ' active' : ''}`}
+      style={{ transform: `translateY(${start}px)` }}
+      aria-current={active || undefined}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSeek(segment.start)}
+      onKeyDown={(e) => {
+        // Solo Enter: Espacio sigue siendo play/pausa (usePlayerShortcuts).
+        if (e.key === 'Enter') onSeek(segment.start)
+      }}
+    >
+      <time>[{formatTimestamp(segment.start)}]</time>
+      <span>{segment.text}</span>
+    </p>
+  )
+})
+
+/**
+ * Lista virtualizada (spec §7): solo están en el DOM los segmentos visibles y unos pocos
+ * alrededor, así una transcripción de horas se desplaza igual de fluida que una corta.
+ */
+function SegmentList({ segments }: { segments: Segment[] }): React.JSX.Element {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  // El selector devuelve un índice: la lista solo se vuelve a pintar al cambiar de segmento.
   const activeIndex = usePlayerStore((s) =>
     s.src ? findActiveSegment(segments, s.currentTime) : null
   )
   const seek = usePlayerStore((s) => s.seek)
+
+  // El virtualizador es mutable a propósito; a las filas solo pasan números y `measureElement`,
+  // que es estable.
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer({
+    count: segments.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ESTIMATED_ROW_PX,
+    overscan: 10,
+    // Con la vista estable, `start` y `measure` no cambian entre renders y `memo` funciona.
+    getItemKey: (index) => index
+  })
+
+  useEffect(
+    () =>
+      registerTranscriptScroller((index, align) =>
+        virtualizer.scrollToIndex(index, { align, behavior: 'auto' })
+      ),
+    [virtualizer]
+  )
+
+  return (
+    <div className="transcript-body" ref={scrollRef}>
+      <div className="transcript-list" style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((item) => (
+          <SegmentRow
+            key={item.key}
+            segment={segments[item.index]}
+            index={item.index}
+            active={item.index === activeIndex}
+            start={item.start}
+            measure={virtualizer.measureElement}
+            onSeek={seek}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TranscriptView(): React.JSX.Element {
+  const { t } = useTranslation()
+  const entry = useTranscriptStore((s) => s.entry)
+  const segments = useTranscriptStore((s) => s.segments)
   // La búsqueda real (resaltado, "3 de 12", navegación) es de la tarea 14.
   const [query, setQuery] = useState('')
 
@@ -110,31 +219,17 @@ function TranscriptView(): React.JSX.Element {
         </div>
       </div>
 
-      {status === 'transcribing' && <ProgressBar progress={progress} etaSec={etaSec} />}
+      <ProgressBar />
+      <ErrorBanner />
 
-      <div className="transcript-body">
-        {segments.length === 0 ? (
+      {segments.length === 0 ? (
+        <div className="transcript-body">
           <EmptyState />
-        ) : (
-          segments.map((seg, i) => (
-            <p
-              className={`segment${i === activeIndex ? ' active' : ''}`}
-              key={seg.start}
-              aria-current={i === activeIndex || undefined}
-              role="button"
-              tabIndex={0}
-              onClick={() => seek(seg.start)}
-              onKeyDown={(e) => {
-                // Solo Enter: Espacio sigue siendo play/pausa (usePlayerShortcuts).
-                if (e.key === 'Enter') seek(seg.start)
-              }}
-            >
-              <time>[{formatTimestamp(seg.start)}]</time>
-              <span>{seg.text}</span>
-            </p>
-          ))
-        )}
-      </div>
+        </div>
+      ) : (
+        // `key`: al cambiar de archivo la lista empieza arriba y sin medidas viejas.
+        <SegmentList key={entry?.id} segments={segments} />
+      )}
     </section>
   )
 }

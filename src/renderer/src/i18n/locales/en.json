@@ -47,7 +47,9 @@
     "showVideo": "Show video panel",
     "settings": "Settings",
     "transcribe": "Transcribe",
-    "noModels": "No models downloaded"
+    "noModels": "No models downloaded",
+    "transcribeNoMedia": "Locate the file on disk first.",
+    "transcribeBusy": "Another transcription is already running."
   },
   "player": {
     "play": "Play",
@@ -72,7 +74,10 @@
     "remaining": "~{{time}} left",
     "emptyIdle": "Open a file to get started",
     "emptyReady": "Press Transcribe to start",
-    "emptyWaiting": "Waiting for the first segments..."
+    "emptyWaiting": "Waiting for the first segments...",
+    "phasePreparing": "Preparing audio...",
+    "phaseTranscribing": "Transcribing...",
+    "failed": "The transcription failed."
   },
   "bottomBar": {
     "copy": "Copy transcription",

@@ -105,7 +105,13 @@ export function startTranscription(job: TranscribeJob): void {
       'marcar el inicio',
       history()
         .setSegments(historyId, [])
-        .then(() => history().update(historyId, { status: 'transcribing' }))
+        .then(() =>
+          history().update(historyId, {
+            status: 'transcribing',
+            model: job.model,
+            language: job.language
+          })
+        )
     )
   }
   void engine.start(job)

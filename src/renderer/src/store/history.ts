@@ -3,6 +3,7 @@ import { MEDIA_FILTER_KEYS, type MediaFilterKey } from '@shared/formats'
 import type { HistoryEntry, OpenedMedia } from '@shared/types'
 import i18n from '@renderer/i18n'
 import { mockHistory } from './mocks'
+import { useSettingsStore } from './settings'
 import { useTranscriptStore } from './transcript'
 
 interface HistoryState {
@@ -18,6 +19,13 @@ interface HistoryState {
   media: Record<string, OpenedMedia>
   select: (id: string) => void
   setFilter: (filter: string) => void
+  /**
+   * "Abrir archivo": elige un archivo, crea su entrada en el historial y la abre. La
+   * selección múltiple y el envío a la cola son de la tarea 19.
+   */
+  openFile: () => Promise<void>
+  /** Cambia campos de una entrada (estado, progreso, idioma detectado...). */
+  patchEntry: (id: string, patch: Partial<Omit<HistoryEntry, 'id'>>) => void
   /** "Buscar archivo...": elige el archivo en disco y lo asocia a la entrada (en memoria; se persiste en la 18). */
   locateFile: (id: string) => Promise<void>
   /**
@@ -25,6 +33,12 @@ interface HistoryState {
    * en memoria; el borrado en disco es de la tarea 18.
    */
   clear: () => void
+}
+
+function filterLabels(): Record<MediaFilterKey, string> {
+  return Object.fromEntries(
+    MEDIA_FILTER_KEYS.map((key) => [key, i18n.t(`fileFilters.${key}`)])
+  ) as Record<MediaFilterKey, string>
 }
 
 const initialId = mockHistory[0]?.id ?? null
@@ -39,11 +53,30 @@ export const useHistoryStore = create<HistoryState>()((set, get) => ({
     useTranscriptStore.getState().open(get().entries.find((e) => e.id === id) ?? null)
   },
   setFilter: (filter) => set({ filter }),
+  openFile: async () => {
+    const media = await window.api.media.pickFile(filterLabels())
+    if (!media) return
+    const { model, language } = useSettingsStore.getState().settings
+    const entry = await window.api.history.create({
+      filePath: media.filePath,
+      fileName: media.fileName,
+      durationSec: media.info?.durationSec ?? 0,
+      model,
+      language
+    })
+    set((s) => ({ entries: [entry, ...s.entries], media: { ...s.media, [entry.id]: media } }))
+    get().select(entry.id)
+  },
+  patchEntry: (id, patch) => {
+    const entries = get().entries.map((e) => (e.id === id ? { ...e, ...patch } : e))
+    set({ entries })
+    const updated = entries.find((e) => e.id === id)
+    if (updated && useTranscriptStore.getState().entry?.id === id) {
+      useTranscriptStore.setState({ entry: updated })
+    }
+  },
   locateFile: async (id) => {
-    const labels = Object.fromEntries(
-      MEDIA_FILTER_KEYS.map((key) => [key, i18n.t(`fileFilters.${key}`)])
-    ) as Record<MediaFilterKey, string>
-    const media = await window.api.media.pickFile(labels)
+    const media = await window.api.media.pickFile(filterLabels())
     if (!media) return
     const entries = get().entries.map((e) =>
       e.id === id

@@ -54,6 +54,9 @@ const api: TranscribaApi = {
     clearPreviewCache: () => invoke(IpcChannel.MediaClearPreviewCache),
     getPreviewCacheSize: () => invoke(IpcChannel.MediaPreviewCacheSize)
   },
+  history: {
+    create: (input) => invoke(IpcChannel.HistoryCreate, input)
+  },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),
     cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),

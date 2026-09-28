@@ -70,7 +70,7 @@ function Sidebar(): React.JSX.Element {
   const entries = useHistoryStore((s) => s.entries)
   const selectedId = useHistoryStore((s) => s.selectedId)
   const filter = useHistoryStore((s) => s.filter)
-  const { select, setFilter, clear } = useHistoryStore.getState()
+  const { select, setFilter, clear, openFile } = useHistoryStore.getState()
   const pendingCount = useQueueStore(selectPendingCount)
   const setQueueOpen = useUiStore((s) => s.setQueueOpen)
   const [confirmClear, setConfirmClear] = useState(false)
@@ -80,7 +80,9 @@ function Sidebar(): React.JSX.Element {
   return (
     <aside className="sidebar">
       <div className="sidebar-actions">
-        <Button icon={<FolderOpen size={16} strokeWidth={1.5} />}>{t('sidebar.openFile')}</Button>
+        <Button icon={<FolderOpen size={16} strokeWidth={1.5} />} onClick={() => void openFile()}>
+          {t('sidebar.openFile')}
+        </Button>
         <Button
           aria-label={t('sidebar.clearHistory')}
           icon={<Eraser size={16} strokeWidth={1.5} />}

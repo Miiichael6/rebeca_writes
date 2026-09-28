@@ -4,7 +4,9 @@ import type { MediaFilterKey } from './formats'
 import type {
   BackendFallback,
   BackendInfo,
+  HistoryEntry,
   MediaPreviewEvent,
+  HistoryEntryInput,
   OpenedMedia,
   TranscribeDoneEvent,
   TranscribeErrorEvent,
@@ -38,6 +40,7 @@ export const IpcChannel = {
   MediaPreview: 'media:preview',
   MediaClearPreviewCache: 'media:clearPreviewCache',
   MediaPreviewCacheSize: 'media:previewCacheSize',
+  HistoryCreate: 'history:create',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -69,6 +72,7 @@ export interface IpcInvokeMap {
   }
   [IpcChannel.MediaClearPreviewCache]: { args: []; result: void }
   [IpcChannel.MediaPreviewCacheSize]: { args: []; result: number }
+  [IpcChannel.HistoryCreate]: { args: [input: HistoryEntryInput]; result: HistoryEntry }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
 }
@@ -145,6 +149,13 @@ export interface TranscribaApi {
     clearPreviewCache: () => Promise<void>
     /** Bytes que ocupa la caché de vistas previas. */
     getPreviewCacheSize: () => Promise<number>
+  }
+  history: {
+    /**
+     * Crea una entrada `pending` en `userData/history/`. El resto del historial (listar,
+     * abrir, borrar) llega en la tarea 18.
+     */
+    create: (input: HistoryEntryInput) => Promise<HistoryEntry>
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

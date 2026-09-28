@@ -48,7 +48,9 @@
     "showVideo": "Mostrar painel de vídeo",
     "settings": "Configurações",
     "transcribe": "Transcrever",
-    "noModels": "Nenhum modelo baixado"
+    "noModels": "Nenhum modelo baixado",
+    "transcribeNoMedia": "Primeiro localize o arquivo no disco.",
+    "transcribeBusy": "Já há outra transcrição em andamento."
   },
   "player": {
     "play": "Reproduzir",
@@ -73,7 +75,10 @@
     "remaining": "faltam ~{{time}}",
     "emptyIdle": "Abra um arquivo para começar",
     "emptyReady": "Clique em Transcrever para começar",
-    "emptyWaiting": "Aguardando os primeiros segmentos..."
+    "emptyWaiting": "Aguardando os primeiros segmentos...",
+    "phasePreparing": "Preparando o áudio...",
+    "phaseTranscribing": "Transcrevendo...",
+    "failed": "A transcrição falhou."
   },
   "bottomBar": {
     "copy": "Copiar transcrição",

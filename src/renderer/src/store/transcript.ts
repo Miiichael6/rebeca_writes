@@ -1,50 +1,146 @@
 import { create } from 'zustand'
-import type { HistoryEntry, Segment, TranscriptStatus } from '@shared/types'
-import { mockSegments } from './mocks'
+import type {
+  ErrorCode,
+  HistoryEntry,
+  Segment,
+  TranscribePhase,
+  TranscriptStatus
+} from '@shared/types'
+import { mockSegmentsFor } from './mocks'
+
+/** Transcripción en curso. Hay una como mucho: la cola (tarea 17) las lanza de una en una. */
+export interface LiveJob {
+  jobId: string
+  entryId: string
+  phase: TranscribePhase
+  /** 0–100. */
+  progress: number
+  /** Segundos restantes estimados, o `null` mientras no hay ritmo suficiente para medir. */
+  etaSec: number | null
+  /** Segmentos recibidos hasta ahora. */
+  segments: Segment[]
+}
 
 interface TranscriptState {
   /** Entrada del historial abierta, o `null` si no hay archivo. */
   entry: HistoryEntry | null
+  /** Segmentos de la entrada abierta. Si es la que se transcribe, es `job.segments`. */
   segments: Segment[]
   status: TranscriptStatus
-  /** 0–100 mientras se transcribe. */
-  progress: number
-  /** Segundos restantes estimados mientras se transcribe. */
-  etaSec: number | null
+  /** Motivo del último fallo de la entrada abierta (`status === 'error'`). */
+  error: ErrorCode | null
+  job: LiveJob | null
   open: (entry: HistoryEntry | null) => void
-  start: () => void
-  cancel: () => void
 }
 
-/** Estado de ejemplo según el estado de la entrada. La transcripción real llega en la tarea 13. */
-function mockStateFor(
-  entry: HistoryEntry | null
-): Omit<TranscriptState, 'open' | 'start' | 'cancel'> {
-  const base = { entry, segments: [], progress: 0, etaSec: null }
-  if (!entry) return { ...base, status: 'idle' }
+/**
+ * Resultados de esta sesión por id de entrada, para volver a verlos al cambiar de archivo.
+ * Con el historial real (tarea 18) se leen del disco.
+ */
+const results = new Map<string, { segments: Segment[]; error: ErrorCode | null }>()
+
+function stateFor(
+  entry: HistoryEntry | null,
+  job: LiveJob | null
+): Pick<TranscriptState, 'entry' | 'segments' | 'status' | 'error'> {
+  if (!entry) return { entry, segments: [], status: 'idle', error: null }
+  if (job?.entryId === entry.id) {
+    return { entry, segments: job.segments, status: 'transcribing', error: null }
+  }
+  const saved = results.get(entry.id)
+  if (saved) {
+    return saved.error
+      ? { entry, segments: saved.segments, status: 'error', error: saved.error }
+      : { entry, segments: saved.segments, status: 'done', error: null }
+  }
   switch (entry.status) {
     case 'done':
-      return { ...base, status: 'done', segments: mockSegments }
-    case 'transcribing': {
-      const progress = entry.progress ?? 0
-      const count = Math.round((mockSegments.length * progress) / 100)
-      return {
-        ...base,
-        status: 'transcribing',
-        segments: mockSegments.slice(0, count),
-        progress,
-        etaSec: 95
-      }
-    }
+      return { entry, segments: mockSegmentsFor(entry.id), status: 'done', error: null }
+    case 'error':
+      return { entry, segments: [], status: 'error', error: null }
+    // Una entrada en `transcribing` sin trabajo vivo quedó cortada: se puede volver a lanzar.
     default:
-      return { ...base, status: 'ready' }
+      return { entry, segments: [], status: 'ready', error: null }
   }
 }
 
-export const useTranscriptStore = create<TranscriptState>()((set) => ({
-  ...mockStateFor(null),
-  open: (entry) => set(mockStateFor(entry)),
-  // Solo cambian el estado visible; el motor real se conecta en las tareas 08 y 13.
-  start: () => set({ status: 'transcribing', progress: 0, etaSec: null, segments: [] }),
-  cancel: () => set({ status: 'ready', progress: 0, etaSec: null })
+export const useTranscriptStore = create<TranscriptState>()((set, get) => ({
+  ...stateFor(null, null),
+  job: null,
+  open: (entry) => set(stateFor(entry, get().job))
 }))
+
+/** ¿Se muestra la entrada que se está transcribiendo? */
+function showsJob(state: TranscriptState, job: LiveJob): boolean {
+  return state.entry?.id === job.entryId
+}
+
+/** Empieza un trabajo nuevo para `entryId`. */
+export function beginJob(jobId: string, entryId: string): void {
+  const job: LiveJob = {
+    jobId,
+    entryId,
+    phase: 'preparing',
+    progress: 0,
+    etaSec: null,
+    segments: []
+  }
+  results.delete(entryId)
+  useTranscriptStore.setState((s) =>
+    showsJob(s, job)
+      ? { job, segments: job.segments, status: 'transcribing', error: null }
+      : { job }
+  )
+}
+
+/**
+ * Añade segmentos al trabajo en curso. El main ya los agrupa (un evento cada ~100 ms), así
+ * que se copia el array una vez por lote y no por segmento; mantenerlo inmutable hace que
+ * los selectores y `useMemo` que dependen de `segments` (búsqueda, unir líneas) se enteren.
+ */
+export function appendJobSegments(jobId: string, segments: Segment[]): void {
+  const { job } = useTranscriptStore.getState()
+  if (job?.jobId !== jobId || segments.length === 0) return
+  const next: LiveJob = { ...job, segments: job.segments.concat(segments) }
+  useTranscriptStore.setState((s) =>
+    showsJob(s, next) ? { job: next, segments: next.segments } : { job: next }
+  )
+}
+
+export function updateJobProgress(
+  jobId: string,
+  phase: TranscribePhase,
+  progress: number,
+  etaSec: number | null
+): void {
+  const { job } = useTranscriptStore.getState()
+  if (job?.jobId !== jobId) return
+  useTranscriptStore.setState({ job: { ...job, phase, progress, etaSec } })
+}
+
+/**
+ * Cierra el trabajo. `segments` es el resultado completo (al terminar bien) o lo que llegó
+ * antes de cancelar o fallar. `error` es `null` si terminó bien o se canceló.
+ */
+export function finishJob(
+  jobId: string,
+  outcome: { segments: Segment[]; error: ErrorCode | null; cancelled?: boolean }
+): void {
+  const state = useTranscriptStore.getState()
+  const { job } = state
+  if (job?.jobId !== jobId) return
+  if (!outcome.cancelled) {
+    results.set(job.entryId, { segments: outcome.segments, error: outcome.error })
+  }
+  if (!showsJob(state, job)) {
+    useTranscriptStore.setState({ job: null })
+    return
+  }
+  useTranscriptStore.setState({
+    job: null,
+    segments: outcome.segments,
+    // Cancelado: se conserva lo que llegó a salir y se puede volver a lanzar.
+    status: outcome.cancelled ? 'ready' : outcome.error ? 'error' : 'done',
+    error: outcome.error
+  })
+}

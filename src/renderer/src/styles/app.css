@@ -511,6 +511,12 @@
   transition: width var(--duration) var(--ease);
 }
 
+.transcript-progress-phase {
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-size: var(--text-xs);
+}
+
 .transcript-progress-text {
   flex-shrink: 0;
   color: var(--text-2);
@@ -525,6 +531,33 @@
   font-size: 14px;
   line-height: 1.6;
   user-select: text;
+}
+
+.transcript-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--danger-fill);
+  font-size: var(--text-sm);
+}
+
+.transcript-error svg {
+  flex-shrink: 0;
+}
+
+/* Lista virtualizada: cada segmento se coloca con `translateY` sobre un contenedor alto. */
+.transcript-list {
+  position: relative;
+  width: 100%;
+}
+
+.transcript-list .segment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 .empty {

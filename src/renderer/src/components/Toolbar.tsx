@@ -3,9 +3,15 @@ import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { whisperLanguageOptions } from '@renderer/lib/languages'
+import { useHistoryStore } from '@renderer/store/history'
 import { selectDownloaded, useModelsStore } from '@renderer/store/models'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useTranscriptStore } from '@renderer/store/transcript'
+import {
+  cancelTranscription,
+  startBlocker,
+  startTranscription
+} from '@renderer/store/transcription'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Checkbox, Select, type SelectOption } from './ui'
 
@@ -25,7 +31,12 @@ function Toolbar(): React.JSX.Element {
   const videoVisible = useUiStore((s) => s.videoVisible)
   const { toggleVideo, setView } = useUiStore.getState()
   const status = useTranscriptStore((s) => s.status)
-  const { start, cancel } = useTranscriptStore.getState()
+  const entryId = useTranscriptStore((s) => s.entry?.id)
+  const runningEntryId = useTranscriptStore((s) => s.job?.entryId)
+  const hasMedia = useHistoryStore((s) => (entryId ? entryId in s.media : false))
+  const blocker = startBlocker(entryId, hasMedia, runningEntryId)
+  // El modelo y el idioma no cambian a mitad de la transcripción del archivo abierto.
+  const locked = status === 'transcribing'
 
   const downloaded = useModelsStore(useShallow(selectDownloaded))
   const loaded = useModelsStore((s) => s.models.length > 0)
@@ -59,6 +70,7 @@ function Toolbar(): React.JSX.Element {
           id="toolbar-model"
           value={hasModel ? model : ''}
           options={modelOptions}
+          disabled={locked}
           onChange={(value) => {
             if (value === MORE_MODELS) setView('settings')
             else if (value) updateSettings({ model: value })
@@ -71,12 +83,14 @@ function Toolbar(): React.JSX.Element {
           id="toolbar-language"
           value={language}
           options={languages}
+          disabled={locked}
           onChange={(value) => updateSettings({ language: value })}
         />
       </div>
       <Checkbox
         className="toolbar-translate"
         checked={translate}
+        disabled={locked}
         onChange={(value) => updateSettings({ translate: value })}
       >
         {t('toolbar.translate')}
@@ -97,12 +111,24 @@ function Toolbar(): React.JSX.Element {
         onClick={() => setView('settings')}
       />
       {status === 'transcribing' ? (
-        <Button variant="primary" className="toolbar-action" onClick={cancel}>
+        <Button variant="primary" className="toolbar-action" onClick={cancelTranscription}>
           {t('common.cancel')}
         </Button>
       ) : (
         (status === 'ready' || status === 'error') && (
-          <Button variant="primary" className="toolbar-action" onClick={start}>
+          <Button
+            variant="primary"
+            className="toolbar-action"
+            disabled={blocker !== null || !hasModel}
+            title={
+              blocker === 'noMedia'
+                ? t('toolbar.transcribeNoMedia')
+                : blocker === 'busy'
+                  ? t('toolbar.transcribeBusy')
+                  : undefined
+            }
+            onClick={() => void startTranscription()}
+          >
             {t('toolbar.transcribe')}
           </Button>
         )

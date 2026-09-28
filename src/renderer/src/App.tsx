@@ -15,6 +15,7 @@ import { usePlayerShortcuts } from './store/player'
 import { useSettingsSync } from './store/settings'
 import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
+import { useTranscriptionSync } from './store/transcription'
 import { useThemeSync, useUiStore } from './store/ui'
 
 // Página temporal de componentes; con import dinámico no entra en el build de producción.
@@ -62,6 +63,7 @@ function App(): React.JSX.Element {
   useBackendFallbackToast()
   useModelsSync()
   usePreviewSync()
+  useTranscriptionSync()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
 

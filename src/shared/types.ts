@@ -31,6 +31,12 @@ export interface HistoryEntry {
   progress?: number
 }
 
+/** Lo que el renderer manda para crear una entrada; el main pone id, fecha y estado. */
+export type HistoryEntryInput = Pick<
+  HistoryEntry,
+  'filePath' | 'fileName' | 'durationSec' | 'model' | 'language'
+>
+
 export type Backend = 'cuda' | 'vulkan' | 'cpu'
 
 /** Backend elegido, el detectado al primer arranque y los que tienen whisper-cli instalado. */
