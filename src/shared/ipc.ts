@@ -1,5 +1,6 @@
 import type { ResolvedTheme, ThemeMode } from './theme'
 import type { BackendFallback, BackendInfo } from './types'
+import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
 /** Canales IPC. El renderer nunca los usa directamente: pasa por `window.api`. */
 export const IpcChannel = {
@@ -9,7 +10,15 @@ export const IpcChannel = {
   ThemeSetMode: 'theme:set-mode',
   ThemeChanged: 'theme:changed',
   BackendGetInfo: 'backend:get-info',
-  BackendFallback: 'backend:fallback'
+  BackendFallback: 'backend:fallback',
+  ModelsList: 'models:list',
+  ModelsDownload: 'models:download',
+  ModelsCancel: 'models:cancel',
+  ModelsDelete: 'models:delete',
+  ModelsPickCustomFile: 'models:pickCustomFile',
+  ModelsAddCustom: 'models:addCustom',
+  ModelsProgress: 'models:progress',
+  ModelsChanged: 'models:changed'
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -21,12 +30,20 @@ export interface IpcInvokeMap {
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
   [IpcChannel.ThemeSetMode]: { args: [mode: ThemeMode]; result: ResolvedTheme }
   [IpcChannel.BackendGetInfo]: { args: []; result: BackendInfo }
+  [IpcChannel.ModelsList]: { args: []; result: ModelStatus[] }
+  [IpcChannel.ModelsDownload]: { args: [id: string]; result: ModelDownloadResult }
+  [IpcChannel.ModelsCancel]: { args: [id: string]; result: void }
+  [IpcChannel.ModelsDelete]: { args: [id: string]; result: ModelActionResult }
+  [IpcChannel.ModelsPickCustomFile]: { args: []; result: string | null }
+  [IpcChannel.ModelsAddCustom]: { args: [path: string, name: string]; result: ModelActionResult }
 }
 
 /** Eventos que el main envía al renderer (`webContents.send`) y su payload. */
 export interface IpcEventMap {
   [IpcChannel.ThemeChanged]: ResolvedTheme
   [IpcChannel.BackendFallback]: BackendFallback
+  [IpcChannel.ModelsProgress]: ModelProgress
+  [IpcChannel.ModelsChanged]: void
 }
 
 /** API que el preload expone en `window.api`. */
@@ -48,5 +65,20 @@ export interface TranscribaApi {
     getInfo: () => Promise<BackendInfo>
     /** Avisa cuando un backend falla al cargar y se reintenta con el siguiente. */
     onFallback: (listener: (fallback: BackendFallback) => void) => () => void
+  }
+  models: {
+    /** Modelos del catálogo y personalizados, con su estado y tamaño en disco. */
+    list: () => Promise<ModelStatus[]>
+    /** Descarga (o reanuda) un modelo del catálogo; resuelve al terminar, cancelar o fallar. */
+    download: (id: string) => Promise<ModelDownloadResult>
+    /** Cancela la descarga conservando el `.part`. */
+    cancel: (id: string) => Promise<void>
+    delete: (id: string) => Promise<ModelActionResult>
+    /** Diálogo para elegir un `.bin` local; `null` si se cancela. */
+    pickCustomFile: () => Promise<string | null>
+    addCustom: (path: string, name: string) => Promise<ModelActionResult>
+    onProgress: (listener: (progress: ModelProgress) => void) => () => void
+    /** Avisa cuando cambia la lista (empieza o termina una descarga, se borra o añade uno). */
+    onChanged: (listener: () => void) => () => void
   }
 }

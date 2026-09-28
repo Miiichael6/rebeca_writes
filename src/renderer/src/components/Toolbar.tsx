@@ -1,9 +1,9 @@
 import { Settings, SquarePlay } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
-import { WHISPER_MODELS } from '@shared/whisper'
 import { whisperLanguageOptions } from '@renderer/lib/languages'
+import { selectDownloaded, useModelsStore } from '@renderer/store/models'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Checkbox, Select, type SelectOption } from './ui'
@@ -26,13 +26,24 @@ function Toolbar(): React.JSX.Element {
   const status = useTranscriptStore((s) => s.status)
   const { start, cancel } = useTranscriptStore.getState()
 
-  // Por ahora todos los modelos cuentan como descargados; la lista real sale de la tarea 06.
+  const downloaded = useModelsStore(useShallow(selectDownloaded))
+  const loaded = useModelsStore((s) => s.models.length > 0)
+
+  // Si el modelo elegido no está descargado (o se borró), pasa al primero que sí lo esté.
+  useEffect(() => {
+    if (loaded && downloaded.length > 0 && !downloaded.some((m) => m.id === model)) {
+      setModel(downloaded[0].id)
+    }
+  }, [loaded, downloaded, model, setModel])
+
+  const hasModel = downloaded.some((m) => m.id === model)
   const modelOptions = useMemo(
     (): SelectOption<string>[] => [
-      ...WHISPER_MODELS.map((m) => ({ value: m.id, label: m.label })),
+      ...(hasModel ? [] : [{ value: '', label: t('toolbar.noModels') }]),
+      ...downloaded.map((m) => ({ value: m.id, label: m.label })),
       { value: MORE_MODELS, label: t('toolbar.moreModels') }
     ],
-    [t]
+    [downloaded, hasModel, t]
   )
   const languages = useMemo(
     () => whisperLanguageOptions(uiLanguage, t('toolbar.autoDetect')),
@@ -45,9 +56,12 @@ function Toolbar(): React.JSX.Element {
         <label htmlFor="toolbar-model">{t('toolbar.model')}</label>
         <Select
           id="toolbar-model"
-          value={model}
+          value={hasModel ? model : ''}
           options={modelOptions}
-          onChange={(value) => (value === MORE_MODELS ? setView('settings') : setModel(value))}
+          onChange={(value) => {
+            if (value === MORE_MODELS) setView('settings')
+            else if (value) setModel(value)
+          }}
         />
       </div>
       <div className="toolbar-field">

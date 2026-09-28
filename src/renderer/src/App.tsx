@@ -9,6 +9,7 @@ import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Button, Toaster } from './components/ui'
+import { useModelsSync } from './store/models'
 import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
 import { useThemeSync, useUiStore } from './store/ui'
@@ -54,6 +55,7 @@ function App(): React.JSX.Element {
   const { t } = useTranslation()
   useThemeSync()
   useBackendFallbackToast()
+  useModelsSync()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
 

@@ -3,11 +3,12 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SUPPORTED_UI_LANGUAGES, type UiLanguageSetting } from '@shared/i18n'
 import { useUiStore } from '@renderer/store/ui'
+import ModelsSection from './ModelsSection'
 import { Button, Select, SettingRow, SettingsSection } from './ui'
 
 /**
- * Página de Configuración. Por ahora solo el idioma de la interfaz; el resto del contenido
- * es de la tarea 21.
+ * Página de Configuración. Por ahora los modelos (tarea 06) y el idioma de la interfaz; el resto
+ * del contenido es de la tarea 21.
  */
 function SettingsPage(): React.JSX.Element {
   const { t } = useTranslation()
@@ -42,6 +43,9 @@ function SettingsPage(): React.JSX.Element {
         <h1>{t('settings.title')}</h1>
       </header>
       <div className="settings-content">
+        <SettingsSection title={t('settings.models')}>
+          <ModelsSection />
+        </SettingsSection>
         <SettingsSection title={t('settings.interface')}>
           <SettingRow
             icon={<Languages size={20} strokeWidth={1.5} />}

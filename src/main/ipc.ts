@@ -1,7 +1,15 @@
-import { app, ipcMain, nativeTheme, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, ipcMain, nativeTheme, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
+import {
+  addCustomModel,
+  cancelDownload,
+  deleteModel,
+  downloadModel,
+  listModels,
+  pickCustomModelFile
+} from './services/models'
 
 type Handler<C extends keyof IpcInvokeMap> = (
   event: IpcMainInvokeEvent,
@@ -30,4 +38,15 @@ export function registerIpcHandlers(): void {
   })
 
   handle(IpcChannel.BackendGetInfo, () => getBackendInfo())
+
+  handle(IpcChannel.ModelsList, () => listModels())
+  handle(IpcChannel.ModelsDownload, (_event, id) => downloadModel(String(id)))
+  handle(IpcChannel.ModelsCancel, (_event, id) => cancelDownload(String(id)))
+  handle(IpcChannel.ModelsDelete, (_event, id) => deleteModel(String(id)))
+  handle(IpcChannel.ModelsPickCustomFile, (event) =>
+    pickCustomModelFile(BrowserWindow.fromWebContents(event.sender))
+  )
+  handle(IpcChannel.ModelsAddCustom, (_event, path, name) =>
+    addCustomModel(String(path), String(name))
+  )
 }

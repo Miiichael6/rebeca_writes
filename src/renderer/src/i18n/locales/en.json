@@ -46,7 +46,8 @@
     "hideVideo": "Hide video panel",
     "showVideo": "Show video panel",
     "settings": "Settings",
-    "transcribe": "Transcribe"
+    "transcribe": "Transcribe",
+    "noModels": "No models downloaded"
   },
   "player": {
     "play": "Play",
@@ -96,11 +97,51 @@
   },
   "settings": {
     "title": "Settings",
-    "placeholder": "Models, storage and about arrive in task 21.",
+    "placeholder": "Backend, transcription options, storage and about arrive in task 21.",
     "interface": "Interface",
     "uiLanguage": "Interface language",
     "uiLanguageDescription": "Choose the language of the app.",
-    "uiLanguageSystem": "Use the Windows language"
+    "uiLanguageSystem": "Use the Windows language",
+    "models": "Models"
+  },
+  "models": {
+    "title": "Whisper models",
+    "description": "Download the models you want to use. They are stored on your computer and have no duration limit.",
+    "speed": "Speed:",
+    "accuracy": "Accuracy:",
+    "memory": "Memory usage:",
+    "speeds": {
+      "fast": "Fast",
+      "moderate": "Moderate",
+      "moderateGpu": "Moderate on GPU",
+      "slow": "Slow"
+    },
+    "accuracies": {
+      "basic": "Basic",
+      "acceptable": "Acceptable",
+      "good": "Good",
+      "veryGood": "Very good",
+      "superior": "Superior"
+    },
+    "download": "Download",
+    "resume": "Resume",
+    "delete": "Delete",
+    "remove": "Remove",
+    "downloading": "Downloading",
+    "starting": "Connecting...",
+    "progress": "{{received}} of {{total}} · {{speed}}/s",
+    "partial": "{{received}} of {{total}}",
+    "fileMissing": "File not found",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteBody": "The model will be deleted from your computer. You can download it again at any time.",
+    "removeTitle": "Remove {{name}}?",
+    "removeBody": "It will be removed from the list. The .bin file is not deleted.",
+    "addCustom": "Add custom model",
+    "addCustomTitle": "Add custom model",
+    "chooseFile": "Choose .bin file...",
+    "noFileChosen": "No file chosen",
+    "customName": "Name",
+    "add": "Add"
   },
   "backend": {
     "fallback": "{{from}} is not available, {{to}} was used instead.",
@@ -112,6 +153,12 @@
   },
   "errors": {
     "noAudioStream": "The file has no audio track.",
-    "unknown": "An unexpected error occurred."
+    "unknown": "An unexpected error occurred.",
+    "modelNotFound": "The model does not exist.",
+    "noDiskSpace": "There is not enough disk space to download the model.",
+    "downloadFailed": "The model could not be downloaded. Check your connection and click Resume.",
+    "sizeMismatch": "The downloaded model is corrupted (wrong size). Download it again.",
+    "modelInUse": "The model is being used by a transcription.",
+    "invalidModel": "The file is not a valid whisper GGML model."
   }
 }

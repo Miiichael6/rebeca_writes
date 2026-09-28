@@ -1,13 +1,3 @@
-/** Modelos oficiales (spec §2.2). `id` es el sufijo de `ggml-<id>.bin`. */
-export const WHISPER_MODELS = [
-  { id: 'tiny', label: 'Tiny' },
-  { id: 'base', label: 'Base' },
-  { id: 'small', label: 'Small' },
-  { id: 'medium', label: 'Medium' },
-  { id: 'large-v3-turbo', label: 'Large v3 turbo' },
-  { id: 'large-v3', label: 'Large v3' }
-] as const
-
 /** Idioma "detectar automáticamente" en `whisper-cli -l`. */
 export const AUTO_LANGUAGE = 'auto'
 

@@ -47,7 +47,8 @@
     "hideVideo": "Ocultar panel de video",
     "showVideo": "Mostrar panel de video",
     "settings": "Configuración",
-    "transcribe": "Transcribir"
+    "transcribe": "Transcribir",
+    "noModels": "Ningún modelo descargado"
   },
   "player": {
     "play": "Reproducir",
@@ -97,11 +98,51 @@
   },
   "settings": {
     "title": "Configuración",
-    "placeholder": "Modelos, almacenamiento y acerca de llegan en la tarea 21.",
+    "placeholder": "Backend, opciones de transcripción, almacenamiento y acerca de llegan en la tarea 21.",
     "interface": "Interfaz",
     "uiLanguage": "Idioma de la interfaz",
     "uiLanguageDescription": "Seleccione el idioma de la aplicación.",
-    "uiLanguageSystem": "Usar el idioma de Windows"
+    "uiLanguageSystem": "Usar el idioma de Windows",
+    "models": "Modelos"
+  },
+  "models": {
+    "title": "Modelos Whisper",
+    "description": "Descarga los modelos que quieras usar. Se guardan en tu equipo y no tienen límite de duración.",
+    "speed": "Velocidad:",
+    "accuracy": "Precisión:",
+    "memory": "Uso de memoria:",
+    "speeds": {
+      "fast": "Rápida",
+      "moderate": "Moderada",
+      "moderateGpu": "Moderada en GPU",
+      "slow": "Lenta"
+    },
+    "accuracies": {
+      "basic": "Básica",
+      "acceptable": "Aceptable",
+      "good": "Buena",
+      "veryGood": "Muy buena",
+      "superior": "Superior"
+    },
+    "download": "Descargar",
+    "resume": "Reanudar",
+    "delete": "Eliminar",
+    "remove": "Quitar",
+    "downloading": "Descargando",
+    "starting": "Conectando...",
+    "progress": "{{received}} de {{total}} · {{speed}}/s",
+    "partial": "{{received}} de {{total}}",
+    "fileMissing": "Archivo no encontrado",
+    "deleteTitle": "¿Eliminar {{name}}?",
+    "deleteBody": "Se borrará el modelo de tu equipo. Puedes volver a descargarlo cuando quieras.",
+    "removeTitle": "¿Quitar {{name}}?",
+    "removeBody": "Se quitará de la lista. El archivo .bin no se borra.",
+    "addCustom": "Agregar modelo personalizado",
+    "addCustomTitle": "Agregar modelo personalizado",
+    "chooseFile": "Elegir archivo .bin...",
+    "noFileChosen": "Ningún archivo elegido",
+    "customName": "Nombre",
+    "add": "Agregar"
   },
   "backend": {
     "fallback": "{{from}} no está disponible, se usó {{to}}.",
@@ -113,6 +154,12 @@
   },
   "errors": {
     "noAudioStream": "El archivo no tiene pista de audio.",
-    "unknown": "Ocurrió un error inesperado."
+    "unknown": "Ocurrió un error inesperado.",
+    "modelNotFound": "El modelo no existe.",
+    "noDiskSpace": "No hay espacio suficiente en el disco para descargar el modelo.",
+    "downloadFailed": "No se pudo descargar el modelo. Revisa tu conexión y pulsa Reanudar.",
+    "sizeMismatch": "El modelo descargado está dañado (tamaño incorrecto). Vuelve a descargarlo.",
+    "modelInUse": "El modelo se está usando en una transcripción.",
+    "invalidModel": "El archivo no es un modelo GGML de whisper válido."
   }
 }

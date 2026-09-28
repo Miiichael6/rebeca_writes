@@ -32,6 +32,16 @@ const api: TranscribaApi = {
   backend: {
     getInfo: () => invoke(IpcChannel.BackendGetInfo),
     onFallback: (listener) => on(IpcChannel.BackendFallback, listener)
+  },
+  models: {
+    list: () => invoke(IpcChannel.ModelsList),
+    download: (id) => invoke(IpcChannel.ModelsDownload, id),
+    cancel: (id) => invoke(IpcChannel.ModelsCancel, id),
+    delete: (id) => invoke(IpcChannel.ModelsDelete, id),
+    pickCustomFile: () => invoke(IpcChannel.ModelsPickCustomFile),
+    addCustom: (path, name) => invoke(IpcChannel.ModelsAddCustom, path, name),
+    onProgress: (listener) => on(IpcChannel.ModelsProgress, listener),
+    onChanged: (listener) => on(IpcChannel.ModelsChanged, () => listener())
   }
 }
 
