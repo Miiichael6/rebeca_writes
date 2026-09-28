@@ -544,9 +544,27 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Envuelve la lista para colocar encima el botón "Volver al actual". */
+.transcript-scroll {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.transcript-return {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-flyout);
+}
+
 .transcript-body {
   flex: 1;
   overflow-y: auto;
+  outline: none;
   padding: 16px 20px;
   font-size: 14px;
   line-height: 1.6;
@@ -615,6 +633,31 @@
 
 .segment.active time {
   color: var(--accent-text);
+}
+
+/* "Unir líneas": el párrafo es texto continuo; el resaltado y el clic van por segmento. */
+.segment.paragraph {
+  display: block;
+  padding: 2px 8px 12px;
+  cursor: text;
+}
+
+.segment.paragraph:hover {
+  background: none;
+}
+
+.segment.paragraph span {
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.segment.paragraph span:hover {
+  background: var(--bg-subtle-hover);
+}
+
+.segment.paragraph span.active {
+  background: var(--bg-selected);
+  box-shadow: 0 2px 0 var(--accent);
 }
 
 /* ---------- Barra inferior ---------- */

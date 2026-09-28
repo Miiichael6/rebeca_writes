@@ -1,8 +1,10 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronDown, ChevronUp, CircleAlert, FolderOpen, Search } from 'lucide-react'
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronDown, ChevronUp, CircleAlert, FolderOpen, LocateFixed, Search } from 'lucide-react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { paragraphOf, toParagraphs } from '@shared/joinLines'
 import type { Segment } from '@shared/types'
+import { copyTranscript } from '@renderer/lib/copyTranscript'
 import {
   firstMatchAtOrAfter,
   updateSearch,
@@ -11,13 +13,21 @@ import {
 } from '@renderer/lib/search'
 import { findActiveSegment } from '@renderer/lib/segments'
 import { formatClock, formatTimestamp } from '@renderer/lib/time'
-import { registerTranscriptScroller, scrollToSegment } from '@renderer/lib/transcriptScroll'
+import {
+  registerTranscriptScroller,
+  scrollToSegment,
+  type ScrollAlign
+} from '@renderer/lib/transcriptScroll'
 import { usePlayerStore } from '@renderer/store/player'
+import { useSettingsStore } from '@renderer/store/settings'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { Button } from './ui'
 
 /** Altura estimada de un segmento de una línea; la real se mide al pintarlo. */
 const ESTIMATED_ROW_PX = 26
+
+/** Altura estimada de un párrafo de "Unir líneas" (unas cuatro líneas). */
+const ESTIMATED_PARAGRAPH_PX = 110
 
 /** Espera tras la última tecla antes de buscar, para no recorrer miles de segmentos por letra. */
 const SEARCH_DEBOUNCE_MS = 150
@@ -156,6 +166,7 @@ const SegmentRow = memo(function SegmentRow({
     <p
       ref={measure}
       data-index={index}
+      data-seg={index}
       className={`segment${active ? ' active' : ''}`}
       style={{ transform: `translateY(${start}px)` }}
       aria-current={active || undefined}
@@ -173,9 +184,115 @@ const SegmentRow = memo(function SegmentRow({
   )
 })
 
+interface ParagraphRowProps {
+  segments: readonly Segment[]
+  /** Segmentos del párrafo: `[from, to)`. */
+  from: number
+  to: number
+  /** Índice de la fila (el párrafo), para `measureElement`. */
+  index: number
+  start: number
+  measure: (el: Element | null) => void
+  onSeek: (t: number) => void
+  /** Segmento activo si está en este párrafo, si no -1. */
+  activeSegment: number
+  matches: readonly SearchMatch[]
+  /** Índice global de la coincidencia actual si está en este párrafo, si no -1. */
+  currentMatch: number
+}
+
+/**
+ * El párrafo no cambió si sus segmentos son los mismos objetos, aunque el array sea otro
+ * (llegaron segmentos al final durante la transcripción).
+ */
+function sameParagraph(a: ParagraphRowProps, b: ParagraphRowProps): boolean {
+  if (
+    a.from !== b.from ||
+    a.to !== b.to ||
+    a.index !== b.index ||
+    a.start !== b.start ||
+    a.measure !== b.measure ||
+    a.onSeek !== b.onSeek ||
+    a.activeSegment !== b.activeSegment ||
+    a.matches !== b.matches ||
+    a.currentMatch !== b.currentMatch
+  ) {
+    return false
+  }
+  for (let i = a.from; i < a.to; i++) if (a.segments[i] !== b.segments[i]) return false
+  return true
+}
+
+/**
+ * Un párrafo de "Unir líneas": texto continuo sin marcas de tiempo, pero cada segmento es un
+ * `<span>` propio para poder hacer clic en él y resaltar el activo y las coincidencias.
+ */
+const ParagraphRow = memo(function ParagraphRow({
+  segments,
+  from,
+  to,
+  index,
+  start,
+  measure,
+  onSeek,
+  activeSegment,
+  matches,
+  currentMatch
+}: ParagraphRowProps): React.JSX.Element {
+  const parts: React.ReactNode[] = []
+  for (let i = from; i < to; i++) {
+    const segment = segments[i]
+    const first = firstMatchAtOrAfter(matches, i)
+    const count = firstMatchAtOrAfter(matches, i + 1) - first
+    if (i > from) parts.push(' ')
+    parts.push(
+      <span
+        key={i}
+        data-seg={i}
+        className={i === activeSegment ? 'active' : undefined}
+        aria-current={i === activeSegment || undefined}
+        onClick={() => onSeek(segment.start)}
+      >
+        {highlight(segment.text, matches, first, count, currentMatch)}
+      </span>
+    )
+  }
+  return (
+    <p
+      ref={measure}
+      data-index={index}
+      className="segment paragraph"
+      style={{ transform: `translateY(${start}px)` }}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        // Enter salta al principio del párrafo; cada segmento se elige con el ratón.
+        if (e.key === 'Enter') onSeek(segments[from].start)
+      }}
+    >
+      {parts}
+    </p>
+  )
+}, sameParagraph)
+
+/** Teclas con las que el usuario desplaza la lista a mano (pausan el autoscroll). */
+const SCROLL_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown'])
+
+/** Lleva `el` a la vista dentro de `container`, salvo que ya se vea entero. */
+function scrollElementIntoView(container: HTMLElement, el: HTMLElement, align: ScrollAlign): void {
+  const r = el.getBoundingClientRect()
+  const c = container.getBoundingClientRect()
+  if (r.top >= c.top && r.bottom <= c.bottom) return
+  let delta: number
+  if (align === 'center') delta = r.top + r.height / 2 - (c.top + c.height / 2)
+  else if (align === 'start' || (align === 'auto' && r.top < c.top)) delta = r.top - c.top
+  else delta = r.bottom - c.bottom
+  container.scrollTop += delta
+}
+
 /**
  * Lista virtualizada (spec §7): solo están en el DOM los segmentos visibles y unos pocos
  * alrededor, así una transcripción de horas se desplaza igual de fluida que una corta.
+ * Con "Unir líneas" cada fila es un párrafo; sin él, un segmento.
  */
 interface SegmentListProps {
   segments: Segment[]
@@ -184,58 +301,204 @@ interface SegmentListProps {
 }
 
 function SegmentList({ segments, matches, currentMatch }: SegmentListProps): React.JSX.Element {
+  const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const joinLines = useSettingsStore((s) => s.settings.joinLines)
+  const autoScroll = useSettingsStore((s) => s.settings.autoScroll)
+  const playing = usePlayerStore((s) => s.playing)
+  const transcribing = useTranscriptStore((s) => s.job !== null && s.job.entryId === s.entry?.id)
   // El selector devuelve un índice: la lista solo se vuelve a pintar al cambiar de segmento.
   const activeIndex = usePlayerStore((s) =>
     s.src ? findActiveSegment(segments, s.currentTime) : null
   )
-  const seek = usePlayerStore((s) => s.seek)
+  const playerSeek = usePlayerStore((s) => s.seek)
+
+  const paragraphs = useMemo(
+    () => (joinLines ? toParagraphs(segments) : null),
+    [joinLines, segments]
+  )
+  const rowCount = paragraphs ? paragraphs.length : segments.length
+  const rowOf = useCallback(
+    (segment: number) => (paragraphs ? paragraphOf(paragraphs, segment) : segment),
+    [paragraphs]
+  )
 
   // El virtualizador es mutable a propósito; a las filas solo pasan números y `measureElement`,
   // que es estable.
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
-    count: segments.length,
+    count: rowCount,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ESTIMATED_ROW_PX,
-    overscan: 10,
+    estimateSize: () => (joinLines ? ESTIMATED_PARAGRAPH_PX : ESTIMATED_ROW_PX),
+    overscan: joinLines ? 3 : 10,
     // Con la vista estable, `start` y `measure` no cambian entre renders y `memo` funciona.
-    getItemKey: (index) => index
+    // El prefijo separa las medidas de párrafos y de segmentos al cambiar "Unir líneas".
+    getItemKey: (index) => `${joinLines ? 'p' : 's'}${index}`
   })
+
+  /** Primer segmento visible, para no perder el sitio al cambiar "Unir líneas". */
+  const topSegmentRef = useRef(0)
+  const onScroll = (): void => {
+    const container = scrollRef.current
+    if (!container) return
+    const top = container.getBoundingClientRect().top
+    for (const el of container.querySelectorAll<HTMLElement>('[data-seg]')) {
+      if (el.getBoundingClientRect().bottom > top) {
+        topSegmentRef.current = Number(el.dataset.seg)
+        return
+      }
+    }
+  }
+  const prevJoinRef = useRef(joinLines)
+  useLayoutEffect(() => {
+    if (prevJoinRef.current === joinLines) return
+    prevJoinRef.current = joinLines
+    virtualizer.scrollToIndex(rowOf(topSegmentRef.current), { align: 'start' })
+  }, [joinLines, rowOf, virtualizer])
+
+  /** Lleva un segmento a la vista: si ya está en el DOM, con precisión dentro del párrafo. */
+  const reveal = useCallback(
+    (segment: number, align: ScrollAlign) => {
+      const container = scrollRef.current
+      if (!container) return
+      const el = container.querySelector<HTMLElement>(`[data-seg="${segment}"]`)
+      if (el) scrollElementIntoView(container, el, align)
+      else virtualizer.scrollToIndex(rowOf(segment), { align, behavior: 'auto' })
+    },
+    [rowOf, virtualizer]
+  )
+
+  // Desplazamiento automático. `following` pasa a `false` cuando el usuario desplaza a mano
+  // o navega la búsqueda, y vuelve con "Volver al actual", al hacer clic en un segmento o al
+  // volver a activar la casilla.
+  const [following, setFollowing] = useState(true)
+  const [prevAutoScroll, setPrevAutoScroll] = useState(autoScroll)
+  if (prevAutoScroll !== autoScroll) {
+    setPrevAutoScroll(autoScroll)
+    if (autoScroll) setFollowing(true)
+  }
+  const followPlayback = playing && activeIndex !== null
+  const followLive = !playing && transcribing
+  const pauseFollow = (): void => {
+    if (autoScroll) setFollowing(false)
+  }
+
+  useEffect(() => {
+    if (!autoScroll || !following) return
+    if (followPlayback) reveal(activeIndex, 'center')
+    else if (followLive && rowCount > 0) {
+      virtualizer.scrollToIndex(rowCount - 1, { align: 'end', behavior: 'auto' })
+    }
+  }, [
+    autoScroll,
+    following,
+    followPlayback,
+    followLive,
+    activeIndex,
+    rowCount,
+    segments,
+    reveal,
+    virtualizer
+  ])
 
   useEffect(
     () =>
-      registerTranscriptScroller((index, align) =>
-        virtualizer.scrollToIndex(index, { align, behavior: 'auto' })
-      ),
-    [virtualizer]
+      registerTranscriptScroller((index, align) => {
+        // La búsqueda manda: si no, el autoscroll se llevaría la vista de la coincidencia.
+        setFollowing(false)
+        reveal(index, align)
+      }),
+    [reveal]
   )
 
+  const seek = useCallback(
+    (time: number) => {
+      setFollowing(true)
+      playerSeek(time)
+    },
+    [playerSeek]
+  )
+
+  const showReturn = autoScroll && !following && (followPlayback || followLive)
+
   return (
-    <div className="transcript-body" ref={scrollRef}>
-      <div className="transcript-list" style={{ height: virtualizer.getTotalSize() }}>
-        {virtualizer.getVirtualItems().map((item) => {
-          // Coincidencias de la fila: solo se buscan para las que están en el DOM.
-          const first = firstMatchAtOrAfter(matches, item.index)
-          const end = firstMatchAtOrAfter(matches, item.index + 1)
-          return (
-            <SegmentRow
-              key={item.key}
-              segment={segments[item.index]}
-              index={item.index}
-              active={item.index === activeIndex}
-              start={item.start}
-              measure={virtualizer.measureElement}
-              onSeek={seek}
-              matches={matches}
-              firstMatch={first}
-              matchCount={end - first}
-              // Solo la fila con la actual la recibe: así `memo` no repinta las demás al navegar.
-              currentMatch={currentMatch >= first && currentMatch < end ? currentMatch : -1}
-            />
-          )
-        })}
+    <div className="transcript-scroll">
+      <div
+        className="transcript-body"
+        ref={scrollRef}
+        tabIndex={-1}
+        onScroll={onScroll}
+        onWheel={pauseFollow}
+        onTouchMove={pauseFollow}
+        onPointerDown={(e) => {
+          // Clic en el propio contenedor: la barra de desplazamiento.
+          if (e.target === e.currentTarget) pauseFollow()
+        }}
+        onKeyDown={(e) => {
+          if (SCROLL_KEYS.has(e.key) && !e.ctrlKey && !e.altKey) pauseFollow()
+        }}
+      >
+        <div
+          className={`transcript-list${joinLines ? ' joined' : ''}`}
+          style={{ height: virtualizer.getTotalSize() }}
+        >
+          {virtualizer.getVirtualItems().map((item) => {
+            if (paragraphs) {
+              const p = paragraphs[item.index]
+              const first = firstMatchAtOrAfter(matches, p.from)
+              const end = firstMatchAtOrAfter(matches, p.to)
+              return (
+                <ParagraphRow
+                  key={item.key}
+                  segments={segments}
+                  from={p.from}
+                  to={p.to}
+                  index={item.index}
+                  start={item.start}
+                  measure={virtualizer.measureElement}
+                  onSeek={seek}
+                  activeSegment={
+                    activeIndex !== null && activeIndex >= p.from && activeIndex < p.to
+                      ? activeIndex
+                      : -1
+                  }
+                  matches={matches}
+                  currentMatch={currentMatch >= first && currentMatch < end ? currentMatch : -1}
+                />
+              )
+            }
+            // Coincidencias de la fila: solo se buscan para las que están en el DOM.
+            const first = firstMatchAtOrAfter(matches, item.index)
+            const end = firstMatchAtOrAfter(matches, item.index + 1)
+            return (
+              <SegmentRow
+                key={item.key}
+                segment={segments[item.index]}
+                index={item.index}
+                active={item.index === activeIndex}
+                start={item.start}
+                measure={virtualizer.measureElement}
+                onSeek={seek}
+                matches={matches}
+                firstMatch={first}
+                matchCount={end - first}
+                // Solo la fila con la actual la recibe: así `memo` no repinta las demás al navegar.
+                currentMatch={currentMatch >= first && currentMatch < end ? currentMatch : -1}
+              />
+            )
+          })}
+        </div>
       </div>
+      {showReturn && (
+        <Button
+          className="transcript-return"
+          size="sm"
+          icon={<LocateFixed size={15} strokeWidth={1.5} />}
+          onClick={() => setFollowing(true)}
+        >
+          {t('transcript.backToCurrent')}
+        </Button>
+      )}
     </div>
   )
 }
@@ -357,10 +620,20 @@ function TranscriptView(): React.JSX.Element {
     e.preventDefault()
   }
 
+  // Ctrl+C con el foco en la transcripción: sin selección copia todo (como se ve); con
+  // selección se deja la copia nativa. En el cuadro de búsqueda copia lo de siempre.
+  const onKeyDown = (e: React.KeyboardEvent<HTMLElement>): void => {
+    if (!e.ctrlKey || e.altKey || e.shiftKey || e.metaKey || e.key.toLowerCase() !== 'c') return
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+    if (window.getSelection()?.toString()) return
+    e.preventDefault()
+    void copyTranscript()
+  }
+
   const hasResults = matches.length > 0
 
   return (
-    <section className="transcript" aria-label={t('transcript.title')}>
+    <section className="transcript" aria-label={t('transcript.title')} onKeyDown={onKeyDown}>
       <div className="transcript-header">
         <h2 title={entry?.fileName}>{entry?.fileName ?? t('transcript.title')}</h2>
         {searched.trim() && (

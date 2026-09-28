@@ -25,6 +25,9 @@ const api: TranscribaApi = {
     getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages),
     openLogs: () => invoke(IpcChannel.AppOpenLogs)
   },
+  clipboard: {
+    writeText: (text) => invoke(IpcChannel.ClipboardWriteText, text)
+  },
   settings: {
     get: () => invoke(IpcChannel.SettingsGet),
     set: (patch) => invoke(IpcChannel.SettingsSet, patch),

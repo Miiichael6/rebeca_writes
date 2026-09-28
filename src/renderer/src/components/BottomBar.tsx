@@ -1,7 +1,7 @@
 import { Copy, Download } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { formatTimestamp } from '@renderer/lib/time'
+import { copyTranscript } from '@renderer/lib/copyTranscript'
 import { toast } from '@renderer/store/toast'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
@@ -29,21 +29,15 @@ function BottomBar(): React.JSX.Element {
     ]
   }, [t])
 
-  // Copia simple, un segmento por línea. "Unir líneas" se aplica en la tarea 15.
-  const copy = async (): Promise<void> => {
-    const text = segments.map((s) => `[${formatTimestamp(s.start)}] ${s.text}`).join('\n')
-    await navigator.clipboard.writeText(text)
-    toast(t('bottomBar.copied'))
-  }
-
   return (
     <footer className="bottombar">
       <Button
         size="sm"
         aria-label={t('bottomBar.copy')}
+        title={t('bottomBar.copy')}
         icon={<Copy size={15} strokeWidth={1.5} />}
         disabled={empty}
-        onClick={copy}
+        onClick={() => void copyTranscript()}
       />
       <Checkbox checked={joinLines} onChange={(value) => updateSettings({ joinLines: value })}>
         {t('bottomBar.joinLines')}

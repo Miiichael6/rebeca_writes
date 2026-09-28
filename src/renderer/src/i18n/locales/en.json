@@ -79,7 +79,8 @@
     "emptyWaiting": "Waiting for the first segments...",
     "phasePreparing": "Preparing audio...",
     "phaseTranscribing": "Transcribing...",
-    "failed": "The transcription failed."
+    "failed": "The transcription failed.",
+    "backToCurrent": "Back to current"
   },
   "bottomBar": {
     "copy": "Copy transcription",

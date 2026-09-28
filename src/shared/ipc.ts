@@ -21,6 +21,7 @@ export const IpcChannel = {
   AppGetVersion: 'app:get-version',
   AppGetPreferredLanguages: 'app:get-preferred-languages',
   AppOpenLogs: 'app:openLogs',
+  ClipboardWriteText: 'clipboard:writeText',
   SettingsGet: 'settings:get',
   SettingsSet: 'settings:set',
   SettingsChanged: 'settings:changed',
@@ -56,6 +57,7 @@ export interface IpcInvokeMap {
   [IpcChannel.AppGetVersion]: { args: []; result: string }
   [IpcChannel.AppGetPreferredLanguages]: { args: []; result: string[] }
   [IpcChannel.AppOpenLogs]: { args: []; result: void }
+  [IpcChannel.ClipboardWriteText]: { args: [text: string]; result: void }
   [IpcChannel.SettingsGet]: { args: []; result: Settings }
   [IpcChannel.SettingsSet]: { args: [patch: SettingsPatch]; result: Settings }
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
@@ -99,6 +101,10 @@ export interface TranscribaApi {
     getPreferredLanguages: () => Promise<string[]>
     /** Abre la carpeta de logs (`userData/logs`) en el Explorador. */
     openLogs: () => Promise<void>
+  }
+  clipboard: {
+    /** Copia texto al portapapeles de Windows desde el main. */
+    writeText: (text: string) => Promise<void>
   }
   settings: {
     get: () => Promise<Settings>

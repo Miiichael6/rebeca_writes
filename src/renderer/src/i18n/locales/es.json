@@ -80,7 +80,8 @@
     "emptyWaiting": "Esperando los primeros segmentos...",
     "phasePreparing": "Preparando audio...",
     "phaseTranscribing": "Transcribiendo...",
-    "failed": "La transcripción falló."
+    "failed": "La transcripción falló.",
+    "backToCurrent": "Volver al actual"
   },
   "bottomBar": {
     "copy": "Copiar transcripción",

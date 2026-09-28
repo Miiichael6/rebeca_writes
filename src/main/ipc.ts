@@ -1,5 +1,5 @@
 import { mkdir } from 'fs/promises'
-import { app, BrowserWindow, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
@@ -39,6 +39,8 @@ export function registerIpcHandlers(): void {
     const error = await shell.openPath(dir)
     if (error) throw new Error(error)
   })
+
+  handle(IpcChannel.ClipboardWriteText, (_event, text) => clipboard.writeText(String(text)))
 
   handle(IpcChannel.SettingsGet, () => loadSettings())
   // El patch se valida clave por clave en `mergeSettings`: lo inválido se ignora.
