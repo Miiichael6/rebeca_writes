@@ -23,7 +23,7 @@ export function Card({ children }: { children: ReactNode }): React.JSX.Element {
 export interface SettingRowProps {
   icon?: ReactNode
   title: string
-  description?: string
+  description?: ReactNode
   /** Control a la derecha (Toggle, Select, NumberInput...). */
   children?: ReactNode
   /** Contenido debajo de la fila, en una zona separada (p. ej. radios o un área de texto). */

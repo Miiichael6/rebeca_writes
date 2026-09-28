@@ -10,9 +10,6 @@
     "decrease": "Decrease",
     "percent": "{{value}}%"
   },
-  "dev": {
-    "components": "Components"
-  },
   "sidebar": {
     "openFile": "Open file",
     "clearHistory": "Clear history",
@@ -179,12 +176,68 @@
   },
   "settings": {
     "title": "Settings",
-    "placeholder": "Backend, transcription options, storage and about arrive in task 21.",
+    "models": "Models",
     "interface": "Interface",
+    "storage": "Storage",
+    "about": "About",
+    "backend": "Backend",
+    "backendDescription": "Choose the hardware platform that runs the model.",
+    "backendOptions": {
+      "cuda": {
+        "label": "CUDA",
+        "description": "Best performance. Recommended."
+      },
+      "vulkan": {
+        "label": "GPU",
+        "description": "Good performance (NVIDIA, AMD, Intel)."
+      },
+      "cpu": {
+        "label": "CPU",
+        "description": "Works, but slow; not recommended for large models."
+      }
+    },
+    "backendDetected": "Detected",
+    "backendNotInstalled": "Not included in this installation.",
+    "prompt": "Initial prompt",
+    "promptDescription": "Tells the model to use specific spellings or styles. Not fully reliable, but it helps with proper names and technical terms.",
+    "promptPlaceholder": "E.g.: Biology lecture about the mitochondria, the ribosome and DNA.",
+    "promptTokens": "Tokens: ~{{count}}",
+    "promptTooLong": "Whisper only uses the last ~224 tokens; the rest is ignored.",
+    "maxLen": "Maximum segment length (characters)",
+    "maxLenDescription": "Sets the maximum length of each segment in characters. Enter 0 for no limit.",
+    "suppressNst": "Suppress non-speech tokens",
+    "suppressNstDescription": "Avoids text that is not spoken in the audio, e.g. (dramatic music), although it may slow down processing.",
+    "normalize": "Audio normalization",
+    "normalizeDescription": "If the file has a low volume, it is normalized before transcribing to improve the transcription quality.",
+    "threads": "CPU threads",
+    "threadsDescription": "Threads used by the transcription engine. By default, half of the cores ({{default}} of {{total}}).",
+    "showCaptions": "Show subtitles/CC",
+    "showCaptionsDescription": "Turns the subtitles over the video on or off.",
+    "videoHeight": "Video panel height",
+    "videoHeightDescription": "Sets the height of the video panel in pixels (300–600).",
+    "videoHeightCurrent": "Current:",
+    "theme": "Theme",
+    "themeDescription": "Choose how the app looks.",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
     "uiLanguage": "Interface language",
     "uiLanguageDescription": "Choose the language of the app.",
     "uiLanguageSystem": "Use the Windows language",
-    "models": "Models"
+    "modelsFolder": "Models folder",
+    "openFolder": "Open folder",
+    "previewCache": "Preview cache",
+    "previewCacheDescription": "H.264 copies of videos that cannot be played directly. It takes up {{size}}.",
+    "previewCacheLimit": "Limit in GB",
+    "previewCacheClear": "Clear",
+    "previewCacheCleared": "The preview cache was cleared.",
+    "aboutDescription": "100% local transcription with whisper.cpp · Version {{version}}",
+    "viewLogs": "View logs",
+    "thirdParty": "Third-party software acknowledgements",
+    "thirdPartyIntro": "{{app}} uses the following open-source components. Thanks to their authors.",
+    "showLicense": "View license"
   },
   "models": {
     "title": "Whisper models",
@@ -192,6 +245,12 @@
     "speed": "Speed:",
     "accuracy": "Accuracy:",
     "memory": "Memory usage:",
+    "memoryLevels": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "memoryValue": "{{level}} (~{{gb}} GB)",
     "speeds": {
       "fast": "Fast",
       "moderate": "Moderate",

@@ -3,7 +3,7 @@ import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { IpcChannel } from '@shared/ipc'
 import type { Backend, BackendInfo } from '@shared/types'
-import { loadSettings, updateSettings } from '../services/settings'
+import { getSettings, loadSettings, updateSettings } from '../services/settings'
 import { probeFoundDevice, type FallbackEvent } from './fallback'
 import { installedBackends, whisperCliPath } from './paths'
 
@@ -60,7 +60,12 @@ export async function detectBackend(installed: readonly Backend[]): Promise<Back
   return 'cpu'
 }
 
-async function loadBackendInfo(): Promise<BackendInfo> {
+interface Detection {
+  detected: Backend
+  installed: Backend[]
+}
+
+async function detect(): Promise<Detection> {
   const installed = installedBackends()
   const saved = await loadSettings()
 
@@ -77,18 +82,25 @@ async function loadBackendInfo(): Promise<BackendInfo> {
     await updateSettings({ detectedBackend: detected, backend })
   }
   log.info(`Backend: ${backend} (detectado ${detected}, instalados: ${installed.join(', ')})`)
-  return { backend, detected, installed }
+  return { detected, installed }
 }
 
-let info: Promise<BackendInfo> | null = null
+let detection: Promise<Detection> | null = null
 
-/** Resuelve el backend una sola vez; las llamadas siguientes reutilizan el resultado. */
-export function getBackendInfo(): Promise<BackendInfo> {
-  info ??= loadBackendInfo().catch((err) => {
-    info = null
+/**
+ * Backend elegido, detectado e instalados. La detección corre una sola vez; el elegido se lee
+ * de settings en cada llamada, así un cambio en Configuración vale desde la siguiente
+ * transcripción. Si el elegido no está instalado se usa el detectado.
+ */
+export async function getBackendInfo(): Promise<BackendInfo> {
+  detection ??= detect().catch((err) => {
+    detection = null
     throw err
   })
-  return info
+  const { detected, installed } = await detection
+  const chosen = getSettings().backend
+  const backend = chosen && installed.includes(chosen) ? chosen : detected
+  return { backend, detected, installed }
 }
 
 /** Avisa al renderer para el toast "X no disponible, se usó Y". */

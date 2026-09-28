@@ -168,6 +168,7 @@ export class TranscriptionEngine extends EventEmitter {
             translate: job.translate,
             options: job.options
           })
+          log.info(`Transcripción ${job.id}: whisper-cli (${b}) ${args.join(' ')}`)
           return this.runWhisper(job.id, active, b, getWhisperCli(b), args)
         },
         notifyFallback

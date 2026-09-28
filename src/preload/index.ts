@@ -24,6 +24,8 @@ const api: TranscribaApi = {
     getVersion: () => invoke(IpcChannel.AppGetVersion),
     getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages),
     openLogs: () => invoke(IpcChannel.AppOpenLogs),
+    getModelsDir: () => invoke(IpcChannel.AppGetModelsDir),
+    openModelsDir: () => invoke(IpcChannel.AppOpenModelsDir),
     notify: (title, body) => invoke(IpcChannel.AppNotify, title, body)
   },
   clipboard: {

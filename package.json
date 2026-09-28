@@ -21,7 +21,8 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "icons": "electron scripts/build-icons.mjs"
+    "icons": "electron scripts/build-icons.mjs",
+    "licenses": "node scripts/gen-licenses.mjs"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",

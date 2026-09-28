@@ -10,9 +10,6 @@
     "decrease": "Diminuir",
     "percent": "{{value}}%"
   },
-  "dev": {
-    "components": "Componentes"
-  },
   "sidebar": {
     "openFile": "Abrir arquivo",
     "clearHistory": "Limpar histórico",
@@ -186,12 +183,68 @@
   },
   "settings": {
     "title": "Configurações",
-    "placeholder": "Backend, opções de transcrição, armazenamento e sobre chegam na tarefa 21.",
+    "models": "Modelos",
     "interface": "Interface",
+    "storage": "Armazenamento",
+    "about": "Sobre",
+    "backend": "Backend",
+    "backendDescription": "Selecione a plataforma de hardware que executa o modelo.",
+    "backendOptions": {
+      "cuda": {
+        "label": "CUDA",
+        "description": "O melhor desempenho. Recomendado."
+      },
+      "vulkan": {
+        "label": "GPU",
+        "description": "Bom desempenho (NVIDIA, AMD, Intel)."
+      },
+      "cpu": {
+        "label": "CPU",
+        "description": "Funciona, mas é lento; não recomendado para modelos grandes."
+      }
+    },
+    "backendDetected": "Detectado",
+    "backendNotInstalled": "Não incluído nesta instalação.",
+    "prompt": "Prompt inicial",
+    "promptDescription": "Indica ao modelo que use grafias ou estilos específicos. Não é totalmente confiável, mas ajuda com nomes próprios e termos técnicos.",
+    "promptPlaceholder": "Ex.: Aula de biologia sobre a mitocôndria, o ribossomo e o DNA.",
+    "promptTokens": "Tokens: ~{{count}}",
+    "promptTooLong": "O Whisper só usa os últimos ~224 tokens; o restante é ignorado.",
+    "maxLen": "Comprimento máximo do segmento (caracteres)",
+    "maxLenDescription": "Define o comprimento máximo de cada segmento em caracteres. Digite 0 para sem limite.",
+    "suppressNst": "Suprimir tokens sem fala",
+    "suppressNstDescription": "Evita gerar textos que não são falados no áudio, p. ex. (música dramática), embora possa deixar o processamento mais lento.",
+    "normalize": "Normalização de áudio",
+    "normalizeDescription": "Se o arquivo tiver volume baixo, ele é normalizado antes da transcrição para melhorar a qualidade.",
+    "threads": "Threads de CPU",
+    "threadsDescription": "Threads usadas pelo mecanismo de transcrição. Por padrão, metade dos núcleos ({{default}} de {{total}}).",
+    "showCaptions": "Mostrar legendas/CC",
+    "showCaptionsDescription": "Ativa ou desativa as legendas sobre o vídeo.",
+    "videoHeight": "Altura do painel de vídeo",
+    "videoHeightDescription": "Define a altura do painel de vídeo em pixels (300–600).",
+    "videoHeightCurrent": "Atual:",
+    "theme": "Tema",
+    "themeDescription": "Escolha a aparência do aplicativo.",
+    "themes": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
     "uiLanguage": "Idioma da interface",
     "uiLanguageDescription": "Selecione o idioma do aplicativo.",
     "uiLanguageSystem": "Usar o idioma do Windows",
-    "models": "Modelos"
+    "modelsFolder": "Pasta de modelos",
+    "openFolder": "Abrir pasta",
+    "previewCache": "Cache de pré-visualizações",
+    "previewCacheDescription": "Cópias em H.264 dos vídeos que não podem ser reproduzidos diretamente. Ocupa {{size}}.",
+    "previewCacheLimit": "Limite em GB",
+    "previewCacheClear": "Esvaziar",
+    "previewCacheCleared": "O cache de pré-visualizações foi esvaziado.",
+    "aboutDescription": "Transcrição 100% local com whisper.cpp · Versão {{version}}",
+    "viewLogs": "Ver registros",
+    "thirdParty": "Reconhecimentos de software de terceiros",
+    "thirdPartyIntro": "O {{app}} usa os seguintes componentes de código aberto. Obrigado aos seus autores.",
+    "showLicense": "Ver licença"
   },
   "models": {
     "title": "Modelos Whisper",
@@ -199,6 +252,12 @@
     "speed": "Velocidade:",
     "accuracy": "Precisão:",
     "memory": "Uso de memória:",
+    "memoryLevels": {
+      "low": "Baixo",
+      "medium": "Médio",
+      "high": "Alto"
+    },
+    "memoryValue": "{{level}} (~{{gb}} GB)",
     "speeds": {
       "fast": "Rápida",
       "moderate": "Moderada",

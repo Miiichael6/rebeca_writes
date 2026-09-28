@@ -1,15 +1,15 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import BottomBar from './components/BottomBar'
 import DropOverlay from './components/DropOverlay'
 import Player from './components/Player'
 import QueuePanel from './components/QueuePanel'
-import SettingsPage from './components/SettingsPage'
+import SettingsPage from './components/settings/SettingsPage'
 import Sidebar from './components/Sidebar'
 import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
-import { Button, Toaster } from './components/ui'
+import { Toaster } from './components/ui'
 import { useModelsSync } from './store/models'
 import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
@@ -20,9 +20,6 @@ import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
 import { useTranscriptionSync } from './store/transcription'
 import { useThemeSync, useUiStore } from './store/ui'
-
-// Página temporal de componentes; con import dinámico no entra en el build de producción.
-const UiDemo = import.meta.env.DEV ? lazy(() => import('./dev/UiDemo')) : null
 
 function MainView(): React.JSX.Element {
   const entryId = useTranscriptStore((s) => s.entry?.id)
@@ -78,7 +75,6 @@ function useOpenFileShortcut(): void {
 }
 
 function App(): React.JSX.Element {
-  const { t } = useTranslation()
   useThemeSync()
   useSettingsSync()
   useBackendFallbackToast()
@@ -89,27 +85,12 @@ function App(): React.JSX.Element {
   useHistorySync()
   useOpenFileShortcut()
   const view = useUiStore((s) => s.view)
-  const [showDemo, setShowDemo] = useState(false)
 
   return (
     <div className="window">
-      <TitleBar>
-        {UiDemo && (
-          <Button size="sm" variant="ghost" onClick={() => setShowDemo((v) => !v)}>
-            {showDemo ? t('common.back') : t('dev.components')}
-          </Button>
-        )}
-      </TitleBar>
+      <TitleBar />
 
-      {UiDemo && showDemo ? (
-        <Suspense>
-          <UiDemo />
-        </Suspense>
-      ) : view === 'settings' ? (
-        <SettingsPage />
-      ) : (
-        <MainView />
-      )}
+      {view === 'settings' ? <SettingsPage /> : <MainView />}
 
       <QueuePanel />
       <DropOverlay />

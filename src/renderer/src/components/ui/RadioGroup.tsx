@@ -4,6 +4,8 @@ export interface RadioOption<T extends string> {
   value: T
   label: string
   description?: string
+  /** Etiqueta pequeña junto al nombre (p. ej. "Detectado"). */
+  badge?: string
   disabled?: boolean
 }
 
@@ -37,7 +39,10 @@ export function RadioGroup<T extends string>({
           />
           <span className="radio-dot" aria-hidden />
           <span className="radio-text">
-            <span className="radio-label">{option.label}</span>
+            <span className="radio-label">
+              {option.label}
+              {option.badge && <span className="radio-badge">{option.badge}</span>}
+            </span>
             {option.description && <span className="radio-description">{option.description}</span>}
           </span>
         </label>

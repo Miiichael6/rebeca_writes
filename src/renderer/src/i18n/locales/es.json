@@ -10,9 +10,6 @@
     "decrease": "Disminuir",
     "percent": "{{value}} %"
   },
-  "dev": {
-    "components": "Componentes"
-  },
   "sidebar": {
     "openFile": "Abrir archivo",
     "clearHistory": "Borrar historial",
@@ -186,12 +183,68 @@
   },
   "settings": {
     "title": "Configuración",
-    "placeholder": "Backend, opciones de transcripción, almacenamiento y acerca de llegan en la tarea 21.",
+    "models": "Modelos",
     "interface": "Interfaz",
+    "storage": "Almacenamiento",
+    "about": "Acerca de",
+    "backend": "Backend",
+    "backendDescription": "Seleccione la plataforma de hardware para ejecutar el modelo.",
+    "backendOptions": {
+      "cuda": {
+        "label": "CUDA",
+        "description": "El mejor rendimiento. Recomendado."
+      },
+      "vulkan": {
+        "label": "GPU",
+        "description": "Buen rendimiento (NVIDIA, AMD, Intel)."
+      },
+      "cpu": {
+        "label": "CPU",
+        "description": "Funcional, pero lento; no recomendado para modelos grandes."
+      }
+    },
+    "backendDetected": "Detectado",
+    "backendNotInstalled": "No incluido en esta instalación.",
+    "prompt": "Prompt inicial",
+    "promptDescription": "Indica al modelo que use ortografías o estilos específicos. No es del todo fiable, pero ayuda con nombres propios y términos técnicos.",
+    "promptPlaceholder": "Ej.: Clase de biología sobre la mitocondria, el ribosoma y el ADN.",
+    "promptTokens": "Tokens: ~{{count}}",
+    "promptTooLong": "Whisper solo usa los últimos ~224 tokens; el resto se ignora.",
+    "maxLen": "Longitud máxima de segmento (caracteres)",
+    "maxLenDescription": "Establece la longitud máxima de cada segmento en caracteres. Introduzca 0 para sin límite.",
+    "suppressNst": "Suprimir tokens sin voz",
+    "suppressNstDescription": "Evita generar textos que no se pronuncian en el audio, p. ej. (música dramática), aunque puede ralentizar el procesamiento.",
+    "normalize": "Normalización de audio",
+    "normalizeDescription": "Si el archivo tiene un volumen bajo, se normaliza antes de transcribir para mejorar la calidad de la transcripción.",
+    "threads": "Hilos de CPU",
+    "threadsDescription": "Hilos que usa el motor de transcripción. Por defecto, la mitad de los núcleos ({{default}} de {{total}}).",
+    "showCaptions": "Mostrar subtítulos/CC",
+    "showCaptionsDescription": "Activa o desactiva los subtítulos sobre el video.",
+    "videoHeight": "Altura del panel de video",
+    "videoHeightDescription": "Establece la altura del panel de video en píxeles (300–600).",
+    "videoHeightCurrent": "Actual:",
+    "theme": "Tema",
+    "themeDescription": "Elija el aspecto de la aplicación.",
+    "themes": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
     "uiLanguage": "Idioma de la interfaz",
     "uiLanguageDescription": "Seleccione el idioma de la aplicación.",
     "uiLanguageSystem": "Usar el idioma de Windows",
-    "models": "Modelos"
+    "modelsFolder": "Carpeta de modelos",
+    "openFolder": "Abrir carpeta",
+    "previewCache": "Caché de vistas previas",
+    "previewCacheDescription": "Copias en H.264 de los videos que no se pueden reproducir directamente. Ocupa {{size}}.",
+    "previewCacheLimit": "Límite en GB",
+    "previewCacheClear": "Vaciar",
+    "previewCacheCleared": "Se vació la caché de vistas previas.",
+    "aboutDescription": "Transcripción 100 % local con whisper.cpp · Versión {{version}}",
+    "viewLogs": "Ver registros",
+    "thirdParty": "Reconocimientos de software de terceros",
+    "thirdPartyIntro": "{{app}} usa los siguientes componentes de código abierto. Gracias a sus autores.",
+    "showLicense": "Ver licencia"
   },
   "models": {
     "title": "Modelos Whisper",
@@ -199,6 +252,12 @@
     "speed": "Velocidad:",
     "accuracy": "Precisión:",
     "memory": "Uso de memoria:",
+    "memoryLevels": {
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto"
+    },
+    "memoryValue": "{{level}} (~{{gb}} GB)",
     "speeds": {
       "fast": "Rápida",
       "moderate": "Moderada",

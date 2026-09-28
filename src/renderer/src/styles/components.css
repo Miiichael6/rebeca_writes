@@ -231,6 +231,15 @@
   min-width: 48px;
 }
 
+.radio-badge {
+  margin-left: var(--space-2);
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: var(--text-1);
+  font-size: var(--text-xs);
+}
+
 .radio-description {
   color: var(--text-2);
   font-size: var(--text-sm);

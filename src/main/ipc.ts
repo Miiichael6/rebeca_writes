@@ -42,6 +42,7 @@ import {
   deleteModel,
   downloadModel,
   listModels,
+  modelsDir,
   pickCustomModelFile
 } from './services/models'
 
@@ -68,6 +69,13 @@ function notify(window: BrowserWindow | null, title: string, body: string): void
   notification.show()
 }
 
+/** Abre una carpeta de `userData` en el Explorador; la crea si todavía no existe. */
+async function openFolder(dir: string): Promise<void> {
+  await mkdir(dir, { recursive: true })
+  const error = await shell.openPath(dir)
+  if (error) throw new Error(error)
+}
+
 function handle<C extends keyof IpcInvokeMap>(channel: C, handler: Handler<C>): void {
   ipcMain.handle(channel, handler as Parameters<typeof ipcMain.handle>[1])
 }
@@ -78,12 +86,9 @@ export function registerIpcHandlers(): void {
     const languages = app.getPreferredSystemLanguages()
     return languages.length > 0 ? languages : [app.getLocale()]
   })
-  handle(IpcChannel.AppOpenLogs, async () => {
-    const dir = logsDir()
-    await mkdir(dir, { recursive: true })
-    const error = await shell.openPath(dir)
-    if (error) throw new Error(error)
-  })
+  handle(IpcChannel.AppOpenLogs, () => openFolder(logsDir()))
+  handle(IpcChannel.AppGetModelsDir, () => modelsDir())
+  handle(IpcChannel.AppOpenModelsDir, () => openFolder(modelsDir()))
 
   handle(IpcChannel.AppNotify, (event, title, body) =>
     notify(BrowserWindow.fromWebContents(event.sender), String(title), String(body))

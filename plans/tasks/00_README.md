@@ -57,7 +57,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 18 | [Historial](done/18_historial.md) | 5 Historial | 12 | ✅ Terminada (falta prueba manual en la app) |
 | 19 | [Entrada de archivos](done/19_entrada_archivos.md) | 5 Cola | 17 | ✅ Terminada (falta probar a mano el arrastre y Ctrl+O) |
 | 20 | [Exportadores](done/20_exportadores.md) | 6 Exportar | 08, 15 | ✅ Terminada (falta probar a mano en VLC y Jellyfin/Plex) |
-| 21 | [Página de Configuración](pending/21_configuracion.md) | 6 Config | 05, 06, 12 | ⬜ Pendiente |
+| 21 | [Página de Configuración](done/21_configuracion.md) | 6 Config | 05, 06, 12 | ✅ Terminada |
 | 22 | [Empaquetado](pending/22_empaquetado.md) | 7 Build | todas | ⬜ Pendiente |
 | 23 | [Calidad y aceptación](pending/23_calidad_aceptacion.md) | 7 Cierre | 22 | ⬜ Pendiente |
 

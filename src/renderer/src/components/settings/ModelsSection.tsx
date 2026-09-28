@@ -5,7 +5,7 @@ import type { ModelProgress, ModelStatus } from '@shared/models'
 import { formatBytes } from '@renderer/lib/format'
 import { formatClock } from '@renderer/lib/time'
 import { useModelsStore } from '@renderer/store/models'
-import { Button, Card, ConfirmDialog } from './ui'
+import { Button, Card, ConfirmDialog } from '../ui'
 
 function DownloadProgress({ progress }: { progress?: ModelProgress }): React.JSX.Element {
   const { t, i18n } = useTranslation()
@@ -37,6 +37,11 @@ function DownloadProgress({ progress }: { progress?: ModelProgress }): React.JSX
       </span>
     </div>
   )
+}
+
+/** Bajo / Medio / Alto, como en la referencia: Tiny y Base ~1 GB, Small ~2 GB, el resto más. */
+function memoryLevel(gb: number): 'low' | 'medium' | 'high' {
+  return gb <= 1 ? 'low' : gb <= 2 ? 'medium' : 'high'
 }
 
 function ModelRow({
@@ -81,7 +86,13 @@ function ModelRow({
                 {t('models.accuracy')} <b>{t(`models.accuracies.${model.accuracy!}`)}</b>
               </span>
               <span>
-                {t('models.memory')} <b>~{model.memoryGb} GB</b>
+                {t('models.memory')}{' '}
+                <b>
+                  {t('models.memoryValue', {
+                    level: t(`models.memoryLevels.${memoryLevel(model.memoryGb!)}`),
+                    gb: model.memoryGb
+                  })}
+                </b>
               </span>
             </div>
           )}

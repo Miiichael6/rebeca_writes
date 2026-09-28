@@ -30,6 +30,8 @@ export const IpcChannel = {
   AppGetVersion: 'app:get-version',
   AppGetPreferredLanguages: 'app:get-preferred-languages',
   AppOpenLogs: 'app:openLogs',
+  AppGetModelsDir: 'app:get-models-dir',
+  AppOpenModelsDir: 'app:openModelsDir',
   AppNotify: 'app:notify',
   ClipboardWriteText: 'clipboard:writeText',
   SettingsGet: 'settings:get',
@@ -95,6 +97,8 @@ export interface IpcInvokeMap {
   [IpcChannel.AppGetVersion]: { args: []; result: string }
   [IpcChannel.AppGetPreferredLanguages]: { args: []; result: string[] }
   [IpcChannel.AppOpenLogs]: { args: []; result: void }
+  [IpcChannel.AppGetModelsDir]: { args: []; result: string }
+  [IpcChannel.AppOpenModelsDir]: { args: []; result: void }
   [IpcChannel.AppNotify]: { args: [title: string, body: string]; result: void }
   [IpcChannel.ClipboardWriteText]: { args: [text: string]; result: void }
   [IpcChannel.SettingsGet]: { args: []; result: Settings }
@@ -195,6 +199,10 @@ export interface TranscribaApi {
     getPreferredLanguages: () => Promise<string[]>
     /** Abre la carpeta de logs (`userData/logs`) en el Explorador. */
     openLogs: () => Promise<void>
+    /** Carpeta donde se guardan los modelos descargados (`userData/models`). */
+    getModelsDir: () => Promise<string>
+    /** Abre la carpeta de modelos en el Explorador (la crea si no existe). */
+    openModelsDir: () => Promise<void>
     /** Notificación de Windows; al hacer clic se enfoca la ventana. El texto llega traducido. */
     notify: (title: string, body: string) => Promise<void>
   }
