@@ -9,6 +9,13 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 - Al marcar un paso: `- [ ]` → `- [x]`.
 - Al cerrar cada **fase**, la app debe correr con `npm run dev` y se hace commit.
 - En la sección **Bitácora** de cada archivo se anotan decisiones, problemas y fecha de cierre.
+- Cada archivo `NN_nombre.md` vive en la carpeta que corresponde a su estado, y al moverlo se actualiza su enlace y su estado en el **Tablero**:
+
+  | Carpeta | Cuándo |
+  |---|---|
+  | [pending/](pending/) | Subtarea no iniciada (⬜) o bloqueada (⛔) |
+  | [in_progress/](in_progress/) | Al **empezar** a trabajarla (🔄). Solo debería haber una a la vez |
+  | [done/](done/) | Al **terminarla** (✅), con todos sus pasos y criterios cumplidos |
 
 ### Leyenda de estados
 
@@ -30,29 +37,29 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 
 | # | Subtarea | Fase | Depende de | Estado |
 |---|---|---|---|---|
-| 01 | [Setup del proyecto](01_setup_proyecto.md) | 1 Base | — | ⬜ Pendiente |
-| 02 | [Tema y ventana frameless](02_tema_y_ventana.md) | 1 Base | 01 | ⬜ Pendiente |
-| 03 | [Layout principal](03_layout_principal.md) | 1 Base | 02 | ⬜ Pendiente |
-| 04 | [Internacionalización](04_i18n.md) | 1 Base | 03 | ⬜ Pendiente |
-| 05 | [Binarios y backend](05_binarios_y_backend.md) | 2 Motor | 01 | ⬜ Pendiente |
-| 06 | [Descarga de modelos](06_descarga_modelos.md) | 2 Motor | 01 | ⬜ Pendiente |
-| 07 | [Servicio ffmpeg](07_servicio_ffmpeg.md) | 2 Motor | 01 | ⬜ Pendiente |
-| 08 | [TranscriptionEngine](08_transcription_engine.md) | 2 Motor | 05, 06, 07 | ⬜ Pendiente |
-| 09 | [Protocolo media://](09_protocolo_media.md) | 3 Reproductor | 03 | ⬜ Pendiente |
-| 10 | [Reproductor y sincronización](10_reproductor_sincronizacion.md) | 3 Reproductor | 09 | ⬜ Pendiente |
-| 11 | [Vista previa de códecs](11_vista_previa_codecs.md) | 3 Reproductor | 07, 10 | ⬜ Pendiente |
-| 12 | [Persistencia y logs](12_persistencia.md) | 5 Datos* | 01 | ⬜ Pendiente |
-| 13 | [Streaming y virtualización](13_streaming_virtualizacion.md) | 4 En vivo | 08, 10 | ⬜ Pendiente |
-| 14 | [Búsqueda](14_busqueda.md) | 4 En vivo | 13 | ⬜ Pendiente |
-| 15 | [Unir líneas, autoscroll, copiar](15_unir_autoscroll_copiar.md) | 4 En vivo | 13 | ⬜ Pendiente |
-| 16 | [Edición en línea](16_edicion_en_linea.md) | 4 En vivo | 12, 13 | ⬜ Pendiente |
-| 17 | [Cola de trabajos](17_cola.md) | 5 Cola | 08, 12 | ⬜ Pendiente |
-| 18 | [Historial](18_historial.md) | 5 Historial | 12 | ⬜ Pendiente |
-| 19 | [Entrada de archivos](19_entrada_archivos.md) | 5 Cola | 17 | ⬜ Pendiente |
-| 20 | [Exportadores](20_exportadores.md) | 6 Exportar | 08, 15 | ⬜ Pendiente |
-| 21 | [Página de Configuración](21_configuracion.md) | 6 Config | 05, 06, 12 | ⬜ Pendiente |
-| 22 | [Empaquetado](22_empaquetado.md) | 7 Build | todas | ⬜ Pendiente |
-| 23 | [Calidad y aceptación](23_calidad_aceptacion.md) | 7 Cierre | 22 | ⬜ Pendiente |
+| 01 | [Setup del proyecto](pending/01_setup_proyecto.md) | 1 Base | — | ⬜ Pendiente |
+| 02 | [Tema y ventana frameless](pending/02_tema_y_ventana.md) | 1 Base | 01 | ⬜ Pendiente |
+| 03 | [Layout principal](pending/03_layout_principal.md) | 1 Base | 02 | ⬜ Pendiente |
+| 04 | [Internacionalización](pending/04_i18n.md) | 1 Base | 03 | ⬜ Pendiente |
+| 05 | [Binarios y backend](pending/05_binarios_y_backend.md) | 2 Motor | 01 | ⬜ Pendiente |
+| 06 | [Descarga de modelos](pending/06_descarga_modelos.md) | 2 Motor | 01 | ⬜ Pendiente |
+| 07 | [Servicio ffmpeg](pending/07_servicio_ffmpeg.md) | 2 Motor | 01 | ⬜ Pendiente |
+| 08 | [TranscriptionEngine](pending/08_transcription_engine.md) | 2 Motor | 05, 06, 07 | ⬜ Pendiente |
+| 09 | [Protocolo media://](pending/09_protocolo_media.md) | 3 Reproductor | 03 | ⬜ Pendiente |
+| 10 | [Reproductor y sincronización](pending/10_reproductor_sincronizacion.md) | 3 Reproductor | 09 | ⬜ Pendiente |
+| 11 | [Vista previa de códecs](pending/11_vista_previa_codecs.md) | 3 Reproductor | 07, 10 | ⬜ Pendiente |
+| 12 | [Persistencia y logs](pending/12_persistencia.md) | 5 Datos* | 01 | ⬜ Pendiente |
+| 13 | [Streaming y virtualización](pending/13_streaming_virtualizacion.md) | 4 En vivo | 08, 10 | ⬜ Pendiente |
+| 14 | [Búsqueda](pending/14_busqueda.md) | 4 En vivo | 13 | ⬜ Pendiente |
+| 15 | [Unir líneas, autoscroll, copiar](pending/15_unir_autoscroll_copiar.md) | 4 En vivo | 13 | ⬜ Pendiente |
+| 16 | [Edición en línea](pending/16_edicion_en_linea.md) | 4 En vivo | 12, 13 | ⬜ Pendiente |
+| 17 | [Cola de trabajos](pending/17_cola.md) | 5 Cola | 08, 12 | ⬜ Pendiente |
+| 18 | [Historial](pending/18_historial.md) | 5 Historial | 12 | ⬜ Pendiente |
+| 19 | [Entrada de archivos](pending/19_entrada_archivos.md) | 5 Cola | 17 | ⬜ Pendiente |
+| 20 | [Exportadores](pending/20_exportadores.md) | 6 Exportar | 08, 15 | ⬜ Pendiente |
+| 21 | [Página de Configuración](pending/21_configuracion.md) | 6 Config | 05, 06, 12 | ⬜ Pendiente |
+| 22 | [Empaquetado](pending/22_empaquetado.md) | 7 Build | todas | ⬜ Pendiente |
+| 23 | [Calidad y aceptación](pending/23_calidad_aceptacion.md) | 7 Cierre | 22 | ⬜ Pendiente |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
