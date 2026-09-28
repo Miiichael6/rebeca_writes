@@ -9,8 +9,14 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  # ffprobe-static trae binarios de todas las plataformas; solo se empaqueta el de Windows x64.
+  - '!node_modules/ffprobe-static/bin/{darwin,linux}/**'
+  - '!node_modules/ffprobe-static/bin/win32/ia32/**'
 asarUnpack:
   - resources/**
+  # Los exe de ffmpeg/ffprobe no se pueden ejecutar desde dentro del asar.
+  - node_modules/ffmpeg-static/**
+  - node_modules/ffprobe-static/bin/**
 win:
   executableName: transcriba
 nsis:

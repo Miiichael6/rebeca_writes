@@ -153,6 +153,8 @@
   },
   "errors": {
     "noAudioStream": "The file has no audio track.",
+    "unreadableMedia": "The file could not be read. It may be damaged or not a media file.",
+    "conversionFailed": "The file's audio could not be converted.",
     "unknown": "An unexpected error occurred.",
     "modelNotFound": "The model does not exist.",
     "noDiskSpace": "There is not enough disk space to download the model.",
@@ -160,5 +162,11 @@
     "sizeMismatch": "The downloaded model is corrupted (wrong size). Download it again.",
     "modelInUse": "The model is being used by a transcription.",
     "invalidModel": "The file is not a valid whisper GGML model."
+  },
+  "fileFilters": {
+    "allMedia": "All media",
+    "video": "Video",
+    "audio": "Audio",
+    "allFiles": "All files"
   }
 }

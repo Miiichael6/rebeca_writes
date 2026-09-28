@@ -48,7 +48,28 @@ export interface BackendFallback {
  * Errores que el main comunica al renderer. Viajan como código y el renderer los traduce
  * (`errors.<code>` en los locales), así el mensaje sigue el idioma de la interfaz.
  */
-export type ErrorCode = 'noAudioStream' | 'unknown'
+export type ErrorCode = 'noAudioStream' | 'unreadableMedia' | 'conversionFailed' | 'unknown'
+
+/** Pista de audio según ffprobe. `index` es su posición entre las de audio (`-map 0:a:<index>`). */
+export interface AudioTrack {
+  index: number
+  /** Código ISO 639-2 de la etiqueta del contenedor (`spa`, `eng`), si la tiene. */
+  language?: string
+  title?: string
+  codec: string
+  channels: number
+}
+
+/** Resultado de `probe` (spec §2.3 paso 1). */
+export interface MediaInfo {
+  durationSec: number
+  /** `format_name` de ffprobe, p. ej. `mov,mp4,m4a,3gp,3g2,mj2`. */
+  container: string
+  /** `null` si es solo audio (las carátulas de mp3/m4a no cuentan como video). */
+  videoCodec: string | null
+  audioTracks: AudioTrack[]
+  isChromiumPlayable: boolean
+}
 
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'error' | 'cancelled'
 
