@@ -1,6 +1,13 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import type { ResolvedTheme, ThemeMode } from '@shared/theme'
+import { AUTO_LANGUAGE } from '@shared/whisper'
+
+export type View = 'main' | 'settings'
+
+/** Límites de la altura del panel de video (spec §4.1). */
+export const VIDEO_HEIGHT_MIN = 300
+export const VIDEO_HEIGHT_MAX = 600
 
 interface UiState {
   /** Lo que eligió el usuario. Se persistirá en settings.json (tarea 12). */
@@ -9,6 +16,28 @@ interface UiState {
   resolvedTheme: ResolvedTheme
   setThemeMode: (mode: ThemeMode) => void
   setResolvedTheme: (theme: ResolvedTheme) => void
+
+  view: View
+  setView: (view: View) => void
+  queueOpen: boolean
+  setQueueOpen: (open: boolean) => void
+  videoVisible: boolean
+  toggleVideo: () => void
+  /** Altura del panel de video en px (300–600). Se ajusta en Configuración (tarea 21). */
+  videoHeight: number
+  setVideoHeight: (height: number) => void
+
+  // Opciones de la barra superior e inferior. Se persistirán en settings.json (tarea 12).
+  model: string
+  setModel: (model: string) => void
+  language: string
+  setLanguage: (language: string) => void
+  translate: boolean
+  setTranslate: (translate: boolean) => void
+  joinLines: boolean
+  setJoinLines: (joinLines: boolean) => void
+  autoScroll: boolean
+  setAutoScroll: (autoScroll: boolean) => void
 }
 
 /** Tema inicial antes de hablar con el main. Chromium ya refleja `nativeTheme` en esta media query. */
@@ -23,7 +52,28 @@ export const useUiStore = create<UiState>()((set) => ({
     set({ themeMode: mode })
     window.api.theme.setMode(mode).then((theme) => set({ resolvedTheme: theme }))
   },
-  setResolvedTheme: (theme) => set({ resolvedTheme: theme })
+  setResolvedTheme: (theme) => set({ resolvedTheme: theme }),
+
+  view: 'main',
+  setView: (view) => set({ view }),
+  queueOpen: false,
+  setQueueOpen: (queueOpen) => set({ queueOpen }),
+  videoVisible: true,
+  toggleVideo: () => set((s) => ({ videoVisible: !s.videoVisible })),
+  videoHeight: 360,
+  setVideoHeight: (height) =>
+    set({ videoHeight: Math.min(VIDEO_HEIGHT_MAX, Math.max(VIDEO_HEIGHT_MIN, height)) }),
+
+  model: 'small',
+  setModel: (model) => set({ model }),
+  language: AUTO_LANGUAGE,
+  setLanguage: (language) => set({ language }),
+  translate: false,
+  setTranslate: (translate) => set({ translate }),
+  joinLines: true,
+  setJoinLines: (joinLines) => set({ joinLines }),
+  autoScroll: true,
+  setAutoScroll: (autoScroll) => set({ autoScroll })
 }))
 
 /**

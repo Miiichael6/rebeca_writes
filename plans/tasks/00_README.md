@@ -28,7 +28,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 
 ## Decisiones pendientes (bloquean tareas)
 
-- [ ] **D1** ¿Hay captura de la ventana principal? Las 5 imágenes solo muestran Configuración y el menú Exportar. Si no, se diseña desde el texto §4.1. → afecta 03
+- [x] **D1** ¿Hay captura de la ventana principal? Las 5 imágenes solo muestran Configuración y el menú Exportar. Si no, se diseña desde el texto §4.1. → afecta 03 — **Sí**, `images/main_view.png` (2026-09-27)
 - [ ] **D2** ¿Backend CUDA dentro del instalador (+~500 MB) o descargable desde la app? → afecta 05, 22
 - [x] **D3** ¿Se reutiliza el scaffold actual de `src/` o se rehace la fase 1? → afecta 01–04 — **Se reutiliza** (2026-09-27)
 - [ ] **D4** ¿`npm run build` debe generar el instalador (criterio §9) o se deja en `build:win`? → afecta 22
@@ -39,7 +39,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 |---|---|---|---|---|
 | 01 | [Setup del proyecto](done/01_setup_proyecto.md) | 1 Base | — | ✅ Terminada |
 | 02 | [Tema y ventana frameless](done/02_tema_y_ventana.md) | 1 Base | 01 | ✅ Terminada |
-| 03 | [Layout principal](pending/03_layout_principal.md) | 1 Base | 02 | ⬜ Pendiente |
+| 03 | [Layout principal](done/03_layout_principal.md) | 1 Base | 02 | ✅ Terminada |
 | 04 | [Internacionalización](pending/04_i18n.md) | 1 Base | 03 | ⬜ Pendiente |
 | 05 | [Binarios y backend](pending/05_binarios_y_backend.md) | 2 Motor | 01 | ⬜ Pendiente |
 | 06 | [Descarga de modelos](pending/06_descarga_modelos.md) | 2 Motor | 01 | ⬜ Pendiente |

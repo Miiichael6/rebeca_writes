@@ -80,6 +80,11 @@
   background: var(--bg-subtle-pressed);
 }
 
+.btn-ghost:disabled {
+  border-color: transparent;
+  background: transparent;
+}
+
 .btn-icon-only {
   width: 38px;
   padding: 0;
@@ -412,6 +417,11 @@
   background: radial-gradient(circle, var(--accent-pressed) 0 4px, var(--thumb) 4.5px);
 }
 
+.slider:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .slider:focus-visible {
   outline: 2px solid var(--text-1);
   outline-offset: 2px;
@@ -560,5 +570,124 @@
   from {
     opacity: 0;
     transform: translateY(8px);
+  }
+}
+
+/* ---------- Menu ---------- */
+.menu-anchor {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  z-index: 100;
+  min-width: 260px;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-flyout);
+  animation: menu-in var(--duration) var(--ease);
+}
+
+.menu-top-end {
+  right: 0;
+  bottom: calc(100% + 6px);
+}
+
+.menu-bottom-start {
+  left: 0;
+  top: calc(100% + 4px);
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--bg-subtle-hover);
+}
+
+.menu-item:active {
+  background: var(--bg-subtle-pressed);
+}
+
+.menu-separator {
+  height: 1px;
+  margin: var(--space-1) calc(-1 * var(--space-1));
+  background: var(--border);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* ---------- Drawer (panel lateral modal) ---------- */
+.drawer {
+  inset: var(--title-bar-height) 0 0 auto;
+  width: min(400px, calc(100vw - 48px));
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-1);
+  box-shadow: var(--shadow-dialog);
+}
+
+.drawer[open] {
+  animation: drawer-in var(--duration) var(--ease);
+}
+
+.drawer::backdrop {
+  background: var(--bg-overlay);
+}
+
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-header h2 {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.drawer-empty {
+  padding: var(--space-5);
+  color: var(--text-3);
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
   }
 }
