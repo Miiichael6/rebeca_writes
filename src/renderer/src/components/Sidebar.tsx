@@ -1,4 +1,5 @@
 import { Eraser, ExternalLink, File, FolderOpen, Library } from 'lucide-react'
+import { Button } from './ui'
 
 const history = [
   {
@@ -11,16 +12,11 @@ function Sidebar({ selectedId }: { selectedId: string }): React.JSX.Element {
   return (
     <aside className="sidebar">
       <div className="sidebar-actions">
-        <button className="btn">
-          <FolderOpen size={16} strokeWidth={1.5} />
-          Abrir archivo
-        </button>
-        <button className="btn btn-icon" aria-label="Borrar historial" title="Borrar historial">
-          <Eraser size={16} strokeWidth={1.5} />
-        </button>
+        <Button icon={<FolderOpen size={16} strokeWidth={1.5} />}>Abrir archivo</Button>
+        <Button aria-label="Borrar historial" icon={<Eraser size={16} strokeWidth={1.5} />} />
       </div>
 
-      <input className="input" placeholder="Filtrar por..." />
+      <input className="input" placeholder="Filtrar por..." aria-label="Filtrar historial" />
 
       <nav className="history">
         {history.map((g) => (
@@ -40,12 +36,11 @@ function Sidebar({ selectedId }: { selectedId: string }): React.JSX.Element {
         ))}
       </nav>
 
-      <button className="btn queue-btn">
-        <Library size={16} strokeWidth={1.5} />
+      <Button className="queue-btn" icon={<Library size={16} strokeWidth={1.5} />}>
         Cola
         <ExternalLink size={14} strokeWidth={1.5} />
         <span className="queue-count">0</span>
-      </button>
+      </Button>
     </aside>
   )
 }

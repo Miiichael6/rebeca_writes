@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f26a52"/>
+      <stop offset="1" stop-color="#d63a25"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="60" fill="url(#bg)"/>
+  <g fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round">
+    <!-- Ondas de audio que se convierten en líneas de texto -->
+    <path d="M60 108v40"/>
+    <path d="M92 76v104"/>
+    <path d="M124 100v56"/>
+    <path d="M166 96h36"/>
+    <path d="M166 128h36"/>
+    <path d="M166 160h16"/>
+  </g>
+</svg>

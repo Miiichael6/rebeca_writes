@@ -1,39 +1,31 @@
-import { Check, Copy, Download, Mic } from 'lucide-react'
-
-function Checkbox({ label, checked }: { label: string; checked: boolean }): React.JSX.Element {
-  return (
-    <label className="checkbox">
-      <input type="checkbox" defaultChecked={checked} />
-      <span className="box">
-        <Check size={14} strokeWidth={2.5} />
-      </span>
-      {label}
-    </label>
-  )
-}
+import { Copy, Download, Mic } from 'lucide-react'
+import { useState } from 'react'
+import { Button, Checkbox } from './ui'
 
 function BottomBar(): React.JSX.Element {
+  const [joinLines, setJoinLines] = useState(true)
+  const [autoScroll, setAutoScroll] = useState(true)
+
   return (
     <footer className="bottombar">
-      <button
-        className="btn btn-icon"
+      <Button
+        size="sm"
         aria-label="Copiar transcripción"
-        title="Copiar transcripción"
-      >
-        <Copy size={15} strokeWidth={1.5} />
-      </button>
-      <Checkbox label="Unir líneas" checked />
+        icon={<Copy size={15} strokeWidth={1.5} />}
+      />
+      <Checkbox checked={joinLines} onChange={setJoinLines}>
+        Unir líneas
+      </Checkbox>
       <span className="divider" />
-      <Checkbox label="Desplaz. auto" checked />
+      <Checkbox checked={autoScroll} onChange={setAutoScroll}>
+        Desplaz. auto
+      </Checkbox>
       <span className="divider" />
-      <button className="btn btn-icon" aria-label="Grabar audio" title="Grabar audio">
-        <Mic size={15} strokeWidth={1.5} />
-      </button>
+      <Button size="sm" aria-label="Grabar audio" icon={<Mic size={15} strokeWidth={1.5} />} />
       <span className="spacer" />
-      <button className="btn btn-outline-accent">
-        <Download size={14} strokeWidth={1.5} />
+      <Button variant="outline" icon={<Download size={14} strokeWidth={1.5} />}>
         Exportar
-      </button>
+      </Button>
     </footer>
   )
 }

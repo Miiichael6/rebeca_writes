@@ -4,20 +4,28 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { APP_ID, APP_NAME } from '@shared/app'
 import { registerIpcHandlers } from './ipc'
+import { resolvedTheme, titleBarOverlay, watchNativeTheme } from './theme'
+import { WINDOW_COLORS } from '@shared/theme'
 
 app.setName(APP_NAME)
 
 function createWindow(): void {
-  // Create the browser window.
+  const theme = resolvedTheme()
+
+  // Ventana sin marco: la barra de título la dibuja el renderer (TitleBar) y Windows pone
+  // los botones nativos min/max/cerrar encima (titleBarOverlay). Tamaño/posición: tarea 12.
   const mainWindow = new BrowserWindow({
     title: APP_NAME,
-    width: 1000,
-    minWidth: 820,
-    minHeight: 560,
+    width: 1100,
     height: 790,
+    minWidth: 960,
+    minHeight: 600,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    backgroundColor: WINDOW_COLORS[theme].background,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: titleBarOverlay(theme),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -67,6 +75,7 @@ app.whenReady().then(() => {
   })
 
   registerIpcHandlers()
+  watchNativeTheme()
 
   createWindow()
 

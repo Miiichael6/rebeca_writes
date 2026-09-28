@@ -4,6 +4,7 @@
 **Fase:** 1 — Base · **Depende de:** 02 · **Doc:** §4.1, §4.2 · **Bloqueada por:** D1
 
 > ⚠ No hay captura de la ventana principal en `images/`. Si no se agrega, se diseña a partir del texto de §4.1.
+(notas: agregué una plans\images\main_view.png)
 
 ## Objetivo
 Maquetar toda la ventana principal sin lógica real, alimentada por stores Zustand con datos de ejemplo.

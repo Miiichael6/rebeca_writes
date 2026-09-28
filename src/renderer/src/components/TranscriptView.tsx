@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, Search } from 'lucide-react'
+import { Button } from './ui'
 
 export interface Segment {
   start: number
@@ -16,14 +17,24 @@ function TranscriptView({ segments }: { segments: Segment[] }): React.JSX.Elemen
     <section className="transcript">
       <div className="transcript-header">
         <h2>Transcripción local con Whisper</h2>
-        <button className="icon-ghost" aria-label="Resultado anterior">
-          <ChevronUp size={18} strokeWidth={1.5} />
-        </button>
-        <button className="icon-ghost" aria-label="Resultado siguiente">
-          <ChevronDown size={18} strokeWidth={1.5} />
-        </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Resultado anterior"
+          icon={<ChevronUp size={18} strokeWidth={1.5} />}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Resultado siguiente"
+          icon={<ChevronDown size={18} strokeWidth={1.5} />}
+        />
         <div className="search">
-          <input className="input" placeholder="Buscar..." />
+          <input
+            className="input"
+            placeholder="Buscar..."
+            aria-label="Buscar en la transcripción"
+          />
           <Search size={14} strokeWidth={1.5} />
         </div>
       </div>

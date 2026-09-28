@@ -1,37 +1,31 @@
-import { ChevronDown, Settings, SquarePlay } from 'lucide-react'
+import { Settings, SquarePlay } from 'lucide-react'
+import { useState } from 'react'
+import { Button, Select } from './ui'
 
-const models = ['Tiny', 'Base', 'Small', 'Medium', 'Large v3 turbo', 'Large v3']
-const languages = ['Detectar automáticamente', 'Español', 'English', 'Português']
-
-function Select({ options, value }: { options: string[]; value: string }): React.JSX.Element {
-  return (
-    <div className="select">
-      <select defaultValue={value}>
-        {options.map((o) => (
-          <option key={o}>{o}</option>
-        ))}
-      </select>
-      <ChevronDown size={16} strokeWidth={1.5} />
-    </div>
-  )
-}
+const models = ['Tiny', 'Base', 'Small', 'Medium', 'Large v3 turbo', 'Large v3'].map((m) => ({
+  value: m,
+  label: m
+}))
+const languages = ['Detectar automáticamente', 'Español', 'English', 'Português'].map((l) => ({
+  value: l,
+  label: l
+}))
 
 function Toolbar(): React.JSX.Element {
+  const [model, setModel] = useState('Small')
+  const [language, setLanguage] = useState('Español')
+
   return (
     <header className="toolbar">
-      <label>Modelo Whisper:</label>
-      <Select options={models} value="Small" />
+      <label htmlFor="toolbar-model">Modelo Whisper:</label>
+      <Select id="toolbar-model" value={model} onChange={setModel} options={models} />
       <span className="gap" />
-      <label>Idioma:</label>
-      <Select options={languages} value="Español" />
+      <label htmlFor="toolbar-language">Idioma:</label>
+      <Select id="toolbar-language" value={language} onChange={setLanguage} options={languages} />
       <span className="spacer" />
-      <button className="btn btn-icon" aria-label="Mostrar video" title="Mostrar video">
-        <SquarePlay size={16} strokeWidth={1.5} />
-      </button>
-      <button className="btn btn-icon" aria-label="Configuración" title="Configuración">
-        <Settings size={16} strokeWidth={1.5} />
-      </button>
-      <button className="btn btn-accent">Transcribir</button>
+      <Button aria-label="Mostrar video" icon={<SquarePlay size={16} strokeWidth={1.5} />} />
+      <Button aria-label="Configuración" icon={<Settings size={16} strokeWidth={1.5} />} />
+      <Button variant="primary">Transcribir</Button>
     </header>
   )
 }

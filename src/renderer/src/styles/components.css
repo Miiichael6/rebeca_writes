@@ -1,0 +1,564 @@
+/* Componentes base (src/renderer/src/components/ui). */
+
+/* ---------- Button ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-bottom-color: var(--border-bottom);
+  border-radius: var(--radius-sm);
+  background: var(--bg-control);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.btn:hover {
+  background: var(--bg-control-hover);
+}
+
+.btn:active {
+  background: var(--bg-control-pressed);
+  color: var(--text-2);
+}
+
+.btn:disabled {
+  background: var(--bg-control-disabled);
+  border-color: var(--border);
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.btn-primary,
+.btn-danger {
+  border-color: transparent;
+  color: var(--on-accent);
+}
+
+.btn-primary {
+  background: var(--accent-fill);
+}
+.btn-primary:hover {
+  background: var(--accent-fill-hover);
+}
+.btn-primary:active {
+  background: var(--accent-fill-pressed);
+  color: var(--on-accent);
+}
+
+.btn-danger {
+  background: var(--danger-fill);
+}
+.btn-danger:hover {
+  background: var(--danger-fill-hover);
+}
+.btn-danger:active {
+  background: var(--danger-fill-pressed);
+  color: var(--on-accent);
+}
+
+.btn-outline {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-2);
+}
+.btn-ghost:hover {
+  background: var(--bg-subtle-hover);
+  color: var(--text-1);
+}
+.btn-ghost:active {
+  background: var(--bg-subtle-pressed);
+}
+
+.btn-icon-only {
+  width: 38px;
+  padding: 0;
+}
+
+.btn-sm {
+  height: 28px;
+}
+.btn-sm.btn-icon-only {
+  width: 28px;
+}
+
+/* ---------- Toggle ---------- */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.toggle-label {
+  min-width: 72px;
+  text-align: right;
+}
+
+.toggle-track {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  border: 1px solid var(--border-control-strong);
+  border-radius: var(--radius-round);
+  background: transparent;
+  transition: background var(--duration) var(--ease);
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-2);
+  transition:
+    transform var(--duration) var(--ease),
+    width var(--duration-fast) var(--ease);
+}
+
+.toggle:hover .toggle-track::after {
+  width: 14px;
+  height: 14px;
+  top: 2px;
+}
+
+.toggle[aria-checked='true'] .toggle-track {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.toggle[aria-checked='true'] .toggle-track::after {
+  background: var(--on-accent);
+  transform: translateX(20px);
+}
+
+.toggle[aria-checked='true']:hover .toggle-track::after {
+  transform: translateX(18px);
+}
+
+.toggle:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.toggle:disabled .toggle-track {
+  opacity: 0.5;
+}
+
+/* ---------- Checkbox y Radio ---------- */
+.checkbox,
+.radio {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.checkbox-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-control-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-control);
+  color: transparent;
+}
+
+.checkbox:hover .checkbox-box {
+  background: var(--bg-control-hover);
+}
+
+.checkbox input:checked + .checkbox-box {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border: 0;
+  padding: 0;
+}
+
+.radio-dot {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-control-strong);
+  border-radius: 50%;
+  background: var(--bg-control);
+  transition: border-width var(--duration-fast) var(--ease);
+}
+
+.radio input:checked + .radio-dot {
+  border: 5px solid var(--accent);
+  background: var(--on-accent);
+}
+
+.radio-text {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.radio-label {
+  min-width: 48px;
+}
+
+.radio-description {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.checkbox input:focus-visible + .checkbox-box,
+.radio input:focus-visible + .radio-dot {
+  outline: 2px solid var(--text-1);
+  outline-offset: 2px;
+}
+
+.checkbox:has(input:disabled),
+.radio:has(input:disabled) {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+/* ---------- Campos: Select, NumberInput, TextArea, TextInput ---------- */
+.field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.input,
+.select select,
+.number-input input,
+.textarea {
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-bottom-color: var(--border-bottom);
+  border-radius: var(--radius-sm);
+  background: var(--bg-control);
+  outline: none;
+}
+
+.input:hover,
+.select select:hover,
+.number-input input:hover,
+.textarea:hover {
+  background: var(--bg-control-hover);
+}
+
+.input:focus,
+.number-input input:focus,
+.textarea:focus {
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--accent);
+}
+
+.select select:focus-visible {
+  outline: 2px solid var(--text-1);
+  outline-offset: 1px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-3);
+}
+
+.input {
+  width: 100%;
+}
+
+.select select {
+  appearance: none;
+  min-width: 120px;
+  padding-right: 34px;
+  cursor: pointer;
+}
+
+.select select option {
+  background: var(--bg-card);
+  color: var(--text-1);
+}
+
+.select svg {
+  position: absolute;
+  right: 10px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.number-input input {
+  width: 150px;
+  padding-right: 64px;
+  font-variant-numeric: tabular-nums;
+}
+
+.number-input input::-webkit-inner-spin-button,
+.number-input input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.number-input-steps {
+  position: absolute;
+  right: 4px;
+  display: flex;
+}
+
+.number-input-steps button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.number-input-steps button:hover {
+  background: var(--bg-subtle-hover);
+  color: var(--text-1);
+}
+
+.number-input-steps button:disabled {
+  color: var(--text-disabled);
+  background: transparent;
+  cursor: default;
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 88px;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+  line-height: 1.5;
+  user-select: text;
+}
+
+.textarea:disabled,
+.input:disabled,
+.number-input input:disabled,
+.select select:disabled {
+  background: var(--bg-control-disabled);
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+/* ---------- Slider ---------- */
+.slider {
+  --fill: 0%;
+  width: 160px;
+  height: 20px;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0,
+    var(--accent) var(--fill),
+    var(--track) var(--fill)
+  );
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  /* Punto de acento dentro de un aro, como el slider de Windows 11 */
+  background: radial-gradient(circle, var(--accent) 0 5px, var(--thumb) 5.5px);
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.slider:hover::-webkit-slider-thumb {
+  background: radial-gradient(circle, var(--accent-hover) 0 6px, var(--thumb) 6.5px);
+}
+
+.slider:active::-webkit-slider-thumb {
+  background: radial-gradient(circle, var(--accent-pressed) 0 4px, var(--thumb) 4.5px);
+}
+
+.slider:focus-visible {
+  outline: 2px solid var(--text-1);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Card y SettingRow ---------- */
+.settings-section + .settings-section {
+  margin-top: var(--space-6);
+}
+
+.settings-section > h2 {
+  margin: 0 0 var(--space-2) var(--space-1);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.card + .card {
+  margin-top: var(--space-1);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 68px;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
+}
+
+.setting-row-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  color: var(--text-1);
+}
+
+.setting-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-row-title {
+  font-size: var(--text-lg);
+}
+
+.setting-row-description {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.setting-row-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.setting-row-extra {
+  padding: var(--space-5) var(--space-5) var(--space-5) 60px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card-secondary);
+}
+
+/* ---------- Dialog ---------- */
+.dialog {
+  width: min(460px, calc(100vw - 48px));
+  margin: auto; /* el reset global pone margin: 0 y el modal dejaría de estar centrado */
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text-1);
+  box-shadow: var(--shadow-dialog);
+}
+
+.dialog::backdrop {
+  background: var(--bg-overlay);
+}
+
+.dialog-body {
+  padding: var(--space-6);
+}
+
+.dialog-body h2 {
+  margin-bottom: var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.dialog-body p {
+  color: var(--text-1);
+  font-size: var(--text-lg);
+  line-height: 1.45;
+  user-select: text;
+}
+
+.dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border-top: 1px solid var(--border);
+  background: var(--bg-card-secondary);
+}
+
+/* ---------- Toast ---------- */
+.toaster {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--bg-toast);
+  color: var(--text-toast);
+  box-shadow: var(--shadow-flyout);
+  font-size: var(--text-md);
+  animation: toast-in var(--duration) var(--ease);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
