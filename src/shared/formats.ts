@@ -7,6 +7,15 @@ export const AUDIO_EXTENSIONS = [
   'mp3', 'wav', 'm4a', 'aac', 'flac', 'ogg', 'opus', 'wma', 'aiff', 'amr', 'mka'
 ] // prettier-ignore
 
+const MEDIA_EXTENSIONS = new Set([...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS])
+
+/** Si la extensión del archivo es una de las admitidas (sin distinguir mayúsculas). */
+export function hasMediaExtension(path: string): boolean {
+  const name = path.replace(/^.*[\\/]/, '')
+  const dot = name.lastIndexOf('.')
+  return dot > 0 && MEDIA_EXTENSIONS.has(name.slice(dot + 1).toLowerCase())
+}
+
 export type MediaFilterKey = 'allMedia' | 'video' | 'audio' | 'allFiles'
 
 /** Orden de los filtros en el diálogo Abrir. El primero es el que sale seleccionado. */

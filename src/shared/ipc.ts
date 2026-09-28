@@ -9,6 +9,7 @@ import type {
   MediaPreviewEvent,
   HistoryEntryInput,
   OpenedMedia,
+  OpenFilesResult,
   QueueAddResult,
   QueueDrainedEvent,
   QueueState,
@@ -43,7 +44,7 @@ export const IpcChannel = {
   ModelsAddCustom: 'models:addCustom',
   ModelsProgress: 'models:progress',
   ModelsChanged: 'models:changed',
-  MediaPickFile: 'media:pickFile',
+  MediaOpenFiles: 'media:openFiles',
   MediaPreview: 'media:preview',
   MediaClearPreviewCache: 'media:clearPreviewCache',
   MediaPreviewCacheSize: 'media:previewCacheSize',
@@ -61,6 +62,8 @@ export const IpcChannel = {
   HistoryAdded: 'history:added',
   QueueGet: 'queue:get',
   QueuePickFiles: 'queue:pickFiles',
+  QueueAddPaths: 'queue:addPaths',
+  QueueFilesReceived: 'queue:filesReceived',
   QueueRemove: 'queue:remove',
   QueueReorder: 'queue:reorder',
   QueuePause: 'queue:pause',
@@ -98,9 +101,9 @@ export interface IpcInvokeMap {
   [IpcChannel.ModelsDelete]: { args: [id: string]; result: ModelActionResult }
   [IpcChannel.ModelsPickCustomFile]: { args: []; result: string | null }
   [IpcChannel.ModelsAddCustom]: { args: [path: string, name: string]; result: ModelActionResult }
-  [IpcChannel.MediaPickFile]: {
+  [IpcChannel.MediaOpenFiles]: {
     args: [filterLabels: Record<MediaFilterKey, string>]
-    result: OpenedMedia | null
+    result: OpenFilesResult | null
   }
   [IpcChannel.MediaClearPreviewCache]: { args: []; result: void }
   [IpcChannel.MediaPreviewCacheSize]: { args: []; result: number }
@@ -129,6 +132,7 @@ export interface IpcInvokeMap {
     args: [filterLabels: Record<MediaFilterKey, string>]
     result: QueueAddResult
   }
+  [IpcChannel.QueueAddPaths]: { args: [paths: string[]]; result: QueueAddResult }
   [IpcChannel.QueueRemove]: { args: [id: string]; result: void }
   [IpcChannel.QueueReorder]: { args: [ids: string[]]; result: void }
   [IpcChannel.QueuePause]: { args: []; result: void }
@@ -155,6 +159,7 @@ export interface IpcEventMap {
   [IpcChannel.HistoryAdded]: HistoryEntry
   [IpcChannel.QueueChanged]: QueueState
   [IpcChannel.QueueDrained]: QueueDrainedEvent
+  [IpcChannel.QueueFilesReceived]: QueueAddResult
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -214,11 +219,11 @@ export interface TranscribaApi {
   }
   media: {
     /**
-     * Diálogo para elegir un archivo de audio o video. El main lo registra en la lista
-     * blanca de `media://` y lo analiza; `null` si se cancela. Los nombres de los filtros
-     * llegan traducidos desde el renderer.
+     * "Abrir archivo": diálogo con selección múltiple. Un archivo se registra en la lista
+     * blanca de `media://` y se analiza; varios van a la cola. `null` si se cancela. Los
+     * nombres de los filtros llegan traducidos desde el renderer.
      */
-    pickFile: (filterLabels: Record<MediaFilterKey, string>) => Promise<OpenedMedia | null>
+    openFiles: (filterLabels: Record<MediaFilterKey, string>) => Promise<OpenFilesResult | null>
     /** Avisa cuando avanza, termina o falla la vista previa de un medio, o se vacía la caché. */
     onPreview: (listener: (event: MediaPreviewEvent) => void) => () => void
     /** Borra todas las vistas previas ("Borrar historial" y "Vaciar caché"). */
@@ -274,6 +279,13 @@ export interface TranscribaApi {
      * traducción actuales. Los nombres de los filtros llegan traducidos.
      */
     pickFiles: (filterLabels: Record<MediaFilterKey, string>) => Promise<QueueAddResult>
+    /**
+     * Drag & drop: encola los archivos y carpetas soltados (las carpetas se recorren con sus
+     * subcarpetas y se filtran por extensión). Las rutas se sacan en el preload.
+     */
+    addDropped: (files: File[]) => Promise<QueueAddResult>
+    /** Archivos que llegaron por "Abrir con" con la app ya abierta. */
+    onFilesReceived: (listener: (result: QueueAddResult) => void) => () => void
     /** Quita un trabajo que no se está procesando. */
     remove: (id: string) => Promise<void>
     /** Nuevo orden (ids); los que falten quedan al final. */

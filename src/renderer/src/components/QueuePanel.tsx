@@ -19,9 +19,8 @@ import { AUTO_LANGUAGE, languageTag } from '@shared/whisper'
 import { filterLabels, useHistoryStore } from '@renderer/store/history'
 import { useModelsStore } from '@renderer/store/models'
 import { moveJob } from '@renderer/lib/queueOrder'
-import { reorderQueue, useQueueStore } from '@renderer/store/queue'
+import { announceQueued, reorderQueue, useQueueStore } from '@renderer/store/queue'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
-import { toast } from '@renderer/store/toast'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Checkbox, ConfirmDialog } from './ui'
 
@@ -195,8 +194,8 @@ function QueuePanel(): React.JSX.Element {
 
   const addFiles = async (): Promise<void> => {
     try {
-      const { added } = await window.api.queue.pickFiles(filterLabels())
-      if (added > 0) toast(t('queue.added', { count: added }))
+      const result = await window.api.queue.pickFiles(filterLabels())
+      if (result.added > 0) announceQueued(result)
     } catch (err) {
       console.error('No se pudieron agregar archivos a la cola', err)
     }

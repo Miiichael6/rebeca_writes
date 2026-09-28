@@ -6,7 +6,14 @@ import { srtFileName, hasSiblingSrt, toSrt } from '@shared/exporters'
 import type { MediaFilterKey } from '@shared/formats'
 import { IpcChannel } from '@shared/ipc'
 import { transcribeOptionsFrom } from '@shared/settings'
-import type { HistoryEntry, OpenedMedia, QueueAddResult, QueueJob, Segment } from '@shared/types'
+import type {
+  HistoryEntry,
+  OpenedMedia,
+  OpenFilesResult,
+  QueueAddResult,
+  QueueJob,
+  Segment
+} from '@shared/types'
 import { AUTO_LANGUAGE } from '@shared/whisper'
 import {
   onTranscriptionProgress,
@@ -15,6 +22,7 @@ import {
   waitTranscriptionIdle
 } from '../engine/transcribeManager'
 import { probe } from './ffmpeg'
+import { expandPaths } from './fileInput'
 import { history } from './history'
 import { isValidHistoryId } from './historyStore'
 import { openMedia, pickMediaFiles } from './mediaOpen'
@@ -125,18 +133,43 @@ export function initQueue(): void {
     .catch((err) => log.error('No se pudo leer la cola', err))
 }
 
-/** `queue:pickFiles`: los archivos van con el modelo, idioma y traducción de este momento. */
+/** Encola archivos con el modelo, idioma y traducción de este momento. */
+async function enqueueFiles(paths: string[]): Promise<number> {
+  const { model, language, translate } = getSettings()
+  return queue().add(
+    paths.map((filePath) => ({ filePath, fileName: basename(filePath) })),
+    { model, language, translate }
+  )
+}
+
+/** `queue:pickFiles`: diálogo con selección múltiple; todo lo elegido va a la cola. */
 export async function pickFilesToQueue(
   window: BrowserWindow | null,
   filterLabels: Record<MediaFilterKey, string>
 ): Promise<QueueAddResult> {
   const paths = await pickMediaFiles(window, filterLabels)
-  const { model, language, translate } = getSettings()
-  const added = await queue().add(
-    paths.map((filePath) => ({ filePath, fileName: basename(filePath) })),
-    { model, language, translate }
-  )
-  return { added }
+  return { added: await enqueueFiles(paths), ignored: 0 }
+}
+
+/** `media:openFiles` ("Abrir archivo"): uno se abre en la vista; varios van a la cola. */
+export async function openFilesDialog(
+  window: BrowserWindow | null,
+  filterLabels: Record<MediaFilterKey, string>
+): Promise<OpenFilesResult | null> {
+  const paths = await pickMediaFiles(window, filterLabels)
+  if (paths.length === 0) return null
+  if (paths.length === 1) return { kind: 'opened', media: await openMedia(paths[0]) }
+  return { kind: 'queued', result: { added: await enqueueFiles(paths), ignored: 0 } }
+}
+
+/**
+ * Drag & drop y "Abrir con": archivos y carpetas (recorridas y filtradas por extensión)
+ * van a la cola.
+ */
+export async function addPathsToQueue(paths: unknown): Promise<QueueAddResult> {
+  const valid = Array.isArray(paths) ? paths.filter((p): p is string => typeof p === 'string') : []
+  const { files, ignored } = await expandPaths(valid)
+  return { added: await enqueueFiles(files), ignored }
 }
 
 /**

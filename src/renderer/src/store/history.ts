@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { MEDIA_FILTER_KEYS, type MediaFilterKey } from '@shared/formats'
 import type { HistoryEntry, OpenedMedia } from '@shared/types'
 import i18n from '@renderer/i18n'
+import { announceQueued } from './queue'
 import { useSettingsStore } from './settings'
 import { forgetResults, setLoadedResult, useTranscriptStore } from './transcript'
 
@@ -29,8 +30,8 @@ interface HistoryState {
   /** Carga la lista de `history:list` (al arrancar). */
   load: () => Promise<void>
   /**
-   * "Abrir archivo": elige un archivo, crea su entrada en el historial y la abre. La
-   * selección múltiple y el envío a la cola son de la tarea 19.
+   * "Abrir archivo" (`Ctrl+O`): con un solo archivo crea su entrada en el historial y la
+   * abre; si se eligen varios, van todos a la cola.
    */
   openFile: () => Promise<void>
   /**
@@ -141,8 +142,13 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
       })
     },
     openFile: async () => {
-      const media = await window.api.media.pickFile(filterLabels())
-      if (!media) return
+      const opened = await window.api.media.openFiles(filterLabels())
+      if (!opened) return
+      if (opened.kind === 'queued') {
+        announceQueued(opened.result)
+        return
+      }
+      const { media } = opened
       const { model, language } = useSettingsStore.getState().settings
       const entry = await window.api.history.create({
         filePath: media.filePath,

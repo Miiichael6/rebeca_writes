@@ -55,7 +55,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 16 | [Edición en línea](done/16_edicion_en_linea.md) | 4 En vivo | 12, 13 | ✅ Terminada (exportar ediciones se comprueba en la 20) |
 | 17 | [Cola de trabajos](done/17_cola.md) | 5 Cola | 08, 12 | ✅ Terminada (falta prueba manual con archivos reales) |
 | 18 | [Historial](done/18_historial.md) | 5 Historial | 12 | ✅ Terminada (falta prueba manual en la app) |
-| 19 | [Entrada de archivos](pending/19_entrada_archivos.md) | 5 Cola | 17 | ⬜ Pendiente |
+| 19 | [Entrada de archivos](done/19_entrada_archivos.md) | 5 Cola | 17 | ✅ Terminada (falta probar a mano el arrastre y Ctrl+O) |
 | 20 | [Exportadores](pending/20_exportadores.md) | 6 Exportar | 08, 15 | ⬜ Pendiente |
 | 21 | [Página de Configuración](pending/21_configuracion.md) | 6 Config | 05, 06, 12 | ⬜ Pendiente |
 | 22 | [Empaquetado](pending/22_empaquetado.md) | 7 Build | todas | ⬜ Pendiente |

@@ -174,7 +174,12 @@ function Sidebar(): React.JSX.Element {
   return (
     <aside className="sidebar">
       <div className="sidebar-actions">
-        <Button icon={<FolderOpen size={16} strokeWidth={1.5} />} onClick={() => void openFile()}>
+        <Button
+          icon={<FolderOpen size={16} strokeWidth={1.5} />}
+          title={`${t('sidebar.openFile')} (Ctrl+O)`}
+          aria-keyshortcuts="Control+O"
+          onClick={() => void openFile()}
+        >
           {t('sidebar.openFile')}
         </Button>
         <Button

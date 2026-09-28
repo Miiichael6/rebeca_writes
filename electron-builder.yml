@@ -46,3 +46,14 @@ appImage:
 npmRebuild: false
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
+# "Abrir con" de Windows (spec §6). Las extensiones principales de `src/shared/formats.ts`;
+# el instalador NSIS las registra y la tarea 22 lo valida.
+fileAssociations:
+  - ext: [mp4, mkv, avi, mov, webm, m4v, wmv, flv, mpg, mpeg, ts, m2ts, 3gp, ogv]
+    name: Video
+    description: Video
+    role: Viewer
+  - ext: [mp3, wav, m4a, aac, flac, ogg, opus, wma, aiff, amr, mka]
+    name: Audio
+    description: Audio
+    role: Viewer

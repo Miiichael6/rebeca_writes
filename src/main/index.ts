@@ -9,15 +9,22 @@ import { getBackendInfo } from './engine/backend'
 import { resolvedTheme, titleBarOverlay, watchNativeTheme } from './theme'
 import { WINDOW_COLORS } from '@shared/theme'
 import type { WindowBounds } from '@shared/settings'
+import type { QueueAddResult } from '@shared/types'
 import { setupLogging } from './logging'
 import { flushAllWrites, hasPendingWrites } from './services/fsAtomic'
 import { handleMediaProtocol, registerMediaScheme } from './services/mediaProtocol'
 import { disposePreviews } from './services/previews'
-import { initQueue, queue } from './services/queue'
+import { addPathsToQueue, initQueue, queue } from './services/queue'
+import { pathsFromArgv } from './services/fileInput'
+import { IpcChannel } from '@shared/ipc'
 import { cancelAllTranscriptions } from './engine/transcribeManager'
 import { getSettings, loadSettings, onSettingsChanged, updateSettings } from './services/settings'
 
 app.setName(APP_NAME)
+// Instancia única (spec §6): una segunda instancia le pasa su argv a esta y se cierra. Va
+// después de `setName` porque el lock vive en la carpeta `userData`, que sale del nombre.
+const primary = app.requestSingleInstanceLock()
+if (!primary) app.quit()
 setupLogging()
 registerMediaScheme()
 
@@ -66,6 +73,36 @@ function trackBounds(window: BrowserWindow): void {
   window.on('unmaximize', save)
   window.on('close', save)
 }
+
+/** La ventana principal, para enfocarla y avisarle desde fuera de `createWindow`. */
+let appWindow: BrowserWindow | null = null
+
+/** "Abrir con" o arrastrar al ícono: lo que venga en el argv va a la cola. */
+async function queueFromArgv(argv: readonly string[], cwd: string): Promise<QueueAddResult | null> {
+  const paths = pathsFromArgv(argv, cwd, app.getAppPath())
+  if (paths.length === 0) return null
+  log.info(`Archivos recibidos por línea de comandos: ${paths.join(', ')}`)
+  return addPathsToQueue(paths).catch((err) => {
+    log.error('No se pudieron encolar los archivos recibidos', err)
+    return null
+  })
+}
+
+function focusAppWindow(): void {
+  if (!appWindow || appWindow.isDestroyed()) return
+  if (appWindow.isMinimized()) appWindow.restore()
+  appWindow.show()
+  appWindow.focus()
+}
+
+app.on('second-instance', (_event, argv, workingDirectory) => {
+  focusAppWindow()
+  void queueFromArgv(argv, workingDirectory).then((result) => {
+    if (result && appWindow && !appWindow.isDestroyed()) {
+      appWindow.webContents.send(IpcChannel.QueueFilesReceived, result)
+    }
+  })
+})
 
 function createWindow(): void {
   const theme = resolvedTheme()
@@ -118,12 +155,15 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  appWindow = mainWindow
+  mainWindow.on('closed', () => (appWindow = null))
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  if (!primary) return
   // Set app user model id for windows
   electronApp.setAppUserModelId(APP_ID)
 
@@ -153,6 +193,9 @@ app.whenReady().then(async () => {
   getBackendInfo().catch((err) => log.error('No se pudo resolver el backend', err))
 
   createWindow()
+  // Arranque en frío con archivos ("Abrir con"). Si la cola pregunta si retomar, esperan a
+  // la respuesta y "Descartar" no los quita.
+  void queueFromArgv(process.argv, process.cwd())
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

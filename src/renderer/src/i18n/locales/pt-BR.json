@@ -122,6 +122,10 @@
     "exportSrt": "como .srt...",
     "saveSrtNextToFile": "Salvar .srt junto ao arquivo"
   },
+  "drop": {
+    "title": "Solte para adicionar à fila",
+    "hint": "Arquivos ou pastas inteiras de áudio e vídeo"
+  },
   "queue": {
     "title": "Fila",
     "empty": "Não há trabalhos na fila",
@@ -136,6 +140,10 @@
     "added_one": "{{count}} arquivo adicionado à fila",
     "added_many": "{{count}} arquivos adicionados à fila",
     "added_other": "{{count}} arquivos adicionados à fila",
+    "ignored_one": "{{count}} ignorado (não é áudio nem vídeo)",
+    "ignored_many": "{{count}} ignorados (não são áudio nem vídeo)",
+    "ignored_other": "{{count}} ignorados (não são áudio nem vídeo)",
+    "noneAdded": "Nenhum arquivo de áudio ou vídeo encontrado",
     "pause": "Pausar fila",
     "resume": "Retomar fila",
     "cancelCurrent": "Cancelar atual",

@@ -242,6 +242,20 @@ describe('QueueService', () => {
     expect(t.saved().map((j) => j.fileName)).toEqual(['a.mp4'])
   })
 
+  it('Descartar conserva lo que se agregó mientras se esperaba la respuesta y lo procesa', async () => {
+    const saved: QueueJob[] = [
+      { id: '1', filePath: 'a.mp4', fileName: 'a.mp4', ...frozen, status: 'pending', addedAt: 1 }
+    ]
+    const t = setup({ saved })
+    await t.queue.init()
+    // "Abrir con" en el arranque: llega antes de que el usuario elija Retomar o Descartar.
+    await t.queue.add(files('nuevo.mp4'), frozen)
+    expect(t.runs).toHaveLength(0)
+    t.queue.discard()
+    expect(t.names()).toEqual(['nuevo.mp4'])
+    expect((await t.next()).job.fileName).toBe('nuevo.mp4')
+  })
+
   it('al cerrar la app deja de guardar: el trabajo en proceso queda como estaba', async () => {
     const t = setup()
     await t.queue.init()

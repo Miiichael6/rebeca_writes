@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import { APP_NAME } from '@shared/app'
-import type { QueueJob, QueueState } from '@shared/types'
+import type { QueueAddResult, QueueJob, QueueState } from '@shared/types'
 import i18n from '@renderer/i18n'
 import { useHistoryStore } from './history'
+import { toast } from './toast'
 import { beginJob, useTranscriptStore } from './transcript'
 
 /**
@@ -22,6 +23,17 @@ export const selectPendingCount = (s: QueueState): number =>
 
 export function isQueueJob(jobId: string): boolean {
   return useQueueStore.getState().jobs.some((j) => j.id === jobId)
+}
+
+/** Resumen de lo que se agregó: "Se agregaron 48 archivos a la cola, 2 ignorados (...)". */
+export function announceQueued({ added, ignored }: QueueAddResult): void {
+  if (added === 0) {
+    toast(i18n.t('queue.noneAdded'), 4000)
+    return
+  }
+  const parts = [i18n.t('queue.added', { count: added })]
+  if (ignored > 0) parts.push(i18n.t('queue.ignored', { count: ignored }))
+  toast(parts.join(', '), ignored > 0 ? 4000 : 2500)
 }
 
 /** Reordena en local al momento (sin esperar al main) y se lo pide al main. */
@@ -66,6 +78,7 @@ export function useQueueSync(): void {
     const offs = [
       window.api.history.onAdded((entry) => useHistoryStore.getState().upsertEntry(entry)),
       api.onChanged(applyState),
+      api.onFilesReceived(announceQueued),
       api.onDrained(({ done, errors }) => {
         const body = [
           i18n.t('queue.notify.done', { count: done }),

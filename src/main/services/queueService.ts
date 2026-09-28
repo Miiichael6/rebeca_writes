@@ -50,6 +50,8 @@ export class QueueService {
   private jobs: QueueJob[] = []
   private paused = false
   private resumePending = false
+  /** Pendientes de la sesión anterior: los únicos que quita "Descartar". */
+  private leftovers = new Set<string>()
   private pumping = false
   /** La app se está cerrando: no se toman trabajos ni se guarda nada más. */
   private closing = false
@@ -71,7 +73,8 @@ export class QueueService {
   async init(): Promise<void> {
     try {
       this.jobs = await this.deps.store.load()
-      this.resumePending = this.jobs.some((j) => j.status === 'pending')
+      this.leftovers = new Set(this.jobs.filter((j) => j.status === 'pending').map((j) => j.id))
+      this.resumePending = this.leftovers.size > 0
     } finally {
       this.resolveReady()
     }
@@ -155,16 +158,22 @@ export class QueueService {
   resume(): void {
     this.paused = false
     this.resumePending = false
+    this.leftovers.clear()
     this.changed(false)
     void this.pump()
   }
 
-  /** "Descartar" del arranque: quita los pendientes de la sesión anterior. */
+  /**
+   * "Descartar" del arranque: quita los pendientes de la sesión anterior. Lo que se agregó
+   * mientras tanto (p. ej. con "Abrir con" al arrancar) se queda y empieza a procesarse.
+   */
   discard(): void {
     if (!this.resumePending) return
     this.resumePending = false
-    this.jobs = this.jobs.filter((j) => j.status !== 'pending')
+    this.jobs = this.jobs.filter((j) => !(j.status === 'pending' && this.leftovers.has(j.id)))
+    this.leftovers.clear()
     this.changed()
+    void this.pump()
   }
 
   cancelCurrent(): void {

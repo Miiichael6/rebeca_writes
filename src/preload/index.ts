@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import { IpcChannel, type IpcEventMap, type IpcInvokeMap, type TranscribaApi } from '@shared/ipc'
 
 function invoke<C extends keyof IpcInvokeMap>(
@@ -53,7 +53,7 @@ const api: TranscribaApi = {
     onChanged: (listener) => on(IpcChannel.ModelsChanged, () => listener())
   },
   media: {
-    pickFile: (filterLabels) => invoke(IpcChannel.MediaPickFile, filterLabels),
+    openFiles: (filterLabels) => invoke(IpcChannel.MediaOpenFiles, filterLabels),
     onPreview: (listener) => on(IpcChannel.MediaPreview, listener),
     clearPreviewCache: () => invoke(IpcChannel.MediaClearPreviewCache),
     getPreviewCacheSize: () => invoke(IpcChannel.MediaPreviewCacheSize)
@@ -75,6 +75,13 @@ const api: TranscribaApi = {
   queue: {
     getState: () => invoke(IpcChannel.QueueGet),
     pickFiles: (filterLabels) => invoke(IpcChannel.QueuePickFiles, filterLabels),
+    // `File.path` ya no existe: la ruta real solo se puede sacar aquí, en el preload.
+    addDropped: (files) =>
+      invoke(
+        IpcChannel.QueueAddPaths,
+        Array.from(files, (file) => webUtils.getPathForFile(file)).filter(Boolean)
+      ),
+    onFilesReceived: (listener) => on(IpcChannel.QueueFilesReceived, listener),
     remove: (id) => invoke(IpcChannel.QueueRemove, id),
     reorder: (ids) => invoke(IpcChannel.QueueReorder, ids),
     pause: () => invoke(IpcChannel.QueuePause),

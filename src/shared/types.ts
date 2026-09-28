@@ -179,7 +179,16 @@ export interface QueueDrainedEvent {
 /** Resultado de agregar archivos: cuántos entraron a la cola. */
 export interface QueueAddResult {
   added: number
+  /** Archivos de las carpetas soltadas que no son de audio ni video. */
+  ignored: number
 }
+
+/**
+ * "Abrir archivo" (diálogo con selección múltiple): uno solo se abre en la vista; varios van
+ * todos a la cola.
+ */
+export type OpenFilesResult =
+  { kind: 'opened'; media: OpenedMedia } | { kind: 'queued'; result: QueueAddResult }
 
 /** Estado del archivo abierto en el panel de transcripción. */
 export type TranscriptStatus = 'idle' | 'ready' | 'transcribing' | 'done' | 'error'

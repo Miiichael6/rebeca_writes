@@ -42,7 +42,7 @@ function showMediaDialog(
   return window ? dialog.showOpenDialog(window, options) : dialog.showOpenDialog(options)
 }
 
-/** Diálogo para elegir un solo archivo de audio o video; `null` si se cancela. */
+/** Diálogo para elegir un solo archivo de audio o video ("Buscar archivo..."); `null` si se cancela. */
 export async function pickMediaFile(
   window: BrowserWindow | null,
   filterLabels: Record<MediaFilterKey, string>
@@ -52,7 +52,7 @@ export async function pickMediaFile(
   return filePath ? openMedia(filePath) : null
 }
 
-/** Diálogo con selección múltiple (para la cola); `[]` si se cancela. */
+/** Diálogo con selección múltiple ("Abrir archivo" y la cola); `[]` si se cancela. */
 export async function pickMediaFiles(
   window: BrowserWindow | null,
   filterLabels: Record<MediaFilterKey, string>

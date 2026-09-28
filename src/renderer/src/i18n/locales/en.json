@@ -121,6 +121,10 @@
     "exportSrt": "as .srt...",
     "saveSrtNextToFile": "Save .srt next to the file"
   },
+  "drop": {
+    "title": "Drop to add to the queue",
+    "hint": "Audio and video files or whole folders"
+  },
   "queue": {
     "title": "Queue",
     "empty": "The queue is empty",
@@ -134,6 +138,9 @@
     "add": "Add files",
     "added_one": "Added {{count}} file to the queue",
     "added_other": "Added {{count}} files to the queue",
+    "ignored_one": "{{count}} ignored (not audio or video)",
+    "ignored_other": "{{count}} ignored (not audio or video)",
+    "noneAdded": "No audio or video files were found",
     "pause": "Pause queue",
     "resume": "Resume queue",
     "cancelCurrent": "Cancel current",

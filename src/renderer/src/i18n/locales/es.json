@@ -122,6 +122,10 @@
     "exportSrt": "como .srt...",
     "saveSrtNextToFile": "Guardar .srt junto al archivo"
   },
+  "drop": {
+    "title": "Suelta para agregar a la cola",
+    "hint": "Archivos o carpetas completas de audio y video"
+  },
   "queue": {
     "title": "Cola",
     "empty": "No hay trabajos en la cola",
@@ -136,6 +140,10 @@
     "added_one": "Se agregó {{count}} archivo a la cola",
     "added_many": "Se agregaron {{count}} archivos a la cola",
     "added_other": "Se agregaron {{count}} archivos a la cola",
+    "ignored_one": "{{count}} ignorado (no es audio ni video)",
+    "ignored_many": "{{count}} ignorados (no son audio ni video)",
+    "ignored_other": "{{count}} ignorados (no son audio ni video)",
+    "noneAdded": "No se encontraron archivos de audio o video",
     "pause": "Pausar cola",
     "resume": "Reanudar cola",
     "cancelCurrent": "Cancelar actual",

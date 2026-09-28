@@ -25,8 +25,14 @@ import {
   showHistoryEntryInFolder,
   updateHistorySegment
 } from './services/history'
-import { pickMediaFile } from './services/mediaOpen'
-import { openQueueJob, pickFilesToQueue, queue, retranscribeEntry } from './services/queue'
+import {
+  addPathsToQueue,
+  openFilesDialog,
+  openQueueJob,
+  pickFilesToQueue,
+  queue,
+  retranscribeEntry
+} from './services/queue'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
 import { loadSettings, updateSettings } from './services/settings'
 import {
@@ -103,8 +109,8 @@ export function registerIpcHandlers(): void {
     addCustomModel(String(path), String(name))
   )
 
-  handle(IpcChannel.MediaPickFile, (event, filterLabels) =>
-    pickMediaFile(BrowserWindow.fromWebContents(event.sender), filterLabels)
+  handle(IpcChannel.MediaOpenFiles, (event, filterLabels) =>
+    openFilesDialog(BrowserWindow.fromWebContents(event.sender), filterLabels)
   )
   handle(IpcChannel.MediaClearPreviewCache, () => clearPreviewCache())
   handle(IpcChannel.MediaPreviewCacheSize, () => previewCacheSize())
@@ -129,6 +135,7 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.QueuePickFiles, (event, filterLabels) =>
     pickFilesToQueue(BrowserWindow.fromWebContents(event.sender), filterLabels)
   )
+  handle(IpcChannel.QueueAddPaths, (_event, paths) => addPathsToQueue(paths))
   handle(IpcChannel.QueueRemove, (_event, id) => queue().remove(String(id)))
   handle(IpcChannel.QueueReorder, (_event, ids) =>
     queue().reorder(Array.isArray(ids) ? ids.map(String) : [])

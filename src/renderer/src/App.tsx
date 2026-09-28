@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import BottomBar from './components/BottomBar'
+import DropOverlay from './components/DropOverlay'
 import Player from './components/Player'
 import QueuePanel from './components/QueuePanel'
 import SettingsPage from './components/SettingsPage'
@@ -12,7 +13,7 @@ import { Button, Toaster } from './components/ui'
 import { useModelsSync } from './store/models'
 import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
-import { useHistorySync } from './store/history'
+import { useHistoryStore, useHistorySync } from './store/history'
 import { useQueueSync } from './store/queue'
 import { useSettingsSync } from './store/settings'
 import { toast } from './store/toast'
@@ -58,6 +59,24 @@ function useBackendFallbackToast(): void {
   )
 }
 
+/** `Ctrl+O` abre el diálogo "Abrir archivo" desde cualquier vista (spec §6). */
+function useOpenFileShortcut(): void {
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent): void => {
+      if (!e.ctrlKey || e.altKey || e.shiftKey || e.metaKey || e.key.toLowerCase() !== 'o') return
+      if (e.repeat || document.querySelector('dialog[open]')) return
+      e.preventDefault()
+      useUiStore.getState().setView('main')
+      useHistoryStore
+        .getState()
+        .openFile()
+        .catch((err) => console.error('No se pudo abrir el archivo', err))
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+}
+
 function App(): React.JSX.Element {
   const { t } = useTranslation()
   useThemeSync()
@@ -68,6 +87,7 @@ function App(): React.JSX.Element {
   useTranscriptionSync()
   useQueueSync()
   useHistorySync()
+  useOpenFileShortcut()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
 
@@ -92,6 +112,7 @@ function App(): React.JSX.Element {
       )}
 
       <QueuePanel />
+      <DropOverlay />
       <Toaster />
     </div>
   )
