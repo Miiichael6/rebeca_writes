@@ -8,8 +8,10 @@ import { registerIpcHandlers } from './ipc'
 import { getBackendInfo } from './engine/backend'
 import { resolvedTheme, titleBarOverlay, watchNativeTheme } from './theme'
 import { WINDOW_COLORS } from '@shared/theme'
+import { handleMediaProtocol, registerMediaScheme } from './services/mediaProtocol'
 
 app.setName(APP_NAME)
+registerMediaScheme()
 
 function createWindow(): void {
   const theme = resolvedTheme()
@@ -76,6 +78,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  handleMediaProtocol()
   registerIpcHandlers()
   watchNativeTheme()
   // Autodetección del backend en segundo plano; la ventana no la espera.

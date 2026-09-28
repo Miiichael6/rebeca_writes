@@ -41,6 +41,7 @@ Un reproductor completo sincronizado con los segmentos: clic para saltar, resalt
 - [ ] Si el archivo original no existe: aviso + botón "Buscar archivo..." (se completa en la tarea 18)
 
 ### Paso 8 — Verificación
+- [ ] Video de más de 1 GB por `media://`: se reproduce al instante y se puede adelantar al final (pendiente de la tarea 09, paso 6)
 - [ ] Commit: `feat(player): reproductor sincronizado`
 
 ## Criterios de aceptación
