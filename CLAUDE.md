@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Windows desktop app (working name **Transcriba**) that transcribes video/audio to text 100% locally with whisper.cpp. Built on electron-vite + React 19 + TypeScript. The repo is currently at the **scaffold stage**: `src/renderer` has a static layout (Sidebar, Toolbar, Player, TranscriptView, BottomBar) with no real logic; `src/main` and `src/preload` are still the electron-vite template.
+A Windows desktop app (working name **RebecaWrites**) that transcribes video/audio to text 100% locally with whisper.cpp. Built on electron-vite + React 19 + TypeScript. The repo is currently at the **scaffold stage**: `src/renderer` has a static layout (Sidebar, Toolbar, Player, TranscriptView, BottomBar) with no real logic; `src/main` and `src/preload` are still the electron-vite template.
 
 The full spec lives in [plans/about_this_project.md](plans/about_this_project.md) (Spanish). Reference screenshots are in [plans/images/](plans/images/). Read the spec before implementing any feature. It defines the stack, the transcription pipeline, UI behavior, the persistence format and the acceptance criteria.
 
