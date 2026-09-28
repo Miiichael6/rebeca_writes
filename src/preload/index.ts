@@ -22,11 +22,16 @@ function on<C extends keyof IpcEventMap>(
 const api: TranscribaApi = {
   app: {
     getVersion: () => invoke(IpcChannel.AppGetVersion),
-    getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages)
+    getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages),
+    openLogs: () => invoke(IpcChannel.AppOpenLogs)
+  },
+  settings: {
+    get: () => invoke(IpcChannel.SettingsGet),
+    set: (patch) => invoke(IpcChannel.SettingsSet, patch),
+    onChanged: (listener) => on(IpcChannel.SettingsChanged, listener)
   },
   theme: {
     getResolved: () => invoke(IpcChannel.ThemeGetResolved),
-    setMode: (mode) => invoke(IpcChannel.ThemeSetMode, mode),
     onChanged: (listener) => on(IpcChannel.ThemeChanged, listener)
   },
   backend: {

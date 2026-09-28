@@ -1,0 +1,108 @@
+import type { UiLanguageSetting } from './i18n'
+import type { ThemeMode } from './theme'
+import type { Backend } from './types'
+import { AUTO_LANGUAGE } from './whisper'
+
+/** Versión del formato de `settings.json`. Se sube al añadir una migración en `services/settings`. */
+export const SETTINGS_VERSION = 1
+
+/** Límites de la altura del panel de video (spec §4.1). */
+export const VIDEO_HEIGHT_MIN = 300
+export const VIDEO_HEIGHT_MAX = 600
+
+/** Tamaño y posición de la ventana principal. `x`/`y` faltan hasta la primera vez que se mueve. */
+export interface WindowBounds {
+  width: number
+  height: number
+  x?: number
+  y?: number
+  maximized: boolean
+}
+
+/** Opciones de la cola (spec §4.2, tarea 17). */
+export interface QueueSettings {
+  /** Saltar archivos que ya tienen un `.srt` al lado. */
+  skipExistingSrt: boolean
+  /** Al terminar, guardar el `.srt` junto al archivo. */
+  autoSaveSrt: boolean
+}
+
+/** Contenido de `userData/settings.json` (spec §4.3 y §5). */
+export interface Settings {
+  version: number
+
+  /** Backend elegido; `null` hasta la autodetección del primer arranque. */
+  backend: Backend | null
+  /** Backend autodetectado; `null` = la detección aún no corrió. */
+  detectedBackend: Backend | null
+
+  // Barra superior e inferior.
+  model: string
+  /** Código de `WHISPER_LANGUAGES` o `AUTO_LANGUAGE`. */
+  language: string
+  translate: boolean
+  joinLines: boolean
+  autoScroll: boolean
+
+  // Opciones de transcripción (whisper-cli).
+  promptEnabled: boolean
+  prompt: string
+  /** `-ml`; 0 = sin límite. */
+  maxLen: number
+  suppressNst: boolean
+  normalize: boolean
+  /** `-t`; por defecto la mitad de los núcleos. */
+  threads: number
+
+  // Interfaz.
+  showCaptions: boolean
+  videoHeight: number
+  theme: ThemeMode
+  uiLanguage: UiLanguageSetting
+
+  /** Límite de la caché de vistas previas en GB. */
+  previewCacheMaxGB: number
+  queue: QueueSettings
+  window: WindowBounds
+}
+
+/** Cambio parcial: los objetos anidados también pueden venir a medias. */
+export type SettingsPatch = Partial<Omit<Settings, 'version' | 'queue' | 'window'>> & {
+  queue?: Partial<QueueSettings>
+  window?: Partial<WindowBounds>
+}
+
+/** Mitad de los núcleos, mínimo 1 (spec §4.3). */
+export function defaultThreads(cpuCount: number): number {
+  return Math.max(1, Math.floor(cpuCount / 2))
+}
+
+/**
+ * Valores por defecto. Los hilos dependen de la máquina, por eso es una función: el main
+ * la llama con `os.availableParallelism()`.
+ */
+export function createDefaultSettings(cpuCount: number): Settings {
+  return {
+    version: SETTINGS_VERSION,
+    backend: null,
+    detectedBackend: null,
+    model: 'small',
+    language: AUTO_LANGUAGE,
+    translate: false,
+    joinLines: true,
+    autoScroll: true,
+    promptEnabled: false,
+    prompt: '',
+    maxLen: 0,
+    suppressNst: false,
+    normalize: true,
+    threads: defaultThreads(cpuCount),
+    showCaptions: true,
+    videoHeight: 360,
+    theme: 'system',
+    uiLanguage: 'system',
+    previewCacheMaxGB: 5,
+    queue: { skipExistingSrt: false, autoSaveSrt: false },
+    window: { width: 1100, height: 790, maximized: false }
+  }
+}

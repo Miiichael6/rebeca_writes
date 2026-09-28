@@ -15,6 +15,7 @@ import {
 import { playbackFor, previewOf } from '@renderer/lib/preview'
 import { usePreviewStore } from '@renderer/store/preview'
 import { useTranscriptStore } from '@renderer/store/transcript'
+import { useSettingsStore } from '@renderer/store/settings'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Select, Slider } from './ui'
 
@@ -95,11 +96,11 @@ function Player(): React.JSX.Element {
   const { t } = useTranslation()
   const entry = useTranscriptStore((s) => s.entry)
   const media = useHistoryStore((s) => (entry ? s.media[entry.id] : undefined))
-  const { videoVisible, videoHeight, showCaptions } = useUiStore(
+  const videoVisible = useUiStore((s) => s.videoVisible)
+  const { videoHeight, showCaptions } = useSettingsStore(
     useShallow((s) => ({
-      videoVisible: s.videoVisible,
-      videoHeight: s.videoHeight,
-      showCaptions: s.showCaptions
+      videoHeight: s.settings.videoHeight,
+      showCaptions: s.settings.showCaptions
     }))
   )
   const { src, hasVideo, playing, volume, muted, rate } = usePlayerStore(

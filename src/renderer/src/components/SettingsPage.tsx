@@ -2,6 +2,7 @@ import { ArrowLeft, Languages } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SUPPORTED_UI_LANGUAGES, type UiLanguageSetting } from '@shared/i18n'
+import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useUiStore } from '@renderer/store/ui'
 import ModelsSection from './ModelsSection'
 import { Button, Select, SettingRow, SettingsSection } from './ui'
@@ -13,8 +14,7 @@ import { Button, Select, SettingRow, SettingsSection } from './ui'
 function SettingsPage(): React.JSX.Element {
   const { t } = useTranslation()
   const setView = useUiStore((s) => s.setView)
-  const uiLanguage = useUiStore((s) => s.uiLanguage)
-  const setUiLanguage = useUiStore((s) => s.setUiLanguage)
+  const uiLanguage = useSettingsStore((s) => s.settings.uiLanguage)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent): void => {
@@ -55,7 +55,7 @@ function SettingsPage(): React.JSX.Element {
             <Select<UiLanguageSetting>
               aria-label={t('settings.uiLanguage')}
               value={uiLanguage}
-              onChange={setUiLanguage}
+              onChange={(value) => updateSettings({ uiLanguage: value })}
               options={languageOptions}
             />
           </SettingRow>

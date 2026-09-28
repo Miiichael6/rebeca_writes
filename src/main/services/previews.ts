@@ -5,22 +5,16 @@ import { IpcChannel, type IpcEventMap } from '@shared/ipc'
 import type { MediaInfo, PreviewStatus } from '@shared/types'
 import { registerMedia } from './mediaRegistry'
 import { PreviewCache, previewPlan } from './previewCache'
-import { readSettings } from './settings'
+import { loadSettings } from './settings'
 
 /**
  * Puente entre `PreviewCache` y la app: carpeta `userData/preview-cache`, límite desde
  * settings, lista blanca de `media://` y eventos al renderer.
  */
 
-/** Clave en settings.json (la pantalla de Configuración llega en la tarea 21). */
-export const PREVIEW_CACHE_LIMIT_SETTING = 'previewCacheMaxGB'
-const DEFAULT_LIMIT_GB = 5
-
+/** `previewCacheMaxGB` ya viene validado (> 0) desde settings. */
 async function limitBytes(): Promise<number> {
-  const value = (await readSettings())[PREVIEW_CACHE_LIMIT_SETTING]
-  const gb =
-    typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : DEFAULT_LIMIT_GB
-  return gb * 1024 ** 3
+  return (await loadSettings()).previewCacheMaxGB * 1024 ** 3
 }
 
 /** Último estado enviado por id de medio: lo necesita `openMedia` si el archivo se reabre. */

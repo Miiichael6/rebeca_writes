@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { whisperLanguageOptions } from '@renderer/lib/languages'
 import { selectDownloaded, useModelsStore } from '@renderer/store/models'
+import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Checkbox, Select, type SelectOption } from './ui'
@@ -14,15 +15,15 @@ const MORE_MODELS = '__more__'
 function Toolbar(): React.JSX.Element {
   const { t, i18n } = useTranslation()
   const uiLanguage = i18n.language
-  const { model, language, translate, videoVisible } = useUiStore(
+  const { model, language, translate } = useSettingsStore(
     useShallow((s) => ({
-      model: s.model,
-      language: s.language,
-      translate: s.translate,
-      videoVisible: s.videoVisible
+      model: s.settings.model,
+      language: s.settings.language,
+      translate: s.settings.translate
     }))
   )
-  const { setModel, setLanguage, setTranslate, toggleVideo, setView } = useUiStore.getState()
+  const videoVisible = useUiStore((s) => s.videoVisible)
+  const { toggleVideo, setView } = useUiStore.getState()
   const status = useTranscriptStore((s) => s.status)
   const { start, cancel } = useTranscriptStore.getState()
 
@@ -32,9 +33,9 @@ function Toolbar(): React.JSX.Element {
   // Si el modelo elegido no está descargado (o se borró), pasa al primero que sí lo esté.
   useEffect(() => {
     if (loaded && downloaded.length > 0 && !downloaded.some((m) => m.id === model)) {
-      setModel(downloaded[0].id)
+      updateSettings({ model: downloaded[0].id })
     }
-  }, [loaded, downloaded, model, setModel])
+  }, [loaded, downloaded, model])
 
   const hasModel = downloaded.some((m) => m.id === model)
   const modelOptions = useMemo(
@@ -60,15 +61,24 @@ function Toolbar(): React.JSX.Element {
           options={modelOptions}
           onChange={(value) => {
             if (value === MORE_MODELS) setView('settings')
-            else if (value) setModel(value)
+            else if (value) updateSettings({ model: value })
           }}
         />
       </div>
       <div className="toolbar-field">
         <label htmlFor="toolbar-language">{t('toolbar.language')}</label>
-        <Select id="toolbar-language" value={language} options={languages} onChange={setLanguage} />
+        <Select
+          id="toolbar-language"
+          value={language}
+          options={languages}
+          onChange={(value) => updateSettings({ language: value })}
+        />
       </div>
-      <Checkbox className="toolbar-translate" checked={translate} onChange={setTranslate}>
+      <Checkbox
+        className="toolbar-translate"
+        checked={translate}
+        onChange={(value) => updateSettings({ translate: value })}
+      >
         {t('toolbar.translate')}
       </Checkbox>
 

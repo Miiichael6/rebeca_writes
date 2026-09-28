@@ -3,8 +3,7 @@ import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { IpcChannel } from '@shared/ipc'
 import type { Backend, BackendInfo } from '@shared/types'
-import { BACKEND_ORDER } from '@shared/whisper'
-import { readSettings, updateSettings } from '../services/settings'
+import { loadSettings, updateSettings } from '../services/settings'
 import { probeFoundDevice, type FallbackEvent } from './fallback'
 import { installedBackends, whisperCliPath } from './paths'
 
@@ -61,22 +60,18 @@ export async function detectBackend(installed: readonly Backend[]): Promise<Back
   return 'cpu'
 }
 
-function isBackend(value: unknown): value is Backend {
-  return (BACKEND_ORDER as readonly unknown[]).includes(value)
-}
-
 async function loadBackendInfo(): Promise<BackendInfo> {
   const installed = installedBackends()
-  const saved = await readSettings()
+  const saved = await loadSettings()
 
   // La detección solo corre en el primer arranque; después manda lo guardado.
-  let detected = isBackend(saved.detectedBackend) ? saved.detectedBackend : null
+  let detected = saved.detectedBackend
   if (!detected) {
     const started = Date.now()
     detected = await detectBackend(installed)
     log.info(`Backend detectado: ${detected} en ${Date.now() - started} ms`)
   }
-  const backend = isBackend(saved.backend) ? saved.backend : detected
+  const backend = saved.backend ?? detected
 
   if (saved.detectedBackend !== detected || saved.backend !== backend) {
     await updateSettings({ detectedBackend: detected, backend })

@@ -1,30 +1,47 @@
-import { readFile, rename, writeFile } from 'fs/promises'
+import { availableParallelism } from 'os'
 import { join } from 'path'
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
+import log from 'electron-log/main'
+import { IpcChannel } from '@shared/ipc'
+import type { Settings, SettingsPatch } from '@shared/settings'
+import { SettingsStore } from './settingsStore'
 
-// Versión mínima de `userData/settings.json`: por ahora solo la usa la detección de backend.
-// La tarea 12 la reemplaza con el tipo `Settings` completo, defaults y escritura con fsync.
+/** Puente entre `SettingsStore` y la app: ruta en `userData` y aviso al renderer de cada cambio. */
 
-export type StoredSettings = Record<string, unknown>
+let store: SettingsStore | null = null
 
-function settingsPath(): string {
-  return join(app.getPath('userData'), 'settings.json')
+function getStore(): SettingsStore {
+  if (store) return store
+  store = new SettingsStore({
+    path: join(app.getPath('userData'), 'settings.json'),
+    cpuCount: availableParallelism(),
+    onCorrupt: (backup, err) => log.error(`settings.json corrupto; respaldado en ${backup}`, err)
+  })
+  store.on('changed', (settings) => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.webContents.send(IpcChannel.SettingsChanged, settings)
+    }
+  })
+  return store
 }
 
-export async function readSettings(): Promise<StoredSettings> {
-  try {
-    const data: unknown = JSON.parse(await readFile(settingsPath(), 'utf8'))
-    return data && typeof data === 'object' && !Array.isArray(data) ? (data as StoredSettings) : {}
-  } catch {
-    return {}
-  }
+/** Carga settings.json (una sola vez). Se espera al arrancar, antes de crear la ventana. */
+export function loadSettings(): Promise<Settings> {
+  return getStore().load()
 }
 
-/** Fusiona `patch` en settings.json con escritura atómica (temporal + rename). */
-export async function updateSettings(patch: StoredSettings): Promise<void> {
-  const next = { ...(await readSettings()), ...patch }
-  const path = settingsPath()
-  const tmp = `${path}.tmp`
-  await writeFile(tmp, JSON.stringify(next, null, 2), 'utf8')
-  await rename(tmp, path)
+/** Settings en memoria sin esperar; los valores por defecto si aún no se cargaron. */
+export function getSettings(): Settings {
+  return getStore().get()
+}
+
+export function updateSettings(patch: SettingsPatch): Promise<Settings> {
+  return getStore().update(patch)
+}
+
+/** Escucha los cambios en el main (p. ej. aplicar el tema). Devuelve la función para dejar de escuchar. */
+export function onSettingsChanged(listener: (settings: Settings) => void): () => void {
+  const s = getStore()
+  s.on('changed', listener)
+  return () => s.off('changed', listener)
 }

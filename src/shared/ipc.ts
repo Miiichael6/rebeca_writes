@@ -1,4 +1,5 @@
-import type { ResolvedTheme, ThemeMode } from './theme'
+import type { ResolvedTheme } from './theme'
+import type { Settings, SettingsPatch } from './settings'
 import type { MediaFilterKey } from './formats'
 import type {
   BackendFallback,
@@ -17,8 +18,11 @@ import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus
 export const IpcChannel = {
   AppGetVersion: 'app:get-version',
   AppGetPreferredLanguages: 'app:get-preferred-languages',
+  AppOpenLogs: 'app:openLogs',
+  SettingsGet: 'settings:get',
+  SettingsSet: 'settings:set',
+  SettingsChanged: 'settings:changed',
   ThemeGetResolved: 'theme:get-resolved',
-  ThemeSetMode: 'theme:set-mode',
   ThemeChanged: 'theme:changed',
   BackendGetInfo: 'backend:get-info',
   BackendFallback: 'backend:fallback',
@@ -48,8 +52,10 @@ export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
 export interface IpcInvokeMap {
   [IpcChannel.AppGetVersion]: { args: []; result: string }
   [IpcChannel.AppGetPreferredLanguages]: { args: []; result: string[] }
+  [IpcChannel.AppOpenLogs]: { args: []; result: void }
+  [IpcChannel.SettingsGet]: { args: []; result: Settings }
+  [IpcChannel.SettingsSet]: { args: [patch: SettingsPatch]; result: Settings }
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
-  [IpcChannel.ThemeSetMode]: { args: [mode: ThemeMode]; result: ResolvedTheme }
   [IpcChannel.BackendGetInfo]: { args: []; result: BackendInfo }
   [IpcChannel.ModelsList]: { args: []; result: ModelStatus[] }
   [IpcChannel.ModelsDownload]: { args: [id: string]; result: ModelDownloadResult }
@@ -69,6 +75,7 @@ export interface IpcInvokeMap {
 
 /** Eventos que el main envía al renderer (`webContents.send`) y su payload. */
 export interface IpcEventMap {
+  [IpcChannel.SettingsChanged]: Settings
   [IpcChannel.ThemeChanged]: ResolvedTheme
   [IpcChannel.BackendFallback]: BackendFallback
   [IpcChannel.ModelsProgress]: ModelProgress
@@ -86,11 +93,21 @@ export interface TranscribaApi {
     getVersion: () => Promise<string>
     /** Idiomas preferidos de Windows (BCP 47), del más al menos preferido. */
     getPreferredLanguages: () => Promise<string[]>
+    /** Abre la carpeta de logs (`userData/logs`) en el Explorador. */
+    openLogs: () => Promise<void>
+  }
+  settings: {
+    get: () => Promise<Settings>
+    /**
+     * Aplica un cambio parcial y devuelve los settings resultantes. Los valores inválidos se
+     * ignoran. El tema se aplica en el main (`nativeTheme.themeSource`).
+     */
+    set: (patch: SettingsPatch) => Promise<Settings>
+    /** Avisa de cada cambio, venga de esta ventana o del main. */
+    onChanged: (listener: (settings: Settings) => void) => () => void
   }
   theme: {
     getResolved: () => Promise<ResolvedTheme>
-    /** Aplica el modo en `nativeTheme.themeSource` y devuelve el tema resultante. */
-    setMode: (mode: ThemeMode) => Promise<ResolvedTheme>
     /** Avisa cuando cambia el tema efectivo (p. ej. el usuario cambia el tema de Windows). */
     onChanged: (listener: (theme: ResolvedTheme) => void) => () => void
   }

@@ -4,14 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { formatTimestamp } from '@renderer/lib/time'
 import { toast } from '@renderer/store/toast'
 import { useTranscriptStore } from '@renderer/store/transcript'
-import { useUiStore } from '@renderer/store/ui'
+import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { Button, Checkbox, Menu, type MenuItem } from './ui'
 
 function BottomBar(): React.JSX.Element {
   const { t } = useTranslation()
-  const joinLines = useUiStore((s) => s.joinLines)
-  const autoScroll = useUiStore((s) => s.autoScroll)
-  const { setJoinLines, setAutoScroll } = useUiStore.getState()
+  const joinLines = useSettingsStore((s) => s.settings.joinLines)
+  const autoScroll = useSettingsStore((s) => s.settings.autoScroll)
   const segments = useTranscriptStore((s) => s.segments)
   const [exportOpen, setExportOpen] = useState(false)
   const closeExport = useCallback(() => setExportOpen(false), [])
@@ -46,11 +45,11 @@ function BottomBar(): React.JSX.Element {
         disabled={empty}
         onClick={copy}
       />
-      <Checkbox checked={joinLines} onChange={setJoinLines}>
+      <Checkbox checked={joinLines} onChange={(value) => updateSettings({ joinLines: value })}>
         {t('bottomBar.joinLines')}
       </Checkbox>
       <span className="divider" />
-      <Checkbox checked={autoScroll} onChange={setAutoScroll}>
+      <Checkbox checked={autoScroll} onChange={(value) => updateSettings({ autoScroll: value })}>
         {t('bottomBar.autoScroll')}
       </Checkbox>
       <span className="spacer" />

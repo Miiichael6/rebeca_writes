@@ -5,6 +5,8 @@ export interface Segment {
   start: number
   end: number
   text: string
+  /** El usuario cambió el texto (tarea 16). Solo en los segmentos guardados en el historial. */
+  edited?: boolean
 }
 
 export type MediaKind = 'video' | 'audio'
@@ -155,6 +157,11 @@ export interface TranscribeJob {
   /** Posición entre las pistas de audio (`AudioTrack.index`); por defecto la primera. */
   audioTrack?: number
   options?: TranscribeOptions
+  /**
+   * Entrada del historial donde se guardan los segmentos a medida que llegan (y el estado
+   * final). Sin ella, el resultado solo viaja al renderer.
+   */
+  historyId?: string
 }
 
 export type TranscribePhase = 'preparing' | 'transcribing'

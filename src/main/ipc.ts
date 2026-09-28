@@ -1,10 +1,13 @@
-import { app, BrowserWindow, ipcMain, nativeTheme, type IpcMainInvokeEvent } from 'electron'
+import { mkdir } from 'fs/promises'
+import { app, BrowserWindow, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
+import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
 import { pickMediaFile } from './services/mediaOpen'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
+import { loadSettings, updateSettings } from './services/settings'
 import {
   addCustomModel,
   cancelDownload,
@@ -23,22 +26,24 @@ function handle<C extends keyof IpcInvokeMap>(channel: C, handler: Handler<C>): 
   ipcMain.handle(channel, handler as Parameters<typeof ipcMain.handle>[1])
 }
 
-const THEME_MODES = new Set(['light', 'dark', 'system'])
-
 export function registerIpcHandlers(): void {
   handle(IpcChannel.AppGetVersion, () => app.getVersion())
   handle(IpcChannel.AppGetPreferredLanguages, () => {
     const languages = app.getPreferredSystemLanguages()
     return languages.length > 0 ? languages : [app.getLocale()]
   })
+  handle(IpcChannel.AppOpenLogs, async () => {
+    const dir = logsDir()
+    await mkdir(dir, { recursive: true })
+    const error = await shell.openPath(dir)
+    if (error) throw new Error(error)
+  })
+
+  handle(IpcChannel.SettingsGet, () => loadSettings())
+  // El patch se valida clave por clave en `mergeSettings`: lo inválido se ignora.
+  handle(IpcChannel.SettingsSet, (_event, patch) => updateSettings(patch))
 
   handle(IpcChannel.ThemeGetResolved, () => resolvedTheme())
-  handle(IpcChannel.ThemeSetMode, (_event, mode) => {
-    if (!THEME_MODES.has(mode)) throw new Error(`Modo de tema inválido: ${mode}`)
-    // Cambiar themeSource dispara nativeTheme 'updated' → watchNativeTheme recolorea la ventana.
-    nativeTheme.themeSource = mode
-    return resolvedTheme()
-  })
 
   handle(IpcChannel.BackendGetInfo, () => getBackendInfo())
 

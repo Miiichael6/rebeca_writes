@@ -28,12 +28,13 @@ import {
   Toggle
 } from '@renderer/components/ui'
 import { toast } from '@renderer/store/toast'
+import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useUiStore } from '@renderer/store/ui'
 
 function UiDemo(): React.JSX.Element {
-  const themeMode = useUiStore((s) => s.themeMode)
+  const themeMode = useSettingsStore((s) => s.settings.theme)
   const resolvedTheme = useUiStore((s) => s.resolvedTheme)
-  const setThemeMode = useUiStore((s) => s.setThemeMode)
+  const setThemeMode = (theme: ThemeMode): void => updateSettings({ theme })
 
   const [backend, setBackend] = useState('cuda')
   const [prompt, setPrompt] = useState(false)

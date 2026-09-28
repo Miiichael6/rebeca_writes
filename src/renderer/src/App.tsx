@@ -12,6 +12,7 @@ import { Button, Toaster } from './components/ui'
 import { useModelsSync } from './store/models'
 import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
+import { useSettingsSync } from './store/settings'
 import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
 import { useThemeSync, useUiStore } from './store/ui'
@@ -57,6 +58,7 @@ function useBackendFallbackToast(): void {
 function App(): React.JSX.Element {
   const { t } = useTranslation()
   useThemeSync()
+  useSettingsSync()
   useBackendFallbackToast()
   useModelsSync()
   usePreviewSync()
