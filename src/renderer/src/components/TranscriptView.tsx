@@ -1,7 +1,9 @@
 import { ChevronDown, ChevronUp, FolderOpen, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { findActiveSegment } from '@renderer/lib/segments'
 import { formatClock, formatTimestamp } from '@renderer/lib/time'
+import { usePlayerStore } from '@renderer/store/player'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { Button } from './ui'
 
@@ -68,7 +70,11 @@ function TranscriptView(): React.JSX.Element {
   const status = useTranscriptStore((s) => s.status)
   const progress = useTranscriptStore((s) => s.progress)
   const etaSec = useTranscriptStore((s) => s.etaSec)
-  const activeIndex = useTranscriptStore((s) => s.activeIndex)
+  // El selector devuelve un índice: la vista solo se vuelve a pintar al cambiar de segmento.
+  const activeIndex = usePlayerStore((s) =>
+    s.src ? findActiveSegment(segments, s.currentTime) : null
+  )
+  const seek = usePlayerStore((s) => s.seek)
   // La búsqueda real (resaltado, "3 de 12", navegación) es de la tarea 14.
   const [query, setQuery] = useState('')
 
@@ -115,6 +121,13 @@ function TranscriptView(): React.JSX.Element {
               className={`segment${i === activeIndex ? ' active' : ''}`}
               key={seg.start}
               aria-current={i === activeIndex || undefined}
+              role="button"
+              tabIndex={0}
+              onClick={() => seek(seg.start)}
+              onKeyDown={(e) => {
+                // Solo Enter: Espacio sigue siendo play/pausa (usePlayerShortcuts).
+                if (e.key === 'Enter') seek(seg.start)
+              }}
             >
               <time>[{formatTimestamp(seg.start)}]</time>
               <span>{seg.text}</span>

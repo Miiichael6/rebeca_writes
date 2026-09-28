@@ -57,7 +57,9 @@
     "mute": "Silenciar",
     "unmute": "Activar sonido",
     "volume": "Volumen",
-    "speed": "Velocidad"
+    "speed": "Velocidad",
+    "unavailable": "El archivo no está disponible. Puede que se haya movido o borrado.",
+    "locateFile": "Buscar archivo..."
   },
   "transcript": {
     "title": "Transcripción",

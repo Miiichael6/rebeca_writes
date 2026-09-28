@@ -45,8 +45,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 06 | [Descarga de modelos](done/06_descarga_modelos.md) | 2 Motor | 01 | ✅ Terminada |
 | 07 | [Servicio ffmpeg](done/07_servicio_ffmpeg.md) | 2 Motor | 01 | ✅ Terminada |
 | 08 | [TranscriptionEngine](done/08_transcription_engine.md) | 2 Motor | 05, 06, 07 | ✅ Terminada |
-| 09 | [Protocolo media://](done/09_protocolo_media.md) | 3 Reproductor | 03 | ✅ Terminada (paso 6.1 se prueba en 10) |
-| 10 | [Reproductor y sincronización](pending/10_reproductor_sincronizacion.md) | 3 Reproductor | 09 | ⬜ Pendiente |
+| 09 | [Protocolo media://](done/09_protocolo_media.md) | 3 Reproductor | 03 | ✅ Terminada |
+| 10 | [Reproductor y sincronización](done/10_reproductor_sincronizacion.md) | 3 Reproductor | 09 | ✅ Terminada |
 | 11 | [Vista previa de códecs](pending/11_vista_previa_codecs.md) | 3 Reproductor | 07, 10 | ⬜ Pendiente |
 | 12 | [Persistencia y logs](pending/12_persistencia.md) | 5 Datos* | 01 | ⬜ Pendiente |
 | 13 | [Streaming y virtualización](pending/13_streaming_virtualizacion.md) | 4 En vivo | 08, 10 | ⬜ Pendiente |

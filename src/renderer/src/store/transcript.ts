@@ -11,8 +11,6 @@ interface TranscriptState {
   progress: number
   /** Segundos restantes estimados mientras se transcribe. */
   etaSec: number | null
-  /** Segmento que suena ahora en el reproductor (tarea 10). */
-  activeIndex: number | null
   open: (entry: HistoryEntry | null) => void
   start: () => void
   cancel: () => void
@@ -22,11 +20,11 @@ interface TranscriptState {
 function mockStateFor(
   entry: HistoryEntry | null
 ): Omit<TranscriptState, 'open' | 'start' | 'cancel'> {
-  const base = { entry, segments: [], progress: 0, etaSec: null, activeIndex: null }
+  const base = { entry, segments: [], progress: 0, etaSec: null }
   if (!entry) return { ...base, status: 'idle' }
   switch (entry.status) {
     case 'done':
-      return { ...base, status: 'done', segments: mockSegments, activeIndex: 3 }
+      return { ...base, status: 'done', segments: mockSegments }
     case 'transcribing': {
       const progress = entry.progress ?? 0
       const count = Math.round((mockSegments.length * progress) / 100)

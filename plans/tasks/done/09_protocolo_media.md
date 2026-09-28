@@ -32,7 +32,7 @@ Servir archivos locales al `<video>` de forma segura y con posibilidad de adelan
 - [x] Test del handler (200/206/416/404, lista blanca, archivo disperso de 1,5 GB)
 
 ### Paso 6 — Verificación
-- [ ] Video de más de 1 GB: se reproduce al instante y se puede adelantar al final _(pendiente de la tarea 10: aún no hay `<video>`; ver Bitácora)_
+- [x] Video de más de 1 GB: se reproduce al instante y se puede adelantar al final _(verificado en la tarea 10)_
 - [x] Commit: `feat(player): protocolo media:// con Range`
 
 ## Criterios de aceptación
@@ -44,3 +44,4 @@ Servir archivos locales al `<video>` de forma segura y con posibilidad de adelan
 - 2026-09-28 — El handler se separó en `mediaHandler.ts` (sin `electron`, `(Request) => Promise<Response>`) para poder probarlo con Vitest; `mediaProtocol.ts` solo hace `registerSchemesAsPrivileged` (a nivel de módulo en `index.ts`, antes de `whenReady`) y `protocol.handle`. Solo acepta host `file`; una ruta metida en la URL se trata como id y da 404.
 - 2026-09-28 — Range: se soporta un único rango (`a-b`, `a-`, `-n`); varios rangos, otra unidad, rango fuera del archivo o archivo vacío → 416 con `Content-Range: bytes */size`. Un `end` más allá del archivo se recorta (RFC 9110). Chromium siempre pide un solo rango, así que no se implementa `multipart/byteranges`.
 - 2026-09-28 — Verificación: typecheck, lint, `electron-vite build` y 118 tests en verde. El test del handler crea un archivo disperso de 1,5 GB y comprueba que `bytes=-4` y un rango de 1 KB a mitad devuelven 206 con solo esos bytes (el seek no lee el archivo entero). La app arranca con el esquema registrado (`electron-vite preview`). La reproducción real en `<video>` con un video de >1 GB **no se ha probado**: el Player todavía es un mock sin `<video>` (llega en la tarea 10). Esa línea del paso 6 queda sin marcar y se verifica en la 10.
+- 2026-09-28 — Paso 6.1 verificado en la tarea 10: un MP4 de 6,8 GB por `media://` empieza a sonar en 8 ms y salta al final en ~0,5 s (ver su Bitácora).

@@ -32,6 +32,9 @@ interface UiState {
   /** Altura del panel de video en px (300–600). Se ajusta en Configuración (tarea 21). */
   videoHeight: number
   setVideoHeight: (height: number) => void
+  /** Subtítulos sobre el video. Se cambia en Configuración (tarea 21) y se persiste (tarea 12). */
+  showCaptions: boolean
+  setShowCaptions: (showCaptions: boolean) => void
 
   // Opciones de la barra superior e inferior. Se persistirán en settings.json (tarea 12).
   model: string
@@ -76,6 +79,8 @@ export const useUiStore = create<UiState>()((set) => ({
   videoHeight: 360,
   setVideoHeight: (height) =>
     set({ videoHeight: Math.min(VIDEO_HEIGHT_MAX, Math.max(VIDEO_HEIGHT_MIN, height)) }),
+  showCaptions: true,
+  setShowCaptions: (showCaptions) => set({ showCaptions }),
 
   model: 'small',
   setModel: (model) => set({ model }),

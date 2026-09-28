@@ -10,6 +10,7 @@ import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Button, Toaster } from './components/ui'
 import { useModelsSync } from './store/models'
+import { usePlayerShortcuts } from './store/player'
 import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
 import { useThemeSync, useUiStore } from './store/ui'
@@ -19,6 +20,7 @@ const UiDemo = import.meta.env.DEV ? lazy(() => import('./dev/UiDemo')) : null
 
 function MainView(): React.JSX.Element {
   const entryId = useTranscriptStore((s) => s.entry?.id)
+  usePlayerShortcuts()
   return (
     <div className="app">
       <Sidebar />

@@ -56,7 +56,9 @@
     "mute": "Mute",
     "unmute": "Unmute",
     "volume": "Volume",
-    "speed": "Speed"
+    "speed": "Speed",
+    "unavailable": "The file isn't available. It may have been moved or deleted.",
+    "locateFile": "Find file..."
   },
   "transcript": {
     "title": "Transcription",

@@ -3,6 +3,7 @@ import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
+import { pickMediaFile } from './services/mediaOpen'
 import {
   addCustomModel,
   cancelDownload,
@@ -49,6 +50,10 @@ export function registerIpcHandlers(): void {
   )
   handle(IpcChannel.ModelsAddCustom, (_event, path, name) =>
     addCustomModel(String(path), String(name))
+  )
+
+  handle(IpcChannel.MediaPickFile, (event, filterLabels) =>
+    pickMediaFile(BrowserWindow.fromWebContents(event.sender), filterLabels)
   )
 
   handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))

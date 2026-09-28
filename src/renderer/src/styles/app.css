@@ -257,28 +257,49 @@
 
 /* ---------- Reproductor ---------- */
 .player-stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
+  position: relative;
   /* Altura configurable (300–600), pero sin comerse la transcripción en ventanas bajas. */
   height: min(var(--video-height), 38vh);
   margin: 12px 12px 0;
-  padding: var(--space-4);
   border-radius: var(--radius);
   overflow: hidden;
+  cursor: pointer;
+}
+
+/* El panel se oculta sin desmontar el <video>, que sigue sonando. */
+.player-stage[hidden] {
+  display: none;
+}
+
+.player-stage video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .player-stage.video {
   background: #000;
-  color: rgba(255, 255, 255, 0.35);
 }
 
 .player-stage.audio {
   border: 1px solid var(--border);
   background: var(--bg-card-secondary);
   color: var(--text-3);
+}
+
+.player-stage.audio video {
+  display: none;
+}
+
+.player-audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-4);
 }
 
 .player-stage-name {
@@ -288,6 +309,50 @@
   white-space: nowrap;
   color: var(--text-2);
   font-size: var(--text-lg);
+}
+
+/* Subtítulos: capa propia (no <track>) para seguir los segmentos en vivo. */
+.player-captions {
+  position: absolute;
+  right: 0;
+  bottom: 16px;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+  pointer-events: none;
+}
+
+.player-captions span {
+  max-width: 90%;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.player-unavailable {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 12px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card-secondary);
+  color: var(--text-2);
+}
+
+.player-unavailable svg {
+  flex-shrink: 0;
+  color: var(--accent-text);
+}
+
+.player-unavailable span {
+  flex: 1;
 }
 
 .player-controls {

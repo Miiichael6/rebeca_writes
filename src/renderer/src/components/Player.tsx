@@ -1,51 +1,158 @@
-import { Music, Pause, Play, SquarePlay, Volume2, VolumeX } from 'lucide-react'
-import { useState, type CSSProperties } from 'react'
+import { FileWarning, Music, Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import { useCallback, useEffect, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
-import { mediaKindOf } from '@shared/media'
+import { useShallow } from 'zustand/react/shallow'
 import { formatClock } from '@renderer/lib/time'
+import { findActiveSegment } from '@renderer/lib/segments'
+import { useHistoryStore } from '@renderer/store/history'
+import {
+  bindVideoEvents,
+  PLAYBACK_RATES,
+  SKIP_SECONDS,
+  usePlayerStore,
+  type PlaybackRate
+} from '@renderer/store/player'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { useUiStore } from '@renderer/store/ui'
-import { Select, Slider } from './ui'
+import { Button, Select, Slider } from './ui'
 
-const SPEEDS = ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2'] as const
-type Speed = (typeof SPEEDS)[number]
-const speedOptions = SPEEDS.map((s) => ({ value: s, label: `${s}x` }))
+const rateOptions = PLAYBACK_RATES.map((r) => ({ value: String(r), label: `${r}x` }))
+
+/** Texto del segmento que suena, sobre el video. No usa `<track>` para seguir los cambios en vivo. */
+function Captions(): React.JSX.Element | null {
+  const segments = useTranscriptStore((s) => s.segments)
+  const text = usePlayerStore((s) => {
+    const i = findActiveSegment(segments, s.currentTime)
+    // En los silencios no se muestra nada: el subtítulo solo dura lo que dura su segmento.
+    return i !== null && s.currentTime < segments[i].end ? segments[i].text : null
+  })
+  return text ? (
+    <div className="player-captions" aria-hidden>
+      <span>{text}</span>
+    </div>
+  ) : null
+}
 
 /**
- * Reproductor de ejemplo: solo la parte visual. El `<video>` real, el protocolo `media://`
- * y la sincronización con la transcripción llegan en las tareas 09 y 10.
+ * Tiempo actual y barra de posición. Van aparte porque cambian en cada frame mientras suena;
+ * así el resto del reproductor no se vuelve a pintar.
+ */
+function SeekBar({ disabled }: { disabled: boolean }): React.JSX.Element {
+  const { t } = useTranslation()
+  const currentTime = usePlayerStore((s) => s.currentTime)
+  const duration = usePlayerStore((s) => s.duration)
+  const { seek, skip } = usePlayerStore.getState()
+  return (
+    <>
+      <span className="player-time">{formatClock(currentTime)}</span>
+      <div
+        className="player-seek"
+        onKeyDown={(e) => {
+          // Con la barra enfocada, las flechas saltan 5 s como el atajo global, no 0,1 s.
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+          e.preventDefault()
+          skip(e.key === 'ArrowLeft' ? -SKIP_SECONDS : SKIP_SECONDS)
+        }}
+      >
+        <Slider
+          aria-label={t('player.seek')}
+          min={0}
+          max={Math.max(duration, 1)}
+          step={0.1}
+          value={Math.min(currentTime, duration)}
+          disabled={disabled}
+          onChange={seek}
+        />
+      </div>
+      <span className="player-time">{formatClock(duration)}</span>
+    </>
+  )
+}
+
+/** Aviso cuando la entrada no tiene un archivo reproducible asociado (spec §5). */
+function Unavailable({ entryId }: { entryId: string }): React.JSX.Element {
+  const { t } = useTranslation()
+  const locateFile = useHistoryStore((s) => s.locateFile)
+  return (
+    <div className="player-unavailable" role="status">
+      <FileWarning size={18} strokeWidth={1.5} aria-hidden />
+      <span>{t('player.unavailable')}</span>
+      <Button size="sm" onClick={() => locateFile(entryId)}>
+        {t('player.locateFile')}
+      </Button>
+    </div>
+  )
+}
+
+/**
+ * Reproductor: un único `<video>` controlado por `usePlayerStore` (también para audio, que
+ * se oye igual con el panel oculto). El archivo llega por `media://` con el id que dio el
+ * main al registrarlo.
  */
 function Player(): React.JSX.Element {
   const { t } = useTranslation()
   const entry = useTranscriptStore((s) => s.entry)
-  const videoVisible = useUiStore((s) => s.videoVisible)
-  const videoHeight = useUiStore((s) => s.videoHeight)
+  const media = useHistoryStore((s) => (entry ? s.media[entry.id] : undefined))
+  const { videoVisible, videoHeight, showCaptions } = useUiStore(
+    useShallow((s) => ({
+      videoVisible: s.videoVisible,
+      videoHeight: s.videoHeight,
+      showCaptions: s.showCaptions
+    }))
+  )
+  const { src, hasVideo, playing, volume, muted, rate } = usePlayerStore(
+    useShallow((s) => ({
+      src: s.src,
+      hasVideo: s.hasVideo,
+      playing: s.playing,
+      volume: s.volume,
+      muted: s.muted,
+      rate: s.rate
+    }))
+  )
+  const { attach, load, toggle, setVolume, toggleMute, setRate } = usePlayerStore.getState()
 
-  const [playing, setPlaying] = useState(false)
-  const [time, setTime] = useState(0)
-  const [volume, setVolume] = useState(80)
-  const [muted, setMuted] = useState(false)
-  const [speed, setSpeed] = useState<Speed>('1')
+  const fallbackDuration = entry?.durationSec ?? 0
+  useEffect(() => {
+    load(media ?? null, fallbackDuration)
+  }, [media, fallbackDuration, load])
 
-  const duration = entry?.durationSec ?? 0
-  const disabled = !entry
-  const kind = entry ? mediaKindOf(entry.fileName) : null
+  // Ref con limpieza (React 19): registra el elemento en el store mientras está montado.
+  const videoRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      if (!el) return
+      attach(el)
+      const unbind = bindVideoEvents(el)
+      return () => {
+        unbind()
+        attach(null)
+      }
+    },
+    [attach]
+  )
+
+  const disabled = !src
 
   return (
     <div className="player">
-      {entry && videoVisible && (
+      {entry && !media && <Unavailable entryId={entry.id} />}
+
+      {entry && media && (
         <div
-          className={`player-stage ${kind}`}
+          className={`player-stage ${hasVideo ? 'video' : 'audio'}`}
           style={{ '--video-height': `${videoHeight}px` } as CSSProperties}
+          // Oculto con CSS y no desmontado: el `<video>` sigue sonando (spec §4.1).
+          hidden={!videoVisible}
+          onClick={toggle}
         >
-          {kind === 'audio' ? (
-            <>
+          <video ref={videoRef} src={src ?? undefined} preload="metadata" playsInline />
+          {!hasVideo && (
+            <div className="player-audio">
               <Music size={40} strokeWidth={1.25} aria-hidden />
               <span className="player-stage-name">{entry.fileName}</span>
-            </>
-          ) : (
-            <SquarePlay size={40} strokeWidth={1.25} aria-hidden />
+            </div>
           )}
+          {showCaptions && <Captions />}
         </div>
       )}
 
@@ -55,29 +162,18 @@ function Player(): React.JSX.Element {
           aria-label={playing ? t('player.pause') : t('player.play')}
           title={playing ? t('player.pause') : t('player.play')}
           disabled={disabled}
-          onClick={() => setPlaying((p) => !p)}
+          onClick={toggle}
         >
           {playing ? <Pause size={20} strokeWidth={1.5} /> : <Play size={20} strokeWidth={1.5} />}
         </button>
-        <span className="player-time">{formatClock(time)}</span>
-        <div className="player-seek">
-          <Slider
-            aria-label={t('player.seek')}
-            min={0}
-            max={Math.max(duration, 1)}
-            value={time}
-            disabled={disabled}
-            onChange={setTime}
-          />
-        </div>
-        <span className="player-time">{formatClock(duration)}</span>
+        <SeekBar disabled={disabled} />
 
         <button
           className="player-btn"
           aria-label={muted ? t('player.unmute') : t('player.mute')}
           title={muted ? t('player.unmute') : t('player.mute')}
           disabled={disabled}
-          onClick={() => setMuted((m) => !m)}
+          onClick={toggleMute}
         >
           {muted || volume === 0 ? (
             <VolumeX size={16} strokeWidth={1.5} />
@@ -90,20 +186,17 @@ function Player(): React.JSX.Element {
             aria-label={t('player.volume')}
             min={0}
             max={100}
-            value={muted ? 0 : volume}
+            value={muted ? 0 : Math.round(volume * 100)}
             disabled={disabled}
-            onChange={(v) => {
-              setVolume(v)
-              setMuted(false)
-            }}
+            onChange={(v) => setVolume(v / 100)}
           />
         </div>
         <Select
           aria-label={t('player.speed')}
-          value={speed}
-          options={speedOptions}
+          value={String(rate)}
+          options={rateOptions}
           disabled={disabled}
-          onChange={setSpeed}
+          onChange={(v) => setRate(Number(v) as PlaybackRate)}
         />
       </div>
     </div>

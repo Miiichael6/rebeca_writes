@@ -43,6 +43,9 @@ const api: TranscribaApi = {
     onProgress: (listener) => on(IpcChannel.ModelsProgress, listener),
     onChanged: (listener) => on(IpcChannel.ModelsChanged, () => listener())
   },
+  media: {
+    pickFile: (filterLabels) => invoke(IpcChannel.MediaPickFile, filterLabels)
+  },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),
     cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),

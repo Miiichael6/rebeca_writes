@@ -1,7 +1,9 @@
 import type { ResolvedTheme, ThemeMode } from './theme'
+import type { MediaFilterKey } from './formats'
 import type {
   BackendFallback,
   BackendInfo,
+  OpenedMedia,
   TranscribeDoneEvent,
   TranscribeErrorEvent,
   TranscribeJob,
@@ -27,6 +29,7 @@ export const IpcChannel = {
   ModelsAddCustom: 'models:addCustom',
   ModelsProgress: 'models:progress',
   ModelsChanged: 'models:changed',
+  MediaPickFile: 'media:pickFile',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -50,6 +53,10 @@ export interface IpcInvokeMap {
   [IpcChannel.ModelsDelete]: { args: [id: string]; result: ModelActionResult }
   [IpcChannel.ModelsPickCustomFile]: { args: []; result: string | null }
   [IpcChannel.ModelsAddCustom]: { args: [path: string, name: string]; result: ModelActionResult }
+  [IpcChannel.MediaPickFile]: {
+    args: [filterLabels: Record<MediaFilterKey, string>]
+    result: OpenedMedia | null
+  }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
 }
@@ -100,6 +107,14 @@ export interface TranscribaApi {
     onProgress: (listener: (progress: ModelProgress) => void) => () => void
     /** Avisa cuando cambia la lista (empieza o termina una descarga, se borra o añade uno). */
     onChanged: (listener: () => void) => () => void
+  }
+  media: {
+    /**
+     * Diálogo para elegir un archivo de audio o video. El main lo registra en la lista
+     * blanca de `media://` y lo analiza; `null` si se cancela. Los nombres de los filtros
+     * llegan traducidos desde el renderer.
+     */
+    pickFile: (filterLabels: Record<MediaFilterKey, string>) => Promise<OpenedMedia | null>
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

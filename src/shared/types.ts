@@ -79,6 +79,18 @@ export interface MediaInfo {
   isChromiumPlayable: boolean
 }
 
+/**
+ * Medio listo para el reproductor: registrado en la lista blanca de `media://` (se pide
+ * con `mediaUrl(id)`) y analizado con ffprobe. `info` es `null` si ffprobe no lo entendió;
+ * el `<video>` lo intenta igual.
+ */
+export interface OpenedMedia {
+  id: string
+  filePath: string
+  fileName: string
+  info: MediaInfo | null
+}
+
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'error' | 'cancelled'
 
 /** Trabajo de la cola (spec §4.2). Guarda el modelo e idioma elegidos al encolarlo. */
