@@ -120,19 +120,53 @@ export type PreviewStatus =
 /** Cambio en la vista previa del medio `mediaId`; `cleared` = se vació la caché. */
 export type MediaPreviewEvent = { mediaId: string; status: PreviewStatus } | { cleared: true }
 
-export type JobStatus = 'pending' | 'processing' | 'completed' | 'error' | 'cancelled'
+export type JobStatus = 'pending' | 'processing' | 'done' | 'error' | 'cancelled'
 
-/** Trabajo de la cola (spec §4.2). Guarda el modelo e idioma elegidos al encolarlo. */
+/**
+ * Trabajo de la cola (spec §4.2). Modelo, idioma, traducción y pista se congelan al
+ * encolarlo; el resto de opciones de whisper se leen de Configuración al procesarlo.
+ */
 export interface QueueJob {
+  /** También es el id del `TranscribeJob` mientras se procesa. */
   id: string
   filePath: string
   fileName: string
   model: string
   language: string
+  translate: boolean
+  audioTrack?: number
   status: JobStatus
   /** 0–100, solo mientras `status === 'processing'`. */
   progress?: number
   error?: ErrorCode
+  /** `done` sin transcribir: ya tenía un `.srt` al lado y la opción de saltarlos estaba activa. */
+  skipped?: boolean
+  /** Entrada del historial; se crea al empezar a procesarlo y se reutiliza si se retoma. */
+  historyId?: string
+  /** Fecha en que se encoló, en ms (epoch). */
+  addedAt: number
+}
+
+/** Estado completo de la cola que el main envía al renderer. */
+export interface QueueState {
+  jobs: QueueJob[]
+  paused: boolean
+  /**
+   * Al arrancar quedaron trabajos sin terminar de la sesión anterior: la cola espera
+   * (pausada) hasta que el usuario elija Retomar o Descartar.
+   */
+  resumePending: boolean
+}
+
+/** Payload de `queue:drained`: la cola se vació tras procesar al menos un trabajo. */
+export interface QueueDrainedEvent {
+  done: number
+  errors: number
+}
+
+/** Resultado de agregar archivos: cuántos entraron a la cola. */
+export interface QueueAddResult {
+  added: number
 }
 
 /** Estado del archivo abierto en el panel de transcripción. */

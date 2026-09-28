@@ -23,7 +23,8 @@ const api: TranscribaApi = {
   app: {
     getVersion: () => invoke(IpcChannel.AppGetVersion),
     getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages),
-    openLogs: () => invoke(IpcChannel.AppOpenLogs)
+    openLogs: () => invoke(IpcChannel.AppOpenLogs),
+    notify: (title, body) => invoke(IpcChannel.AppNotify, title, body)
   },
   clipboard: {
     writeText: (text) => invoke(IpcChannel.ClipboardWriteText, text)
@@ -59,7 +60,22 @@ const api: TranscribaApi = {
   },
   history: {
     create: (input) => invoke(IpcChannel.HistoryCreate, input),
-    updateSegment: (id, index, text) => invoke(IpcChannel.HistoryUpdateSegment, id, index, text)
+    updateSegment: (id, index, text) => invoke(IpcChannel.HistoryUpdateSegment, id, index, text),
+    onAdded: (listener) => on(IpcChannel.HistoryAdded, listener)
+  },
+  queue: {
+    getState: () => invoke(IpcChannel.QueueGet),
+    pickFiles: (filterLabels) => invoke(IpcChannel.QueuePickFiles, filterLabels),
+    remove: (id) => invoke(IpcChannel.QueueRemove, id),
+    reorder: (ids) => invoke(IpcChannel.QueueReorder, ids),
+    pause: () => invoke(IpcChannel.QueuePause),
+    resume: () => invoke(IpcChannel.QueueResume),
+    discard: () => invoke(IpcChannel.QueueDiscard),
+    cancelCurrent: () => invoke(IpcChannel.QueueCancelCurrent),
+    clearCompleted: () => invoke(IpcChannel.QueueClearCompleted),
+    openJob: (id) => invoke(IpcChannel.QueueOpenJob, id),
+    onChanged: (listener) => on(IpcChannel.QueueChanged, listener),
+    onDrained: (listener) => on(IpcChannel.QueueDrained, listener)
   },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),

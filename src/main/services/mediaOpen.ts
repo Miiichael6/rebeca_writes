@@ -26,22 +26,37 @@ export async function openMedia(filePath: string): Promise<OpenedMedia> {
   return { id, filePath, fileName: basename(filePath), info, preview }
 }
 
-/** Diálogo para elegir un solo archivo de audio o video; `null` si se cancela. */
-export async function pickMediaFile(
+function showMediaDialog(
   window: BrowserWindow | null,
-  filterLabels: Record<MediaFilterKey, string>
-): Promise<OpenedMedia | null> {
+  filterLabels: Record<MediaFilterKey, string>,
+  multiple: boolean
+): Promise<Electron.OpenDialogReturnValue> {
   const label = (key: MediaFilterKey): string => {
     const value = filterLabels?.[key]
     return typeof value === 'string' && value ? value : key
   }
   const options: Electron.OpenDialogOptions = {
-    properties: ['openFile'],
+    properties: multiple ? ['openFile', 'multiSelections'] : ['openFile'],
     filters: mediaFileFilters(label)
   }
-  const result = window
-    ? await dialog.showOpenDialog(window, options)
-    : await dialog.showOpenDialog(options)
+  return window ? dialog.showOpenDialog(window, options) : dialog.showOpenDialog(options)
+}
+
+/** Diálogo para elegir un solo archivo de audio o video; `null` si se cancela. */
+export async function pickMediaFile(
+  window: BrowserWindow | null,
+  filterLabels: Record<MediaFilterKey, string>
+): Promise<OpenedMedia | null> {
+  const result = await showMediaDialog(window, filterLabels, false)
   const filePath = result.canceled ? undefined : result.filePaths[0]
   return filePath ? openMedia(filePath) : null
+}
+
+/** Diálogo con selección múltiple (para la cola); `[]` si se cancela. */
+export async function pickMediaFiles(
+  window: BrowserWindow | null,
+  filterLabels: Record<MediaFilterKey, string>
+): Promise<string[]> {
+  const result = await showMediaDialog(window, filterLabels, true)
+  return result.canceled ? [] : result.filePaths
 }

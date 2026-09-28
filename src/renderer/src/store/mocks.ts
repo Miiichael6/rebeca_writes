@@ -1,6 +1,6 @@
 // Datos de ejemplo para maquetar la ventana (tarea 03). Se reemplazan por los servicios reales:
-// historial (18), transcripción en vivo (13) y cola (17).
-import type { HistoryEntry, QueueJob, Segment } from '@shared/types'
+// historial (18) y transcripción en vivo (13).
+import type { HistoryEntry, Segment } from '@shared/types'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const now = Date.now()
@@ -124,29 +124,3 @@ export function mockSegmentsFor(entryId: string): Segment[] {
   longCache ??= longSegments()
   return longCache
 }
-
-function job(
-  id: string,
-  fileName: string,
-  status: QueueJob['status'],
-  extra: Partial<QueueJob> = {}
-): QueueJob {
-  return {
-    id,
-    filePath: `C:\\Users\\Demo\\Videos\\${fileName}`,
-    fileName,
-    model: 'small',
-    language: 'es',
-    status,
-    ...extra
-  }
-}
-
-export const mockQueue: QueueJob[] = [
-  job('q1', 'Entrevista podcast episodio 12.mp3', 'processing', { progress: 42 }),
-  job('q2', 'Tutorial de React 19.mov', 'pending'),
-  job('q3', 'Webinar arquitectura hexagonal.mp4', 'pending', { model: 'medium' }),
-  job('q4', 'Reunión de equipo - planificación Q4.mkv', 'completed'),
-  job('q5', 'Clase 05 - Derivadas parciales.mp4', 'error', { error: 'noAudioStream' }),
-  job('q6', 'Audiolibro capítulo 1.flac', 'cancelled', { language: 'auto' })
-]

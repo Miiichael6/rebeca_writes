@@ -8,6 +8,9 @@ import type {
   MediaPreviewEvent,
   HistoryEntryInput,
   OpenedMedia,
+  QueueAddResult,
+  QueueDrainedEvent,
+  QueueState,
   Segment,
   TranscribeDoneEvent,
   TranscribeErrorEvent,
@@ -22,6 +25,7 @@ export const IpcChannel = {
   AppGetVersion: 'app:get-version',
   AppGetPreferredLanguages: 'app:get-preferred-languages',
   AppOpenLogs: 'app:openLogs',
+  AppNotify: 'app:notify',
   ClipboardWriteText: 'clipboard:writeText',
   SettingsGet: 'settings:get',
   SettingsSet: 'settings:set',
@@ -44,6 +48,19 @@ export const IpcChannel = {
   MediaPreviewCacheSize: 'media:previewCacheSize',
   HistoryCreate: 'history:create',
   HistoryUpdateSegment: 'history:updateSegment',
+  HistoryAdded: 'history:added',
+  QueueGet: 'queue:get',
+  QueuePickFiles: 'queue:pickFiles',
+  QueueRemove: 'queue:remove',
+  QueueReorder: 'queue:reorder',
+  QueuePause: 'queue:pause',
+  QueueResume: 'queue:resume',
+  QueueDiscard: 'queue:discard',
+  QueueCancelCurrent: 'queue:cancelCurrent',
+  QueueClearCompleted: 'queue:clearCompleted',
+  QueueOpenJob: 'queue:openJob',
+  QueueChanged: 'queue:changed',
+  QueueDrained: 'queue:drained',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -59,6 +76,7 @@ export interface IpcInvokeMap {
   [IpcChannel.AppGetVersion]: { args: []; result: string }
   [IpcChannel.AppGetPreferredLanguages]: { args: []; result: string[] }
   [IpcChannel.AppOpenLogs]: { args: []; result: void }
+  [IpcChannel.AppNotify]: { args: [title: string, body: string]; result: void }
   [IpcChannel.ClipboardWriteText]: { args: [text: string]; result: void }
   [IpcChannel.SettingsGet]: { args: []; result: Settings }
   [IpcChannel.SettingsSet]: { args: [patch: SettingsPatch]; result: Settings }
@@ -81,6 +99,22 @@ export interface IpcInvokeMap {
     args: [id: string, index: number, text: string]
     result: Segment | null
   }
+  [IpcChannel.QueueGet]: { args: []; result: QueueState }
+  [IpcChannel.QueuePickFiles]: {
+    args: [filterLabels: Record<MediaFilterKey, string>]
+    result: QueueAddResult
+  }
+  [IpcChannel.QueueRemove]: { args: [id: string]; result: void }
+  [IpcChannel.QueueReorder]: { args: [ids: string[]]; result: void }
+  [IpcChannel.QueuePause]: { args: []; result: void }
+  [IpcChannel.QueueResume]: { args: []; result: void }
+  [IpcChannel.QueueDiscard]: { args: []; result: void }
+  [IpcChannel.QueueCancelCurrent]: { args: []; result: void }
+  [IpcChannel.QueueClearCompleted]: { args: []; result: void }
+  [IpcChannel.QueueOpenJob]: {
+    args: [id: string]
+    result: { entry: HistoryEntry; media: OpenedMedia } | null
+  }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
 }
@@ -93,6 +127,9 @@ export interface IpcEventMap {
   [IpcChannel.ModelsProgress]: ModelProgress
   [IpcChannel.ModelsChanged]: void
   [IpcChannel.MediaPreview]: MediaPreviewEvent
+  [IpcChannel.HistoryAdded]: HistoryEntry
+  [IpcChannel.QueueChanged]: QueueState
+  [IpcChannel.QueueDrained]: QueueDrainedEvent
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -107,6 +144,8 @@ export interface TranscribaApi {
     getPreferredLanguages: () => Promise<string[]>
     /** Abre la carpeta de logs (`userData/logs`) en el Explorador. */
     openLogs: () => Promise<void>
+    /** Notificación de Windows; al hacer clic se enfoca la ventana. El texto llega traducido. */
+    notify: (title: string, body: string) => Promise<void>
   }
   clipboard: {
     /** Copia texto al portapapeles de Windows desde el main. */
@@ -173,6 +212,36 @@ export interface TranscribaApi {
      * `originalText`; pasar ese mismo texto lo restaura. `null` si la entrada no está en disco.
      */
     updateSegment: (id: string, index: number, text: string) => Promise<Segment | null>
+    /** Avisa de las entradas que crea el main (la cola, al empezar cada trabajo). */
+    onAdded: (listener: (entry: HistoryEntry) => void) => () => void
+  }
+  queue: {
+    getState: () => Promise<QueueState>
+    /**
+     * Diálogo con selección múltiple; lo elegido va a la cola con el modelo, idioma y
+     * traducción actuales. Los nombres de los filtros llegan traducidos.
+     */
+    pickFiles: (filterLabels: Record<MediaFilterKey, string>) => Promise<QueueAddResult>
+    /** Quita un trabajo que no se está procesando. */
+    remove: (id: string) => Promise<void>
+    /** Nuevo orden (ids); los que falten quedan al final. */
+    reorder: (ids: string[]) => Promise<void>
+    /** Deja de tomar trabajos; el que está en proceso termina. */
+    pause: () => Promise<void>
+    /** Reanuda, y es el "Retomar" del arranque. */
+    resume: () => Promise<void>
+    /** "Descartar" del arranque: quita los pendientes de la sesión anterior. */
+    discard: () => Promise<void>
+    cancelCurrent: () => Promise<void>
+    clearCompleted: () => Promise<void>
+    /**
+     * Registra el archivo del trabajo en `media://` y devuelve su entrada del historial,
+     * para abrir su vista. `null` si el trabajo aún no tiene entrada.
+     */
+    openJob: (id: string) => Promise<{ entry: HistoryEntry; media: OpenedMedia } | null>
+    onChanged: (listener: (state: QueueState) => void) => () => void
+    /** La cola se vació tras procesar al menos un trabajo. */
+    onDrained: (listener: (event: QueueDrainedEvent) => void) => () => void
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

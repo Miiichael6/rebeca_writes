@@ -199,6 +199,11 @@ export class TranscriptionEngine extends EventEmitter {
     if (active.child?.pid) killTree(active.child.pid)
   }
 
+  /** Cancela todo lo que esté en marcha (al cerrar la app). */
+  cancelAll(): void {
+    for (const jobId of this.active.keys()) this.cancel(jobId)
+  }
+
   private emitProgress(jobId: string, phase: TranscribePhase, percent: number): void {
     this.emitTyped('progress', {
       jobId,

@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import type { ErrorCode, TranscribeJob } from '@shared/types'
+import { transcribeOptionsFrom } from '@shared/settings'
 import { AUTO_LANGUAGE } from '@shared/whisper'
 import i18n from '@renderer/i18n'
 import { EtaEstimator } from '@renderer/lib/eta'
 import { useHistoryStore } from './history'
+import { isQueueJob } from './queue'
 import { useSettingsStore } from './settings'
 import { toast } from './toast'
 import {
@@ -54,13 +56,7 @@ export async function startTranscription(): Promise<void> {
     language: s.language,
     translate: s.translate,
     historyId: entry.id,
-    options: {
-      prompt: s.promptEnabled && s.prompt.trim() ? s.prompt.trim() : undefined,
-      maxLen: s.maxLen,
-      suppressNst: s.suppressNst,
-      threads: s.threads,
-      normalize: s.normalize
-    }
+    options: transcribeOptionsFrom(s)
   }
 
   eta.reset()
@@ -96,7 +92,8 @@ function onError(jobId: string, code: ErrorCode, detail?: string): void {
   })
   finishJob(jobId, { segments: job.segments, error: cancelled ? null : code, cancelled })
   if (cancelled) toast(i18n.t('errors.cancelled'))
-  else showError(code, detail)
+  // Los errores de la cola se ven en su panel: la cola sigue sola, sin avisos que cerrar.
+  else if (!isQueueJob(jobId)) showError(code, detail)
 }
 
 /** Sigue los eventos del motor. Se llama una vez, en App. */

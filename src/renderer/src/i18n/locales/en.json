@@ -112,9 +112,37 @@
     "status": {
       "pending": "Pending",
       "processing": "Processing",
-      "completed": "Completed",
+      "done": "Completed",
       "error": "Error",
       "cancelled": "Cancelled"
+    },
+    "add": "Add files",
+    "added_one": "Added {{count}} file to the queue",
+    "added_other": "Added {{count}} files to the queue",
+    "pause": "Pause queue",
+    "resume": "Resume queue",
+    "cancelCurrent": "Cancel current",
+    "clearCompleted": "Clear completed",
+    "remove": "Remove {{name}} from the queue",
+    "skipExistingSrt": "Skip files that already have an .srt next to them",
+    "autoSaveSrt": "When finished, automatically save the .srt next to the file",
+    "skipped": "Skipped (already has .srt)",
+    "translated": "Translated to English",
+    "openLive": "View the live transcription",
+    "reorderHint": "Drag or use Alt+↑/↓ to reorder",
+    "pausedNotice_one": "Queue paused: {{count}} pending",
+    "pausedNotice_other": "Queue paused: {{count}} pending",
+    "resumeTitle": "Resume the queue?",
+    "resumeBody_one": "{{count}} file from the previous session wasn't transcribed.",
+    "resumeBody_other": "{{count}} files from the previous session weren't transcribed.",
+    "resumeConfirm": "Resume",
+    "resumeDiscard": "Discard",
+    "notify": {
+      "title": "Queue finished",
+      "done_one": "{{count}} completed",
+      "done_other": "{{count}} completed",
+      "errors_one": "{{count}} failed",
+      "errors_other": "{{count}} failed"
     }
   },
   "settings": {

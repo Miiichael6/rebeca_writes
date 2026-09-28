@@ -1,6 +1,6 @@
 import type { UiLanguageSetting } from './i18n'
 import type { ThemeMode } from './theme'
-import type { Backend } from './types'
+import type { Backend, TranscribeOptions } from './types'
 import { AUTO_LANGUAGE } from './whisper'
 
 /** Versión del formato de `settings.json`. Se sube al añadir una migración en `services/settings`. */
@@ -70,6 +70,17 @@ export interface Settings {
 export type SettingsPatch = Partial<Omit<Settings, 'version' | 'queue' | 'window'>> & {
   queue?: Partial<QueueSettings>
   window?: Partial<WindowBounds>
+}
+
+/** Opciones de whisper-cli que salen de Configuración, al lanzar un trabajo. */
+export function transcribeOptionsFrom(s: Settings): TranscribeOptions {
+  return {
+    prompt: s.promptEnabled && s.prompt.trim() ? s.prompt.trim() : undefined,
+    maxLen: s.maxLen,
+    suppressNst: s.suppressNst,
+    threads: s.threads,
+    normalize: s.normalize
+  }
 }
 
 /** Mitad de los núcleos, mínimo 1 (spec §4.3). */

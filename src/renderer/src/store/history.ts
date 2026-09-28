@@ -24,6 +24,14 @@ interface HistoryState {
    * selección múltiple y el envío a la cola son de la tarea 19.
    */
   openFile: () => Promise<void>
+  /**
+   * Entrada que creó (o retomó) el main, p. ej. la cola al empezar un trabajo: se reemplaza
+   * si ya está y si no se añade arriba. Lo que el renderer ya sabe en vivo (estado y
+   * progreso del trabajo en curso) se conserva.
+   */
+  upsertEntry: (entry: HistoryEntry) => void
+  /** Abre la vista del trabajo de la cola `jobId` (su entrada del historial y su archivo). */
+  openQueueJob: (jobId: string) => Promise<boolean>
   /** Cambia campos de una entrada (estado, progreso, idioma detectado...). */
   patchEntry: (id: string, patch: Partial<Omit<HistoryEntry, 'id'>>) => void
   /** "Buscar archivo...": elige el archivo en disco y lo asocia a la entrada (en memoria; se persiste en la 18). */
@@ -35,7 +43,8 @@ interface HistoryState {
   clear: () => void
 }
 
-function filterLabels(): Record<MediaFilterKey, string> {
+/** Nombres traducidos de los filtros del diálogo Abrir. */
+export function filterLabels(): Record<MediaFilterKey, string> {
   return Object.fromEntries(
     MEDIA_FILTER_KEYS.map((key) => [key, i18n.t(`fileFilters.${key}`)])
   ) as Record<MediaFilterKey, string>
@@ -66,6 +75,27 @@ export const useHistoryStore = create<HistoryState>()((set, get) => ({
     })
     set((s) => ({ entries: [entry, ...s.entries], media: { ...s.media, [entry.id]: media } }))
     get().select(entry.id)
+  },
+  upsertEntry: (entry) => {
+    const current = get().entries.find((e) => e.id === entry.id)
+    if (!current) {
+      set((s) => ({ entries: [entry, ...s.entries] }))
+      return
+    }
+    const live = current.status === 'transcribing'
+    get().patchEntry(entry.id, {
+      ...entry,
+      ...(live ? { status: current.status, progress: current.progress } : {})
+    })
+  },
+  openQueueJob: async (jobId) => {
+    const opened = await window.api.queue.openJob(jobId)
+    if (!opened) return false
+    const { entry, media } = opened
+    get().upsertEntry(entry)
+    set((s) => ({ media: { ...s.media, [entry.id]: media } }))
+    get().select(entry.id)
+    return true
   },
   patchEntry: (id, patch) => {
     const entries = get().entries.map((e) => (e.id === id ? { ...e, ...patch } : e))

@@ -164,7 +164,7 @@ describe('QueueStore', () => {
     const jobs = [
       { id: '1', filePath: 'a.mp4', fileName: 'a.mp4', model: 'small', language: 'auto' },
       { id: '2', filePath: 'b.mp4', fileName: 'b.mp4', model: 'small', language: 'es' }
-    ]
+    ].map((job) => ({ ...job, translate: false, addedAt: 1000 }))
     store.save(() => [
       { ...jobs[0], status: 'processing', progress: 50 },
       { ...jobs[1], status: 'pending' }

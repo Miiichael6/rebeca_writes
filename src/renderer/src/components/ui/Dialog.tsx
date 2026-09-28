@@ -10,6 +10,8 @@ export interface ConfirmDialogProps {
   cancelLabel?: string
   /** Acción destructiva: el botón de confirmar se pinta en rojo. */
   danger?: boolean
+  /** El foco empieza en Confirmar; para cuando lo destructivo es Cancelar. */
+  focusConfirm?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
@@ -25,12 +27,14 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   danger,
+  focusConfirm,
   onConfirm,
   onCancel
 }: ConfirmDialogProps): React.JSX.Element {
   const { t } = useTranslation()
   const ref = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
+  const confirmRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
 
   useEffect(() => {
@@ -40,10 +44,10 @@ export function ConfirmDialog({
       dialog.showModal()
       // El foco empieza en Cancelar: un Enter por accidente no confirma una acción destructiva.
       // (showModal enfoca el primer botón, así que `autoFocus` no basta.)
-      cancelRef.current?.focus()
+      ;(focusConfirm ? confirmRef : cancelRef).current?.focus()
     }
     if (!open && dialog.open) dialog.close()
-  }, [open])
+  }, [open, focusConfirm])
 
   return (
     <dialog
@@ -61,7 +65,7 @@ export function ConfirmDialog({
         <p>{children}</p>
       </div>
       <div className="dialog-actions">
-        <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm}>
+        <Button ref={confirmRef} variant={danger ? 'danger' : 'primary'} onClick={onConfirm}>
           {confirmLabel ?? t('common.accept')}
         </Button>
         <Button ref={cancelRef} onClick={onCancel}>

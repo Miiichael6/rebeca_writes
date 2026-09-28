@@ -13,6 +13,8 @@ import { setupLogging } from './logging'
 import { flushAllWrites, hasPendingWrites } from './services/fsAtomic'
 import { handleMediaProtocol, registerMediaScheme } from './services/mediaProtocol'
 import { disposePreviews } from './services/previews'
+import { initQueue, queue } from './services/queue'
+import { cancelAllTranscriptions } from './engine/transcribeManager'
 import { getSettings, loadSettings, onSettingsChanged, updateSettings } from './services/settings'
 
 app.setName(APP_NAME)
@@ -145,6 +147,7 @@ app.whenReady().then(async () => {
 
   handleMediaProtocol()
   registerIpcHandlers()
+  initQueue()
   watchNativeTheme()
   // Autodetección del backend en segundo plano; la ventana no la espera.
   getBackendInfo().catch((err) => log.error('No se pudo resolver el backend', err))
@@ -161,11 +164,15 @@ app.whenReady().then(async () => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('will-quit', () => disposePreviews())
+app.on('will-quit', () => {
+  disposePreviews()
+  cancelAllTranscriptions()
+})
 
 // Settings, historial y cola se guardan con debounce: al salir se escribe lo pendiente.
 let writesFlushed = false
 app.on('before-quit', (event) => {
+  queue().shutdown()
   if (writesFlushed || !hasPendingWrites()) return
   event.preventDefault()
   flushAllWrites()

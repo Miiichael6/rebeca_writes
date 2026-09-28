@@ -862,6 +862,33 @@
 }
 
 /* ---------- Panel de cola ---------- */
+.queue-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3) 0 var(--space-5);
+}
+
+.queue-toolbar > :first-child {
+  margin-right: auto;
+}
+
+.queue-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.queue-paused {
+  padding: var(--space-2) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
 .queue-list {
   flex: 1;
   overflow-y: auto;
@@ -871,9 +898,61 @@
 
 .queue-job {
   display: flex;
-  gap: var(--space-3);
-  padding: 10px 12px;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: 10px 8px 10px 4px;
   border-radius: var(--radius-sm);
+  /* Línea del destino al arrastrar (sin mover el contenido). */
+  box-shadow: inset 0 2px 0 transparent;
+}
+
+.queue-job.dragging {
+  opacity: 0.5;
+}
+
+.queue-job.drop-target {
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.queue-job-grip {
+  flex-shrink: 0;
+  width: 16px;
+  margin-top: 2px;
+  color: var(--text-3);
+}
+
+.queue-job.pending {
+  cursor: grab;
+}
+
+.queue-job-open {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.queue-job-open {
+  cursor: pointer;
+}
+
+button.queue-job-open:hover .queue-job-name {
+  text-decoration: underline;
+}
+
+.queue-job-remove {
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.queue-job:hover .queue-job-remove,
+.queue-job:focus-within .queue-job-remove {
+  opacity: 1;
 }
 
 .queue-job:hover {
@@ -891,7 +970,7 @@
   animation: spin 1s linear infinite;
 }
 
-.queue-job.completed .queue-job-icon {
+.queue-job.done .queue-job-icon {
   color: var(--success);
 }
 
@@ -900,8 +979,12 @@
 }
 
 .queue-job-text {
-  flex: 1;
+  display: block;
   min-width: 0;
+}
+
+.queue-job-text > span {
+  display: block;
 }
 
 .queue-job-name {
@@ -913,6 +996,11 @@
 .queue-job-status {
   margin-top: 2px;
   color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.queue-job-details {
+  color: var(--text-3);
   font-size: var(--text-sm);
 }
 

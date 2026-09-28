@@ -1,5 +1,13 @@
 import { mkdir } from 'fs/promises'
-import { app, BrowserWindow, clipboard, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  clipboard,
+  ipcMain,
+  Notification,
+  shell,
+  type IpcMainInvokeEvent
+} from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
@@ -7,6 +15,7 @@ import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
 import { createHistoryEntry, updateHistorySegment } from './services/history'
 import { pickMediaFile } from './services/mediaOpen'
+import { openQueueJob, pickFilesToQueue, queue } from './services/queue'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
 import { loadSettings, updateSettings } from './services/settings'
 import {
@@ -22,6 +31,24 @@ type Handler<C extends keyof IpcInvokeMap> = (
   event: IpcMainInvokeEvent,
   ...args: IpcInvokeMap[C]['args']
 ) => IpcInvokeMap[C]['result'] | Promise<IpcInvokeMap[C]['result']>
+
+/** Notificaciones mostradas: sin una referencia viva, el GC se las lleva y el clic no llega. */
+const notifications = new Set<Notification>()
+
+function notify(window: BrowserWindow | null, title: string, body: string): void {
+  if (!Notification.isSupported()) return
+  const notification = new Notification({ title, body })
+  notifications.add(notification)
+  notification.on('close', () => notifications.delete(notification))
+  notification.on('click', () => {
+    notifications.delete(notification)
+    if (!window || window.isDestroyed()) return
+    if (window.isMinimized()) window.restore()
+    window.show()
+    window.focus()
+  })
+  notification.show()
+}
 
 function handle<C extends keyof IpcInvokeMap>(channel: C, handler: Handler<C>): void {
   ipcMain.handle(channel, handler as Parameters<typeof ipcMain.handle>[1])
@@ -39,6 +66,10 @@ export function registerIpcHandlers(): void {
     const error = await shell.openPath(dir)
     if (error) throw new Error(error)
   })
+
+  handle(IpcChannel.AppNotify, (event, title, body) =>
+    notify(BrowserWindow.fromWebContents(event.sender), String(title), String(body))
+  )
 
   handle(IpcChannel.ClipboardWriteText, (_event, text) => clipboard.writeText(String(text)))
 
@@ -71,6 +102,21 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.HistoryUpdateSegment, (_event, id, index, text) =>
     updateHistorySegment(id, index, text)
   )
+
+  handle(IpcChannel.QueueGet, () => queue().getState())
+  handle(IpcChannel.QueuePickFiles, (event, filterLabels) =>
+    pickFilesToQueue(BrowserWindow.fromWebContents(event.sender), filterLabels)
+  )
+  handle(IpcChannel.QueueRemove, (_event, id) => queue().remove(String(id)))
+  handle(IpcChannel.QueueReorder, (_event, ids) =>
+    queue().reorder(Array.isArray(ids) ? ids.map(String) : [])
+  )
+  handle(IpcChannel.QueuePause, () => queue().pause())
+  handle(IpcChannel.QueueResume, () => queue().resume())
+  handle(IpcChannel.QueueDiscard, () => queue().discard())
+  handle(IpcChannel.QueueCancelCurrent, () => queue().cancelCurrent())
+  handle(IpcChannel.QueueClearCompleted, () => queue().clearCompleted())
+  handle(IpcChannel.QueueOpenJob, (_event, id) => openQueueJob(id))
 
   handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
   handle(IpcChannel.TranscribeCancel, (_event, jobId) => cancelTranscription(String(jobId)))
