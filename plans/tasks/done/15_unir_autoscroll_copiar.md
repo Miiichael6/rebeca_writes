@@ -34,7 +34,7 @@ Los tres controles de la barra inferior que afectan la vista y el texto copiado.
 
 ### Paso 5 — Verificación
 - [x] Commit: `feat(transcript): unir líneas, autoscroll y copiar`
-- [ ] **Cierre de Fase 4** (junto con 14 y 16) — queda para la 16, ver Bitácora
+- [x] **Cierre de Fase 4** (junto con 14 y 16) — se cerró en la 16
 
 ## Criterios de aceptación
 - [x] Los tres controles funcionan durante una transcripción en curso

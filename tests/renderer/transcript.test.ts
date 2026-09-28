@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { HistoryEntry } from '@shared/types'
 import {
   appendJobSegments,
+  applySegmentEdit,
   beginJob,
   finishJob,
   updateJobProgress,
@@ -122,5 +123,33 @@ describe('transcript store', () => {
     }
     expect(state().segments).toHaveLength(10_000)
     expect(performance.now() - startedAt).toBeLessThan(500)
+  })
+
+  it('edita un segmento sin mutar el array y lo conserva al volver al archivo', () => {
+    const a = entry('a')
+    state().open(a)
+    beginJob('job1', 'a')
+    appendJobSegments('job1', [seg(0), seg(1)])
+    // Mientras se transcribe ese archivo no se edita.
+    expect(applySegmentEdit(0, 'x')).toBeNull()
+    finishJob('job1', { segments: [seg(0), seg(1)], error: null })
+    const before = state().segments
+    expect(applySegmentEdit(1, 'uno')).toBe('a')
+    expect(state().segments).not.toBe(before)
+    expect(state().segments[1]).toEqual({
+      ...seg(1),
+      text: 'uno',
+      edited: true,
+      originalText: 's1'
+    })
+    expect(state().segments[0]).toBe(before[0])
+    state().open(entry('b'))
+    state().open(a)
+    expect(state().segments[1].text).toBe('uno')
+    // Volver al texto original quita las marcas.
+    applySegmentEdit(1, 's1')
+    expect(state().segments[1]).toEqual(seg(1))
+    expect(applySegmentEdit(1, 's1')).toBeNull()
+    expect(applySegmentEdit(9, 'x')).toBeNull()
   })
 })

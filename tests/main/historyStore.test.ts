@@ -79,6 +79,34 @@ describe('HistoryStore', () => {
     ])
   })
 
+  it('updateSegment marca la edición, guarda el original y persiste', async () => {
+    const store = new HistoryStore({ dir, debounceMs: 5 })
+    const { id } = await store.create(input('x.mp4'))
+    await store.appendSegments(id, [seg(0, 'hola'), seg(1, 'mundo')])
+    expect(await store.updateSegment(id, 1, 'mundillo')).toEqual({
+      ...seg(1, 'mundillo'),
+      edited: true,
+      originalText: 'mundo'
+    })
+    // Una segunda edición conserva el texto de whisper, no el de la primera.
+    await store.updateSegment(id, 1, 'mundial')
+    await store.flush()
+    expect((await new HistoryStore({ dir }).get(id))?.segments).toEqual([
+      seg(0, 'hola'),
+      { ...seg(1, 'mundial'), edited: true, originalText: 'mundo' }
+    ])
+  })
+
+  it('updateSegment con el texto original quita las marcas', async () => {
+    const store = new HistoryStore({ dir, debounceMs: 5 })
+    const { id } = await store.create(input('x.mp4'))
+    await store.appendSegments(id, [seg(0, 'hola')])
+    await store.updateSegment(id, 0, 'adiós')
+    expect(await store.updateSegment(id, 0, 'hola')).toEqual(seg(0, 'hola'))
+    expect(await store.updateSegment(id, 5, 'x')).toBeNull()
+    expect(await store.updateSegment('nope', 0, 'x')).toBeNull()
+  })
+
   it('ignora ids inexistentes', async () => {
     const store = new HistoryStore({ dir })
     expect(await store.update('nope', { status: 'done' })).toBeNull()

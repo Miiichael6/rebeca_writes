@@ -5,8 +5,10 @@ export interface Segment {
   start: number
   end: number
   text: string
-  /** El usuario cambió el texto (tarea 16). Solo en los segmentos guardados en el historial. */
+  /** El usuario cambió el texto (tarea 16). */
   edited?: boolean
+  /** Texto de whisper antes de la primera edición, para "Restaurar original". */
+  originalText?: string
 }
 
 export type MediaKind = 'video' | 'audio'

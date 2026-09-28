@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
 import { readdir, rm } from 'fs/promises'
 import { join } from 'path'
+import { editSegment } from '@shared/editSegment'
 import type { HistoryEntry, Segment } from '@shared/types'
 import { DebouncedJsonWriter, readJsonSafe } from './fsAtomic'
 
@@ -210,6 +211,21 @@ export class HistoryStore {
     const current = await this.segmentsOf(id)
     current.splice(0, current.length, ...segments)
     await this.scheduleSegments(id)
+  }
+
+  /**
+   * Cambia el texto de un segmento y guarda el de whisper en `originalText` para poder
+   * restaurarlo. Volver al texto original quita las marcas. `null` si no existe.
+   */
+  async updateSegment(id: string, index: number, text: string): Promise<Segment | null> {
+    if (!(await this.load()).some((e) => e.id === id)) return null
+    const segments = await this.segmentsOf(id)
+    const current = segments[index]
+    if (!current) return null
+    const next = editSegment(current, text)
+    segments[index] = next
+    await this.scheduleSegments(id)
+    return { ...next }
   }
 
   async remove(id: string): Promise<boolean> {

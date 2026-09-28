@@ -6,6 +6,7 @@ import type {
   TranscribePhase,
   TranscriptStatus
 } from '@shared/types'
+import { editSegment } from '@shared/editSegment'
 import { mockSegmentsFor } from './mocks'
 
 /** Transcripción en curso. Hay una como mucho: la cola (tarea 17) las lanza de una en una. */
@@ -143,4 +144,29 @@ export function finishJob(
     status: outcome.cancelled ? 'ready' : outcome.error ? 'error' : 'done',
     error: outcome.error
   })
+}
+
+/** ¿Se puede editar la transcripción abierta? No mientras ese mismo archivo se transcribe. */
+export function canEdit(state: TranscriptState): boolean {
+  return state.entry !== null && state.job?.entryId !== state.entry.id
+}
+
+/**
+ * Cambia el texto de un segmento de la entrada abierta en memoria. El array se reemplaza, así
+ * búsqueda, copiar, unir líneas y subtítulos lo ven. Devuelve el id de la entrada si cambió
+ * algo (para guardarlo en el historial), si no `null`. Ver `lib/editTranscript.ts`.
+ */
+export function applySegmentEdit(index: number, text: string): string | null {
+  const state = useTranscriptStore.getState()
+  const { entry, segments } = state
+  const current = segments[index]
+  if (!entry || !current || !canEdit(state) || current.text === text) return null
+  const next = segments.slice()
+  next[index] = editSegment(current, text)
+  // Para verla igual al volver a este archivo en la sesión (los mocks no están en disco).
+  if (state.status === 'done' || state.status === 'error') {
+    results.set(entry.id, { segments: next, error: state.error })
+  }
+  useTranscriptStore.setState({ segments: next })
+  return entry.id
 }

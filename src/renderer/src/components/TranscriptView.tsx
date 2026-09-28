@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { paragraphOf, toParagraphs } from '@shared/joinLines'
 import type { Segment } from '@shared/types'
 import { copyTranscript } from '@renderer/lib/copyTranscript'
+import { editTranscriptSegment } from '@renderer/lib/editTranscript'
 import {
   firstMatchAtOrAfter,
   updateSearch,
@@ -20,8 +21,9 @@ import {
 } from '@renderer/lib/transcriptScroll'
 import { usePlayerStore } from '@renderer/store/player'
 import { useSettingsStore } from '@renderer/store/settings'
-import { useTranscriptStore } from '@renderer/store/transcript'
-import { Button } from './ui'
+import { toast } from '@renderer/store/toast'
+import { canEdit, useTranscriptStore } from '@renderer/store/transcript'
+import { Button, Menu, type MenuItem } from './ui'
 
 /** Altura estimada de un segmento de una línea; la real se mide al pintarlo. */
 const ESTIMATED_ROW_PX = 26
@@ -106,6 +108,80 @@ function EmptyState(): React.JSX.Element | null {
   }
 }
 
+/** Acciones de la edición en línea. Estables entre renders para no romper el `memo` de las filas. */
+interface EditHandlers {
+  start: (index: number) => void
+  change: (text: string) => void
+  /** `refocus`: devolver el foco a la lista (Enter); no al salir con un clic fuera. */
+  commit: (refocus: boolean) => void
+  cancel: () => void
+}
+
+/**
+ * Campo de edición de un segmento: se ajusta a la altura del texto. Enter guarda,
+ * Shift+Enter hace salto de línea, Esc cancela y al perder el foco guarda.
+ */
+function SegmentEditor({ draft, edit }: { draft: string; edit: EditHandlers }): React.JSX.Element {
+  const { t } = useTranslation()
+  const ref = useRef<HTMLTextAreaElement>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [draft])
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.focus({ preventScroll: true })
+    el.setSelectionRange(el.value.length, el.value.length)
+  }, [])
+
+  // Los eventos no suben a la fila: su clic salta en el video y su Enter también.
+  const stop = (e: React.SyntheticEvent): void => e.stopPropagation()
+  return (
+    <textarea
+      ref={ref}
+      className="segment-editor"
+      rows={1}
+      value={draft}
+      aria-label={t('transcript.editLabel')}
+      onChange={(e) => edit.change(e.target.value)}
+      onBlur={() => edit.commit(false)}
+      onClick={stop}
+      onDoubleClick={stop}
+      onContextMenu={stop}
+      onKeyDown={(e) => {
+        // Tampoco llegan a los atajos globales (Espacio, flechas, Ctrl+C...).
+        e.stopPropagation()
+        if (e.nativeEvent.isComposing) return
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault()
+          edit.commit(true)
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          edit.cancel()
+        }
+      }}
+    />
+  )
+}
+
+/** Marca y tooltip de un segmento editado a mano. */
+function editedProps(
+  segment: Segment,
+  t: (key: 'transcript.edited', options: { original: string }) => string
+): { className?: string; title?: string } {
+  return segment.edited
+    ? {
+        className: 'edited',
+        title: t('transcript.edited', { original: segment.originalText ?? '' })
+      }
+    : {}
+}
+
 interface SegmentRowProps {
   segment: Segment
   index: number
@@ -119,6 +195,9 @@ interface SegmentRowProps {
   matchCount: number
   /** Índice global de la coincidencia actual si está en este segmento, si no -1. */
   currentMatch: number
+  /** Borrador si este segmento se está editando, si no `null`. */
+  draft: string | null
+  edit: EditHandlers
 }
 
 /** Texto del segmento con sus coincidencias en `<mark>`; la actual lleva otro color. */
@@ -160,8 +239,11 @@ const SegmentRow = memo(function SegmentRow({
   matches,
   firstMatch,
   matchCount,
-  currentMatch
+  currentMatch,
+  draft,
+  edit
 }: SegmentRowProps): React.JSX.Element {
+  const { t } = useTranslation()
   return (
     <p
       ref={measure}
@@ -177,9 +259,16 @@ const SegmentRow = memo(function SegmentRow({
         // Solo Enter: Espacio sigue siendo play/pausa (usePlayerShortcuts).
         if (e.key === 'Enter') onSeek(segment.start)
       }}
+      onDoubleClick={() => edit.start(index)}
     >
       <time>[{formatTimestamp(segment.start)}]</time>
-      <span>{highlight(segment.text, matches, firstMatch, matchCount, currentMatch)}</span>
+      {draft === null ? (
+        <span {...editedProps(segment, t)}>
+          {highlight(segment.text, matches, firstMatch, matchCount, currentMatch)}
+        </span>
+      ) : (
+        <SegmentEditor draft={draft} edit={edit} />
+      )}
     </p>
   )
 })
@@ -199,6 +288,10 @@ interface ParagraphRowProps {
   matches: readonly SearchMatch[]
   /** Índice global de la coincidencia actual si está en este párrafo, si no -1. */
   currentMatch: number
+  /** Segmento que se está editando si está en este párrafo, si no -1. */
+  editIndex: number
+  draft: string | null
+  edit: EditHandlers
 }
 
 /**
@@ -215,7 +308,10 @@ function sameParagraph(a: ParagraphRowProps, b: ParagraphRowProps): boolean {
     a.onSeek !== b.onSeek ||
     a.activeSegment !== b.activeSegment ||
     a.matches !== b.matches ||
-    a.currentMatch !== b.currentMatch
+    a.currentMatch !== b.currentMatch ||
+    a.editIndex !== b.editIndex ||
+    a.draft !== b.draft ||
+    a.edit !== b.edit
   ) {
     return false
   }
@@ -237,21 +333,37 @@ const ParagraphRow = memo(function ParagraphRow({
   onSeek,
   activeSegment,
   matches,
-  currentMatch
+  currentMatch,
+  editIndex,
+  draft,
+  edit
 }: ParagraphRowProps): React.JSX.Element {
+  const { t } = useTranslation()
   const parts: React.ReactNode[] = []
   for (let i = from; i < to; i++) {
     const segment = segments[i]
     const first = firstMatchAtOrAfter(matches, i)
     const count = firstMatchAtOrAfter(matches, i + 1) - first
     if (i > from) parts.push(' ')
+    if (i === editIndex && draft !== null) {
+      parts.push(
+        <span key={i} data-seg={i} className="editing">
+          <SegmentEditor draft={draft} edit={edit} />
+        </span>
+      )
+      continue
+    }
+    const edited = editedProps(segment, t)
+    const classes = [i === activeSegment && 'active', edited.className].filter(Boolean)
     parts.push(
       <span
         key={i}
         data-seg={i}
-        className={i === activeSegment ? 'active' : undefined}
+        className={classes.length > 0 ? classes.join(' ') : undefined}
+        title={edited.title}
         aria-current={i === activeSegment || undefined}
         onClick={() => onSeek(segment.start)}
+        onDoubleClick={() => edit.start(i)}
       >
         {highlight(segment.text, matches, first, count, currentMatch)}
       </span>
@@ -421,6 +533,67 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
 
   const showReturn = autoScroll && !following && (followPlayback || followLive)
 
+  // Edición en línea (tarea 16). El borrador vive aquí y no en la fila: la fila puede salir
+  // del DOM al desplazar (virtualización) sin perder lo escrito.
+  const editable = useTranscriptStore(canEdit)
+  const [editing, setEditing] = useState<{ index: number; draft: string } | null>(null)
+  // Copia síncrona: Enter y el `blur` que le sigue no deben guardar dos veces.
+  const editingRef = useRef(editing)
+  const edit = useMemo<EditHandlers>(() => {
+    const set = (next: { index: number; draft: string } | null): void => {
+      editingRef.current = next
+      setEditing(next)
+    }
+    return {
+      start: (index) => {
+        const state = useTranscriptStore.getState()
+        const segment = state.segments[index]
+        if (!segment) return
+        if (!canEdit(state)) {
+          toast(t('transcript.editLocked'))
+          return
+        }
+        // Que el autoscroll no se lleve la vista mientras se escribe.
+        setFollowing(false)
+        set({ index, draft: segment.text })
+      },
+      change: (text) => {
+        if (editingRef.current) set({ ...editingRef.current, draft: text })
+      },
+      commit: (refocus) => {
+        const current = editingRef.current
+        if (!current) return
+        set(null)
+        // Vacío cuenta como cancelar: un segmento no se borra editándolo.
+        const text = current.draft.trim()
+        if (text) editTranscriptSegment(current.index, text)
+        if (refocus) scrollRef.current?.focus({ preventScroll: true })
+      },
+      cancel: () => {
+        if (!editingRef.current) return
+        set(null)
+        scrollRef.current?.focus({ preventScroll: true })
+      }
+    }
+  }, [t])
+  // Si ese archivo empieza a transcribirse, el campo desaparece (no se puede editar).
+  const activeEdit = editable ? editing : null
+
+  const [menu, setMenu] = useState<{ index: number; x: number; y: number } | null>(null)
+  const closeMenu = useCallback(() => setMenu(null), [])
+  const menuSegment = menu ? segments[menu.index] : undefined
+  const menuItems: MenuItem[] = []
+  if (menu && menuSegment) {
+    menuItems.push({ label: t('transcript.edit'), onSelect: () => edit.start(menu.index) })
+    const original = menuSegment.originalText
+    if (menuSegment.edited && original !== undefined) {
+      menuItems.push({
+        label: t('transcript.restoreOriginal'),
+        onSelect: () => editTranscriptSegment(menu.index, original)
+      })
+    }
+  }
+
   return (
     <div className="transcript-scroll">
       <div
@@ -437,6 +610,12 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
         onKeyDown={(e) => {
           if (SCROLL_KEYS.has(e.key) && !e.ctrlKey && !e.altKey) pauseFollow()
         }}
+        onContextMenu={(e) => {
+          const el = (e.target as HTMLElement).closest<HTMLElement>('[data-seg]')
+          if (!el || !editable) return
+          e.preventDefault()
+          setMenu({ index: Number(el.dataset.seg), x: e.clientX, y: e.clientY })
+        }}
       >
         <div
           className={`transcript-list${joinLines ? ' joined' : ''}`}
@@ -447,6 +626,10 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
               const p = paragraphs[item.index]
               const first = firstMatchAtOrAfter(matches, p.from)
               const end = firstMatchAtOrAfter(matches, p.to)
+              const editIndex =
+                activeEdit && activeEdit.index >= p.from && activeEdit.index < p.to
+                  ? activeEdit.index
+                  : -1
               return (
                 <ParagraphRow
                   key={item.key}
@@ -464,6 +647,9 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
                   }
                   matches={matches}
                   currentMatch={currentMatch >= first && currentMatch < end ? currentMatch : -1}
+                  editIndex={editIndex}
+                  draft={editIndex === -1 ? null : activeEdit!.draft}
+                  edit={edit}
                 />
               )
             }
@@ -484,6 +670,8 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
                 matchCount={end - first}
                 // Solo la fila con la actual la recibe: así `memo` no repinta las demás al navegar.
                 currentMatch={currentMatch >= first && currentMatch < end ? currentMatch : -1}
+                draft={activeEdit?.index === item.index ? activeEdit.draft : null}
+                edit={edit}
               />
             )
           })}
@@ -498,6 +686,23 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
         >
           {t('transcript.backToCurrent')}
         </Button>
+      )}
+      {menu && menuItems.length > 0 && (
+        // Ancla de tamaño cero en el puntero; el menú se abre debajo y no se sale de la ventana.
+        <div
+          className="menu-anchor segment-menu"
+          style={{
+            left: Math.min(menu.x, window.innerWidth - 272),
+            top: Math.min(menu.y, window.innerHeight - 100)
+          }}
+        >
+          <Menu
+            open
+            onClose={closeMenu}
+            items={menuItems}
+            aria-label={t('transcript.segmentMenu')}
+          />
+        </div>
       )}
     </div>
   )

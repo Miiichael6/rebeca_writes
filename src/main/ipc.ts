@@ -5,7 +5,7 @@ import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
-import { createHistoryEntry } from './services/history'
+import { createHistoryEntry, updateHistorySegment } from './services/history'
 import { pickMediaFile } from './services/mediaOpen'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
 import { loadSettings, updateSettings } from './services/settings'
@@ -68,6 +68,9 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.MediaPreviewCacheSize, () => previewCacheSize())
 
   handle(IpcChannel.HistoryCreate, (_event, input) => createHistoryEntry(input))
+  handle(IpcChannel.HistoryUpdateSegment, (_event, id, index, text) =>
+    updateHistorySegment(id, index, text)
+  )
 
   handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
   handle(IpcChannel.TranscribeCancel, (_event, jobId) => cancelTranscription(String(jobId)))

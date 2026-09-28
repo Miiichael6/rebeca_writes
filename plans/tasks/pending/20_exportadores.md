@@ -33,6 +33,7 @@ Exportar en 5 formatos correctos y guardar el .srt junto al video para Jellyfin 
 
 ### Paso 4 — Verificación
 - [ ] Abrir los .srt/.vtt en VLC y comprobar la sincronía
+- [ ] Exportar una transcripción con segmentos editados (tarea 16) y comprobar que salen los textos editados
 - [ ] `npm run test` pasa
 - [ ] Commit: `feat(export): 5 formatos y srt junto al archivo`
 

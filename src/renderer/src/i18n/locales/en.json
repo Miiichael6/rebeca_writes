@@ -49,7 +49,10 @@
     "transcribe": "Transcribe",
     "noModels": "No models downloaded",
     "transcribeNoMedia": "Locate the file on disk first.",
-    "transcribeBusy": "Another transcription is already running."
+    "transcribeBusy": "Another transcription is already running.",
+    "retranscribeTitle": "Transcribe again?",
+    "retranscribeBody": "The edits you made to this transcript will be lost.",
+    "retranscribe": "Transcribe again"
   },
   "player": {
     "play": "Play",
@@ -80,7 +83,14 @@
     "phasePreparing": "Preparing audio...",
     "phaseTranscribing": "Transcribing...",
     "failed": "The transcription failed.",
-    "backToCurrent": "Back to current"
+    "backToCurrent": "Back to current",
+    "edit": "Edit",
+    "editLabel": "Edit segment",
+    "edited": "Edited. Original: “{{original}}”",
+    "restoreOriginal": "Restore original",
+    "editSaveFailed": "Couldn't save the edit",
+    "editLocked": "Can't edit while transcribing",
+    "segmentMenu": "Segment options"
   },
   "bottomBar": {
     "copy": "Copy transcription",

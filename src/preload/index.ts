@@ -58,7 +58,8 @@ const api: TranscribaApi = {
     getPreviewCacheSize: () => invoke(IpcChannel.MediaPreviewCacheSize)
   },
   history: {
-    create: (input) => invoke(IpcChannel.HistoryCreate, input)
+    create: (input) => invoke(IpcChannel.HistoryCreate, input),
+    updateSegment: (id, index, text) => invoke(IpcChannel.HistoryUpdateSegment, id, index, text)
   },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),

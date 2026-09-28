@@ -1,5 +1,5 @@
 import { Settings, SquarePlay } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { whisperLanguageOptions } from '@renderer/lib/languages'
@@ -13,7 +13,7 @@ import {
   startTranscription
 } from '@renderer/store/transcription'
 import { useUiStore } from '@renderer/store/ui'
-import { Button, Checkbox, Select, type SelectOption } from './ui'
+import { Button, Checkbox, ConfirmDialog, Select, type SelectOption } from './ui'
 
 /** Valor especial del combo de modelos: no es un modelo, abre Configuración. */
 const MORE_MODELS = '__more__'
@@ -37,6 +37,12 @@ function Toolbar(): React.JSX.Element {
   const blocker = startBlocker(entryId, hasMedia, runningEntryId)
   // El modelo y el idioma no cambian a mitad de la transcripción del archivo abierto.
   const locked = status === 'transcribing'
+  // Volver a transcribir reemplaza los segmentos: si hay ediciones, se pide confirmación.
+  const [confirmRestart, setConfirmRestart] = useState(false)
+  const onTranscribe = (): void => {
+    if (useTranscriptStore.getState().segments.some((s) => s.edited)) setConfirmRestart(true)
+    else void startTranscription()
+  }
 
   const downloaded = useModelsStore(useShallow(selectDownloaded))
   const loaded = useModelsStore((s) => s.models.length > 0)
@@ -127,12 +133,25 @@ function Toolbar(): React.JSX.Element {
                   ? t('toolbar.transcribeBusy')
                   : undefined
             }
-            onClick={() => void startTranscription()}
+            onClick={onTranscribe}
           >
             {t('toolbar.transcribe')}
           </Button>
         )
       )}
+      <ConfirmDialog
+        open={confirmRestart}
+        title={t('toolbar.retranscribeTitle')}
+        confirmLabel={t('toolbar.retranscribe')}
+        danger
+        onConfirm={() => {
+          setConfirmRestart(false)
+          void startTranscription()
+        }}
+        onCancel={() => setConfirmRestart(false)}
+      >
+        {t('toolbar.retranscribeBody')}
+      </ConfirmDialog>
     </header>
   )
 }

@@ -50,7 +50,10 @@
     "transcribe": "Transcrever",
     "noModels": "Nenhum modelo baixado",
     "transcribeNoMedia": "Primeiro localize o arquivo no disco.",
-    "transcribeBusy": "Já há outra transcrição em andamento."
+    "transcribeBusy": "Já há outra transcrição em andamento.",
+    "retranscribeTitle": "Transcrever novamente?",
+    "retranscribeBody": "As edições que você fez nesta transcrição serão perdidas.",
+    "retranscribe": "Transcrever novamente"
   },
   "player": {
     "play": "Reproduzir",
@@ -81,7 +84,14 @@
     "phasePreparing": "Preparando o áudio...",
     "phaseTranscribing": "Transcrevendo...",
     "failed": "A transcrição falhou.",
-    "backToCurrent": "Voltar ao atual"
+    "backToCurrent": "Voltar ao atual",
+    "edit": "Editar",
+    "editLabel": "Editar segmento",
+    "edited": "Editado. Original: “{{original}}”",
+    "restoreOriginal": "Restaurar original",
+    "editSaveFailed": "Não foi possível salvar a edição",
+    "editLocked": "Não é possível editar durante a transcrição",
+    "segmentMenu": "Opções do segmento"
   },
   "bottomBar": {
     "copy": "Copiar transcrição",

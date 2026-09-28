@@ -660,6 +660,53 @@
   box-shadow: 0 2px 0 var(--accent);
 }
 
+/* Edición en línea: el texto conserva los saltos de línea (Shift+Enter). */
+.segment span {
+  white-space: pre-wrap;
+}
+
+.segment .edited {
+  text-decoration: underline dotted var(--text-3);
+  text-underline-offset: 3px;
+}
+
+.segment-editor {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  width: 100%;
+  margin: -1px -4px;
+  padding: 0 3px;
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  cursor: text;
+}
+
+.segment.paragraph span.editing {
+  display: block;
+  margin: 2px 0;
+}
+
+.segment.paragraph span.editing:hover {
+  background: none;
+}
+
+/* Menú contextual de un segmento: ancla de tamaño cero en el puntero. */
+.menu-anchor.segment-menu {
+  position: fixed;
+  z-index: 100;
+  width: 0;
+  height: 0;
+}
+
 /* ---------- Barra inferior ---------- */
 .bottombar {
   display: flex;
