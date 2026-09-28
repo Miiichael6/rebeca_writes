@@ -1,11 +1,16 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { APP_ID, APP_NAME } from '@shared/app'
+import { registerIpcHandlers } from './ipc'
+
+app.setName(APP_NAME)
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
+    title: APP_NAME,
     width: 1000,
     minWidth: 820,
     minHeight: 560,
@@ -15,7 +20,9 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
     }
   })
 
@@ -23,9 +30,17 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+  // window.open nunca abre ventanas nuevas; los enlaces https van al navegador del sistema.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://')) shell.openExternal(url)
     return { action: 'deny' }
+  })
+
+  // El renderer no puede navegar fuera de la app (solo recargas del propio origen en dev).
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const devUrl = process.env['ELECTRON_RENDERER_URL']
+    if (is.dev && devUrl && url.startsWith(devUrl)) return
+    event.preventDefault()
   })
 
   // HMR for renderer base on electron-vite cli.
@@ -42,7 +57,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId(APP_ID)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -51,8 +66,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  registerIpcHandlers()
 
   createWindow()
 
@@ -71,6 +85,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

@@ -1,22 +1,18 @@
-import { contextBridge } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron'
+import { IpcChannel, type IpcInvokeMap, type TranscribaApi } from '@shared/ipc'
 
-// Custom APIs for renderer
-const api = {}
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
+function invoke<C extends keyof IpcInvokeMap>(
+  channel: C,
+  ...args: IpcInvokeMap[C]['args']
+): Promise<IpcInvokeMap[C]['result']> {
+  return ipcRenderer.invoke(channel, ...args)
 }
+
+// Solo funciones concretas: el renderer nunca recibe `ipcRenderer`.
+const api: TranscribaApi = {
+  app: {
+    getVersion: () => invoke(IpcChannel.AppGetVersion)
+  }
+}
+
+contextBridge.exposeInMainWorld('api', api)

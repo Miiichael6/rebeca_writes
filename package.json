@@ -1,16 +1,17 @@
 {
-  "name": "mi-app",
+  "name": "transcriba",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "Transcripción local de audio y video",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Michael Canales Palomino",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
@@ -21,10 +22,13 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
-    "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
-    "electron-updater": "^6.3.9",
-    "lucide-react": "^1.48.0"
+    "@tanstack/react-virtual": "^3.14.13",
+    "electron-log": "^5.4.4",
+    "i18next": "^26.4.2",
+    "lucide-react": "^1.48.0",
+    "react-i18next": "^17.0.15",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
@@ -45,6 +49,8 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.6"
-  }
+    "vite": "^7.2.6",
+    "vitest": "^5.0.2"
+  },
+  "productName": "Transcriba"
 }

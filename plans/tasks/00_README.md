@@ -30,14 +30,14 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 
 - [ ] **D1** ¿Hay captura de la ventana principal? Las 5 imágenes solo muestran Configuración y el menú Exportar. Si no, se diseña desde el texto §4.1. → afecta 03
 - [ ] **D2** ¿Backend CUDA dentro del instalador (+~500 MB) o descargable desde la app? → afecta 05, 22
-- [ ] **D3** ¿Se reutiliza el scaffold actual de `src/` o se rehace la fase 1? → afecta 01–04
+- [x] **D3** ¿Se reutiliza el scaffold actual de `src/` o se rehace la fase 1? → afecta 01–04 — **Se reutiliza** (2026-09-27)
 - [ ] **D4** ¿`npm run build` debe generar el instalador (criterio §9) o se deja en `build:win`? → afecta 22
 
 ## Tablero
 
 | # | Subtarea | Fase | Depende de | Estado |
 |---|---|---|---|---|
-| 01 | [Setup del proyecto](pending/01_setup_proyecto.md) | 1 Base | — | ⬜ Pendiente |
+| 01 | [Setup del proyecto](done/01_setup_proyecto.md) | 1 Base | — | ✅ Terminada |
 | 02 | [Tema y ventana frameless](pending/02_tema_y_ventana.md) | 1 Base | 01 | ⬜ Pendiente |
 | 03 | [Layout principal](pending/03_layout_principal.md) | 1 Base | 02 | ⬜ Pendiente |
 | 04 | [Internacionalización](pending/04_i18n.md) | 1 Base | 03 | ⬜ Pendiente |
