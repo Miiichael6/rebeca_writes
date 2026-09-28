@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
+    "fetch:bin": "node scripts/fetch-binaries.mjs",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",

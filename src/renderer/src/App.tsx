@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import BottomBar from './components/BottomBar'
 import Player from './components/Player'
@@ -9,6 +9,7 @@ import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Button, Toaster } from './components/ui'
+import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
 import { useThemeSync, useUiStore } from './store/ui'
 
@@ -31,9 +32,28 @@ function MainView(): React.JSX.Element {
   )
 }
 
+/** Aviso no bloqueante cuando el main cae a otro backend (p. ej. "CUDA no disponible, se usó CPU"). */
+function useBackendFallbackToast(): void {
+  const { t } = useTranslation()
+  useEffect(
+    () =>
+      window.api.backend.onFallback(({ from, to }) =>
+        toast(
+          t('backend.fallback', {
+            from: t(`backend.names.${from}`),
+            to: t(`backend.names.${to}`)
+          }),
+          5000
+        )
+      ),
+    [t]
+  )
+}
+
 function App(): React.JSX.Element {
   const { t } = useTranslation()
   useThemeSync()
+  useBackendFallbackToast()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
 

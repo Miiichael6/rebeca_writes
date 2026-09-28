@@ -43,4 +43,4 @@ Guardar settings, historial y cola en JSON sin riesgo de corrupción, y registra
 - [ ] Los settings se aplican al reiniciar
 
 ## Bitácora
-- _(fecha — nota)_
+- 2026-09-27 — La tarea 05 creó un `services/settings.ts` mínimo (solo `detectedBackend` y `backend`, escritura temporal + rename). Reemplazarlo aquí manteniendo esas dos claves.

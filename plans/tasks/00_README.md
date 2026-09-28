@@ -41,7 +41,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 02 | [Tema y ventana frameless](done/02_tema_y_ventana.md) | 1 Base | 01 | ✅ Terminada |
 | 03 | [Layout principal](done/03_layout_principal.md) | 1 Base | 02 | ✅ Terminada |
 | 04 | [Internacionalización](done/04_i18n.md) | 1 Base | 03 | ✅ Terminada |
-| 05 | [Binarios y backend](pending/05_binarios_y_backend.md) | 2 Motor | 01 | ⬜ Pendiente |
+| 05 | [Binarios y backend](done/05_binarios_y_backend.md) | 2 Motor | 01 | ✅ Terminada (paso 6.4 espera D2) |
 | 06 | [Descarga de modelos](pending/06_descarga_modelos.md) | 2 Motor | 01 | ⬜ Pendiente |
 | 07 | [Servicio ffmpeg](pending/07_servicio_ffmpeg.md) | 2 Motor | 01 | ⬜ Pendiente |
 | 08 | [TranscriptionEngine](pending/08_transcription_engine.md) | 2 Motor | 05, 06, 07 | ⬜ Pendiente |

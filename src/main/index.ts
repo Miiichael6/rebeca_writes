@@ -3,7 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { APP_ID, APP_NAME } from '@shared/app'
+import log from 'electron-log/main'
 import { registerIpcHandlers } from './ipc'
+import { getBackendInfo } from './engine/backend'
 import { resolvedTheme, titleBarOverlay, watchNativeTheme } from './theme'
 import { WINDOW_COLORS } from '@shared/theme'
 
@@ -76,6 +78,8 @@ app.whenReady().then(() => {
 
   registerIpcHandlers()
   watchNativeTheme()
+  // Autodetección del backend en segundo plano; la ventana no la espera.
+  getBackendInfo().catch((err) => log.error('No se pudo resolver el backend', err))
 
   createWindow()
 

@@ -1,6 +1,7 @@
 import { app, ipcMain, nativeTheme, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { resolvedTheme } from './theme'
+import { getBackendInfo } from './engine/backend'
 
 type Handler<C extends keyof IpcInvokeMap> = (
   event: IpcMainInvokeEvent,
@@ -27,4 +28,6 @@ export function registerIpcHandlers(): void {
     nativeTheme.themeSource = mode
     return resolvedTheme()
   })
+
+  handle(IpcChannel.BackendGetInfo, () => getBackendInfo())
 }

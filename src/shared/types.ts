@@ -31,6 +31,19 @@ export interface HistoryEntry {
 
 export type Backend = 'cuda' | 'vulkan' | 'cpu'
 
+/** Backend elegido, el detectado al primer arranque y los que tienen whisper-cli instalado. */
+export interface BackendInfo {
+  backend: Backend
+  detected: Backend
+  installed: Backend[]
+}
+
+/** Aviso de fallback: `from` falló al cargar y la transcripción siguió con `to`. */
+export interface BackendFallback {
+  from: Backend
+  to: Backend
+}
+
 /**
  * Errores que el main comunica al renderer. Viajan como código y el renderer los traduce
  * (`errors.<code>` en los locales), así el mensaje sigue el idioma de la interfaz.

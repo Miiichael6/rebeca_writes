@@ -29,3 +29,6 @@ export const WHISPER_LANGUAGES = [
 export function languageTag(code: string): string {
   return code === 'jw' ? 'jv' : code
 }
+
+/** Backends de whisper.cpp en orden de preferencia; el fallback baja por esta lista (spec §2.1). */
+export const BACKEND_ORDER = ['cuda', 'vulkan', 'cpu'] as const

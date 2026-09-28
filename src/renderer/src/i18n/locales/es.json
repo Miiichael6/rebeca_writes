@@ -103,6 +103,14 @@
     "uiLanguageDescription": "Seleccione el idioma de la aplicación.",
     "uiLanguageSystem": "Usar el idioma de Windows"
   },
+  "backend": {
+    "fallback": "{{from}} no está disponible, se usó {{to}}.",
+    "names": {
+      "cuda": "CUDA",
+      "vulkan": "GPU (Vulkan)",
+      "cpu": "CPU"
+    }
+  },
   "errors": {
     "noAudioStream": "El archivo no tiene pista de audio.",
     "unknown": "Ocurrió un error inesperado."

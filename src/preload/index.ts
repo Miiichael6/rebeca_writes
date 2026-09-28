@@ -28,6 +28,10 @@ const api: TranscribaApi = {
     getResolved: () => invoke(IpcChannel.ThemeGetResolved),
     setMode: (mode) => invoke(IpcChannel.ThemeSetMode, mode),
     onChanged: (listener) => on(IpcChannel.ThemeChanged, listener)
+  },
+  backend: {
+    getInfo: () => invoke(IpcChannel.BackendGetInfo),
+    onFallback: (listener) => on(IpcChannel.BackendFallback, listener)
   }
 }
 
