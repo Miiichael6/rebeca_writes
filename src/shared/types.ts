@@ -48,7 +48,15 @@ export interface BackendFallback {
  * Errores que el main comunica al renderer. Viajan como código y el renderer los traduce
  * (`errors.<code>` en los locales), así el mensaje sigue el idioma de la interfaz.
  */
-export type ErrorCode = 'noAudioStream' | 'unreadableMedia' | 'conversionFailed' | 'unknown'
+export type ErrorCode =
+  | 'noAudioStream'
+  | 'unreadableMedia'
+  | 'conversionFailed'
+  | 'modelMissing'
+  | 'backendFailed'
+  | 'noDiskSpace'
+  | 'cancelled'
+  | 'unknown'
 
 /** Pista de audio según ffprobe. `index` es su posición entre las de audio (`-map 0:a:<index>`). */
 export interface AudioTrack {
@@ -88,3 +96,61 @@ export interface QueueJob {
 
 /** Estado del archivo abierto en el panel de transcripción. */
 export type TranscriptStatus = 'idle' | 'ready' | 'transcribing' | 'done' | 'error'
+
+/** Opciones de `whisper-cli` que vienen de Configuración (spec §2.3 paso 3). */
+export interface TranscribeOptions {
+  /** `--prompt`: vocabulario o contexto inicial. */
+  prompt?: string
+  /** `-ml`: longitud máxima de línea en caracteres. */
+  maxLen?: number
+  /** `--suppress-nst`: descarta tokens no-habla (música, risas...). */
+  suppressNst?: boolean
+  /** Hilos de CPU (`-t`). */
+  threads?: number
+  /** Filtro `loudnorm` al convertir a WAV. */
+  normalize?: boolean
+}
+
+/** Trabajo que ejecuta el `TranscriptionEngine` (spec §2.3). */
+export interface TranscribeJob {
+  id: string
+  filePath: string
+  /** Id del catálogo o de un modelo personalizado (`ModelCatalogEntry.id` / `custom:<uuid>`). */
+  model: string
+  /** Código de `WHISPER_LANGUAGES` o `AUTO_LANGUAGE`. */
+  language: string
+  /** `-tr`: traducir el resultado al inglés. */
+  translate?: boolean
+  /** Posición entre las pistas de audio (`AudioTrack.index`); por defecto la primera. */
+  audioTrack?: number
+  options?: TranscribeOptions
+}
+
+export type TranscribePhase = 'preparing' | 'transcribing'
+
+/** Payload de `transcribe:progress`. 0–5 % preparando el audio, 5–100 % transcribiendo. */
+export interface TranscribeProgressEvent {
+  jobId: string
+  phase: TranscribePhase
+  percent: number
+}
+
+/** Payload de `transcribe:segment`: uno o más tramos agrupados para no saturar el IPC. */
+export interface TranscribeSegmentEvent {
+  jobId: string
+  segments: Segment[]
+}
+
+export interface TranscribeDoneEvent {
+  jobId: string
+  segments: Segment[]
+  /** Idioma detectado si el trabajo pidió `auto`, si no el mismo que se pidió. */
+  language: string
+  backend: Backend
+}
+
+export interface TranscribeErrorEvent {
+  jobId: string
+  code: ErrorCode
+  detail?: string
+}

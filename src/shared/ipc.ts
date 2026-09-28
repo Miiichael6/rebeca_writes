@@ -1,5 +1,13 @@
 import type { ResolvedTheme, ThemeMode } from './theme'
-import type { BackendFallback, BackendInfo } from './types'
+import type {
+  BackendFallback,
+  BackendInfo,
+  TranscribeDoneEvent,
+  TranscribeErrorEvent,
+  TranscribeJob,
+  TranscribeProgressEvent,
+  TranscribeSegmentEvent
+} from './types'
 import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
 /** Canales IPC. El renderer nunca los usa directamente: pasa por `window.api`. */
@@ -18,7 +26,13 @@ export const IpcChannel = {
   ModelsPickCustomFile: 'models:pickCustomFile',
   ModelsAddCustom: 'models:addCustom',
   ModelsProgress: 'models:progress',
-  ModelsChanged: 'models:changed'
+  ModelsChanged: 'models:changed',
+  TranscribeStart: 'transcribe:start',
+  TranscribeCancel: 'transcribe:cancel',
+  TranscribeSegment: 'transcribe:segment',
+  TranscribeProgress: 'transcribe:progress',
+  TranscribeDone: 'transcribe:done',
+  TranscribeError: 'transcribe:error'
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -36,6 +50,8 @@ export interface IpcInvokeMap {
   [IpcChannel.ModelsDelete]: { args: [id: string]; result: ModelActionResult }
   [IpcChannel.ModelsPickCustomFile]: { args: []; result: string | null }
   [IpcChannel.ModelsAddCustom]: { args: [path: string, name: string]; result: ModelActionResult }
+  [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
+  [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
 }
 
 /** Eventos que el main envía al renderer (`webContents.send`) y su payload. */
@@ -44,6 +60,10 @@ export interface IpcEventMap {
   [IpcChannel.BackendFallback]: BackendFallback
   [IpcChannel.ModelsProgress]: ModelProgress
   [IpcChannel.ModelsChanged]: void
+  [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
+  [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
+  [IpcChannel.TranscribeDone]: TranscribeDoneEvent
+  [IpcChannel.TranscribeError]: TranscribeErrorEvent
 }
 
 /** API que el preload expone en `window.api`. */
@@ -80,5 +100,15 @@ export interface TranscribaApi {
     onProgress: (listener: (progress: ModelProgress) => void) => () => void
     /** Avisa cuando cambia la lista (empieza o termina una descarga, se borra o añade uno). */
     onChanged: (listener: () => void) => () => void
+  }
+  transcribe: {
+    /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */
+    start: (job: TranscribeJob) => Promise<void>
+    /** Mata whisper-cli y limpia los temporales del trabajo. */
+    cancel: (jobId: string) => Promise<void>
+    onSegment: (listener: (event: TranscribeSegmentEvent) => void) => () => void
+    onProgress: (listener: (event: TranscribeProgressEvent) => void) => () => void
+    onDone: (listener: (event: TranscribeDoneEvent) => void) => () => void
+    onError: (listener: (event: TranscribeErrorEvent) => void) => () => void
   }
 }

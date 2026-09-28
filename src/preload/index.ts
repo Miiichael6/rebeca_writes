@@ -42,6 +42,14 @@ const api: TranscribaApi = {
     addCustom: (path, name) => invoke(IpcChannel.ModelsAddCustom, path, name),
     onProgress: (listener) => on(IpcChannel.ModelsProgress, listener),
     onChanged: (listener) => on(IpcChannel.ModelsChanged, () => listener())
+  },
+  transcribe: {
+    start: (job) => invoke(IpcChannel.TranscribeStart, job),
+    cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),
+    onSegment: (listener) => on(IpcChannel.TranscribeSegment, listener),
+    onProgress: (listener) => on(IpcChannel.TranscribeProgress, listener),
+    onDone: (listener) => on(IpcChannel.TranscribeDone, listener),
+    onError: (listener) => on(IpcChannel.TranscribeError, listener)
   }
 }
 

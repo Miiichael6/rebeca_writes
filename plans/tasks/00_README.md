@@ -44,7 +44,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 05 | [Binarios y backend](done/05_binarios_y_backend.md) | 2 Motor | 01 | ✅ Terminada (paso 6.4 espera D2) |
 | 06 | [Descarga de modelos](done/06_descarga_modelos.md) | 2 Motor | 01 | ✅ Terminada |
 | 07 | [Servicio ffmpeg](done/07_servicio_ffmpeg.md) | 2 Motor | 01 | ✅ Terminada |
-| 08 | [TranscriptionEngine](pending/08_transcription_engine.md) | 2 Motor | 05, 06, 07 | ⬜ Pendiente |
+| 08 | [TranscriptionEngine](done/08_transcription_engine.md) | 2 Motor | 05, 06, 07 | ✅ Terminada |
 | 09 | [Protocolo media://](pending/09_protocolo_media.md) | 3 Reproductor | 03 | ⬜ Pendiente |
 | 10 | [Reproductor y sincronización](pending/10_reproductor_sincronizacion.md) | 3 Reproductor | 09 | ⬜ Pendiente |
 | 11 | [Vista previa de códecs](pending/11_vista_previa_codecs.md) | 3 Reproductor | 07, 10 | ⬜ Pendiente |

@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, nativeTheme, type IpcMainInvokeEvent } fro
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
+import { cancelTranscription, startTranscription } from './engine/transcribeManager'
 import {
   addCustomModel,
   cancelDownload,
@@ -49,4 +50,7 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.ModelsAddCustom, (_event, path, name) =>
     addCustomModel(String(path), String(name))
   )
+
+  handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
+  handle(IpcChannel.TranscribeCancel, (_event, jobId) => cancelTranscription(String(jobId)))
 }
