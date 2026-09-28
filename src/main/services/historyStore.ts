@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import { readdir, rm } from 'fs/promises'
 import { join } from 'path'
 import { editSegment } from '@shared/editSegment'
+import { normalize } from '@shared/normalize'
 import type { HistoryEntry, Segment } from '@shared/types'
 import { DebouncedJsonWriter, readJsonSafe } from './fsAtomic'
 
@@ -226,6 +227,20 @@ export class HistoryStore {
     segments[index] = next
     await this.scheduleSegments(id)
     return { ...next }
+  }
+
+  /** Ids de las entradas cuya transcripción contiene `query` (sin mayúsculas ni tildes). */
+  async search(query: string): Promise<string[]> {
+    const needle = normalize(query.trim())
+    if (!needle) return []
+    const entries = await this.load()
+    const matches = await Promise.all(
+      entries.map(async (e) => {
+        const segments = await this.segmentsOf(e.id)
+        return segments.some((s) => normalize(s.text).includes(needle)) ? e.id : null
+      })
+    )
+    return matches.filter((id): id is string => id !== null)
   }
 
   async remove(id: string): Promise<boolean> {

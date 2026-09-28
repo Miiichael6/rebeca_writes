@@ -1,10 +1,13 @@
+import { useEffect } from 'react'
 import { create } from 'zustand'
 import { MEDIA_FILTER_KEYS, type MediaFilterKey } from '@shared/formats'
 import type { HistoryEntry, OpenedMedia } from '@shared/types'
 import i18n from '@renderer/i18n'
-import { mockHistory } from './mocks'
 import { useSettingsStore } from './settings'
-import { useTranscriptStore } from './transcript'
+import { forgetResults, setLoadedResult, useTranscriptStore } from './transcript'
+
+/** Espera tras la última tecla antes de buscar en el texto de las transcripciones. */
+const SEARCH_DEBOUNCE_MS = 200
 
 interface HistoryState {
   entries: HistoryEntry[]
@@ -12,13 +15,19 @@ interface HistoryState {
   /** Texto del campo "Filtrar por...". */
   filter: string
   /**
-   * Archivo listo para el reproductor, por id de entrada. Sin entrada aquí, el archivo
-   * "no está disponible". Hoy solo la llena "Buscar archivo..."; con el historial real
-   * (tarea 18) el main registra cada archivo al cargar la entrada y comprueba si existe.
+   * Ids de las entradas cuya transcripción contiene el filtro (`history:search`), o `null`
+   * mientras no hay filtro. Se rellena con debounce, así que va un poco por detrás del texto.
    */
-  media: Record<string, OpenedMedia>
+  textMatches: Set<string> | null
+  /**
+   * Archivo listo para el reproductor, por id de entrada. Lo llena `history:get` al abrir la
+   * entrada: `null` si el archivo original "no está disponible"; sin id, aún no se sabe.
+   */
+  media: Record<string, OpenedMedia | null>
   select: (id: string) => void
   setFilter: (filter: string) => void
+  /** Carga la lista de `history:list` (al arrancar). */
+  load: () => Promise<void>
   /**
    * "Abrir archivo": elige un archivo, crea su entrada en el historial y la abre. La
    * selección múltiple y el envío a la cola son de la tarea 19.
@@ -34,13 +43,23 @@ interface HistoryState {
   openQueueJob: (jobId: string) => Promise<boolean>
   /** Cambia campos de una entrada (estado, progreso, idioma detectado...). */
   patchEntry: (id: string, patch: Partial<Omit<HistoryEntry, 'id'>>) => void
-  /** "Buscar archivo...": elige el archivo en disco y lo asocia a la entrada (en memoria; se persiste en la 18). */
+  /** "Buscar archivo...": el main abre el diálogo y apunta la entrada al archivo elegido. */
   locateFile: (id: string) => Promise<void>
+  /** Cambia solo el nombre mostrado; vacío vuelve al nombre del archivo. */
+  rename: (id: string, displayName: string) => Promise<void>
+  /** Quita una entrada del historial (el archivo original no se toca). */
+  remove: (id: string) => Promise<void>
+  /** Si la transcripción de la entrada tiene ediciones a mano (se perderían al rehacerla). */
+  hasEdits: (id: string) => Promise<boolean>
+  /** Vuelve a encolar el archivo de la entrada con los ajustes actuales; `false` si ya estaba. */
+  retranscribe: (id: string) => Promise<boolean>
+  /** Abre el Explorador con el archivo original seleccionado. */
+  showInFolder: (id: string) => Promise<void>
   /**
-   * Vacía el historial y la caché de vistas previas (spec §5). Las entradas solo se borran
-   * en memoria; el borrado en disco es de la tarea 18.
+   * Vacía el historial, sus transcripciones y la caché de vistas previas (spec §5). Los
+   * medios originales y los .srt exportados no se tocan.
    */
-  clear: () => void
+  clear: () => Promise<void>
 }
 
 /** Nombres traducidos de los filtros del diálogo Abrir. */
@@ -50,87 +69,170 @@ export function filterLabels(): Record<MediaFilterKey, string> {
   ) as Record<MediaFilterKey, string>
 }
 
-const initialId = mockHistory[0]?.id ?? null
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+/** Número de la última búsqueda lanzada: una respuesta vieja no pisa a una más reciente. */
+let searchSeq = 0
 
-export const useHistoryStore = create<HistoryState>()((set, get) => ({
-  entries: mockHistory,
-  selectedId: initialId,
-  filter: '',
-  media: {},
-  select: (id) => {
-    set({ selectedId: id })
-    useTranscriptStore.getState().open(get().entries.find((e) => e.id === id) ?? null)
-  },
-  setFilter: (filter) => set({ filter }),
-  openFile: async () => {
-    const media = await window.api.media.pickFile(filterLabels())
-    if (!media) return
-    const { model, language } = useSettingsStore.getState().settings
-    const entry = await window.api.history.create({
-      filePath: media.filePath,
-      fileName: media.fileName,
-      durationSec: media.info?.durationSec ?? 0,
-      model,
-      language
-    })
-    set((s) => ({ entries: [entry, ...s.entries], media: { ...s.media, [entry.id]: media } }))
-    get().select(entry.id)
-  },
-  upsertEntry: (entry) => {
-    const current = get().entries.find((e) => e.id === entry.id)
-    if (!current) {
-      set((s) => ({ entries: [entry, ...s.entries] }))
-      return
-    }
-    const live = current.status === 'transcribing'
-    get().patchEntry(entry.id, {
-      ...entry,
-      ...(live ? { status: current.status, progress: current.progress } : {})
-    })
-  },
-  openQueueJob: async (jobId) => {
-    const opened = await window.api.queue.openJob(jobId)
-    if (!opened) return false
-    const { entry, media } = opened
-    get().upsertEntry(entry)
-    set((s) => ({ media: { ...s.media, [entry.id]: media } }))
-    get().select(entry.id)
-    return true
-  },
-  patchEntry: (id, patch) => {
-    const entries = get().entries.map((e) => (e.id === id ? { ...e, ...patch } : e))
-    set({ entries })
-    const updated = entries.find((e) => e.id === id)
-    if (updated && useTranscriptStore.getState().entry?.id === id) {
-      useTranscriptStore.setState({ entry: updated })
-    }
-  },
-  locateFile: async (id) => {
-    const media = await window.api.media.pickFile(filterLabels())
-    if (!media) return
-    const entries = get().entries.map((e) =>
-      e.id === id
-        ? { ...e, filePath: media.filePath, durationSec: media.info?.durationSec || e.durationSec }
-        : e
-    )
-    set({ entries, media: { ...get().media, [id]: media } })
-    // La transcripción abierta sigue igual; solo cambia la entrada a la que apunta.
-    const updated = entries.find((e) => e.id === id)
-    if (updated && useTranscriptStore.getState().entry?.id === id) {
-      useTranscriptStore.setState({ entry: updated })
-    }
-  },
-  clear: () => {
-    set({ entries: [], selectedId: null, media: {} })
-    useTranscriptStore.getState().open(null)
-    window.api.media.clearPreviewCache().catch(() => {})
+/** Busca `filter` en el texto de las transcripciones, `SEARCH_DEBOUNCE_MS` tras la última tecla. */
+function scheduleSearch(filter: string, apply: (matches: Set<string> | null) => void): void {
+  clearTimeout(searchTimer)
+  const seq = ++searchSeq
+  if (!filter.trim()) {
+    apply(null)
+    return
   }
-}))
+  searchTimer = setTimeout(() => {
+    window.api.history
+      .search(filter)
+      .then((ids) => {
+        if (seq === searchSeq) apply(new Set(ids))
+      })
+      .catch(() => {
+        if (seq === searchSeq) apply(null)
+      })
+  }, SEARCH_DEBOUNCE_MS)
+}
 
-useTranscriptStore.getState().open(mockHistory.find((e) => e.id === initialId) ?? null)
+/** Estados con una transcripción que no va a cambiar sola: su resultado se puede recordar. */
+const TERMINAL: ReadonlySet<HistoryEntry['status']> = new Set(['done', 'error', 'cancelled'])
 
-/** Entradas que pasan el filtro. Por ahora solo por nombre; el texto de la transcripción entra en la tarea 18. */
-export function filterHistory(entries: HistoryEntry[], filter: string): HistoryEntry[] {
-  const q = filter.trim().toLocaleLowerCase()
-  return q ? entries.filter((e) => e.fileName.toLocaleLowerCase().includes(q)) : entries
+export const useHistoryStore = create<HistoryState>()((set, get) => {
+  /**
+   * Abre la entrada en el panel de transcripción y pide al main sus segmentos y si el
+   * archivo sigue en su sitio. Mientras llega la respuesta se ve lo que ya hay en memoria.
+   */
+  async function loadEntry(id: string): Promise<void> {
+    const transcript = useTranscriptStore.getState()
+    transcript.open(get().entries.find((e) => e.id === id) ?? null)
+    const opened = await window.api.history.get(id).catch(() => null)
+    // El usuario pudo cambiar de entrada o borrar esta mientras tanto.
+    if (get().selectedId !== id || !get().entries.some((e) => e.id === id)) return
+    set((s) => ({ media: { ...s.media, [id]: opened?.media ?? null } }))
+    if (!opened) return
+    const current = get().entries.find((e) => e.id === id)!
+    // Lo que se está transcribiendo ahora manda sobre lo que hay en disco.
+    const live = useTranscriptStore.getState().job?.entryId === id
+    if (!live && TERMINAL.has(current.status)) {
+      setLoadedResult(id, opened.segments, null)
+    }
+    useTranscriptStore.getState().open(current)
+  }
+
+  return {
+    entries: [],
+    selectedId: null,
+    filter: '',
+    textMatches: null,
+    media: {},
+    select: (id) => {
+      set({ selectedId: id })
+      void loadEntry(id)
+    },
+    setFilter: (filter) => {
+      set({ filter })
+      scheduleSearch(filter, (textMatches) => set({ textMatches }))
+    },
+    load: async () => {
+      const entries = await window.api.history.list()
+      // Se conserva lo que el renderer ya sabe en vivo si llegó algo antes que la lista.
+      const known = new Map(get().entries.map((e) => [e.id, e]))
+      set({
+        entries: entries.map((e) => (e.status === 'transcribing' ? (known.get(e.id) ?? e) : e))
+      })
+    },
+    openFile: async () => {
+      const media = await window.api.media.pickFile(filterLabels())
+      if (!media) return
+      const { model, language } = useSettingsStore.getState().settings
+      const entry = await window.api.history.create({
+        filePath: media.filePath,
+        fileName: media.fileName,
+        durationSec: media.info?.durationSec ?? 0,
+        model,
+        language
+      })
+      set((s) => ({ entries: [entry, ...s.entries], media: { ...s.media, [entry.id]: media } }))
+      get().select(entry.id)
+    },
+    upsertEntry: (entry) => {
+      const current = get().entries.find((e) => e.id === entry.id)
+      if (!current) {
+        set((s) => ({ entries: [entry, ...s.entries] }))
+        return
+      }
+      const live = current.status === 'transcribing'
+      get().patchEntry(entry.id, {
+        ...entry,
+        ...(live ? { status: current.status, progress: current.progress } : {})
+      })
+    },
+    openQueueJob: async (jobId) => {
+      const opened = await window.api.queue.openJob(jobId)
+      if (!opened) return false
+      get().upsertEntry(opened.entry)
+      get().select(opened.entry.id)
+      return true
+    },
+    patchEntry: (id, patch) => {
+      const entries = get().entries.map((e) => (e.id === id ? { ...e, ...patch } : e))
+      set({ entries })
+      const updated = entries.find((e) => e.id === id)
+      if (updated && useTranscriptStore.getState().entry?.id === id) {
+        useTranscriptStore.setState({ entry: updated })
+      }
+    },
+    locateFile: async (id) => {
+      const relocated = await window.api.history.relocate(id, filterLabels())
+      if (!relocated) return
+      set((s) => ({ media: { ...s.media, [id]: relocated.media } }))
+      // La transcripción abierta sigue igual; solo cambia la entrada a la que apunta.
+      get().patchEntry(id, relocated.entry)
+    },
+    rename: async (id, displayName) => {
+      const entry = await window.api.history.rename(id, displayName)
+      if (!entry) return
+      // Se pasa siempre la clave: con `undefined` el nombre vuelve al del archivo.
+      get().patchEntry(id, { displayName: entry.displayName })
+    },
+    remove: async (id) => {
+      if (!(await window.api.history.remove(id))) return
+      forgetResults(id)
+      const { selectedId } = get()
+      const media = { ...get().media }
+      delete media[id]
+      set((s) => ({
+        entries: s.entries.filter((e) => e.id !== id),
+        media,
+        selectedId: selectedId === id ? null : selectedId
+      }))
+      if (selectedId === id) useTranscriptStore.getState().open(null)
+      // Los resultados de búsqueda de texto pueden incluir la entrada borrada.
+      scheduleSearch(get().filter, (textMatches) => set({ textMatches }))
+    },
+    hasEdits: async (id) => {
+      const transcript = useTranscriptStore.getState()
+      if (transcript.entry?.id === id) return transcript.segments.some((s) => s.edited)
+      const opened = await window.api.history.get(id).catch(() => null)
+      return opened?.segments.some((s) => s.edited) ?? false
+    },
+    retranscribe: (id) => window.api.history.retranscribe(id),
+    showInFolder: (id) => window.api.history.showInFolder(id),
+    clear: async () => {
+      await window.api.history.clear()
+      forgetResults()
+      set({ entries: [], selectedId: null, media: {}, textMatches: null })
+      useTranscriptStore.getState().open(null)
+      // El main ya vació la caché de vistas previas; el renderer se entera por `media:preview`.
+    }
+  }
+})
+
+/** Carga el historial guardado al arrancar. Se llama una vez, en App. */
+export function useHistorySync(): void {
+  useEffect(() => {
+    useHistoryStore
+      .getState()
+      .load()
+      .catch(() => {})
+  }, [])
 }

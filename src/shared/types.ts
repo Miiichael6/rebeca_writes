@@ -20,6 +20,8 @@ export interface HistoryEntry {
   id: string
   filePath: string
   fileName: string
+  /** Nombre mostrado en el historial si el usuario lo renombró; nunca cambia el archivo. */
+  displayName?: string
   durationSec: number
   model: string
   /** Código de idioma elegido, o `auto`. */
@@ -38,6 +40,16 @@ export type HistoryEntryInput = Pick<
   HistoryEntry,
   'filePath' | 'fileName' | 'durationSec' | 'model' | 'language'
 >
+
+/**
+ * Entrada abierta desde el historial (tarea 18). `media` es `null` si el archivo original
+ * ya no está en su ruta: la transcripción se muestra igual y el usuario puede relocalizarlo.
+ */
+export interface HistoryOpened {
+  entry: HistoryEntry
+  segments: Segment[]
+  media: OpenedMedia | null
+}
 
 export type Backend = 'cuda' | 'vulkan' | 'cpu'
 

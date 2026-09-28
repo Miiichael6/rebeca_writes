@@ -61,6 +61,15 @@ const api: TranscribaApi = {
   history: {
     create: (input) => invoke(IpcChannel.HistoryCreate, input),
     updateSegment: (id, index, text) => invoke(IpcChannel.HistoryUpdateSegment, id, index, text),
+    list: () => invoke(IpcChannel.HistoryList),
+    get: (id) => invoke(IpcChannel.HistoryGet, id),
+    search: (query) => invoke(IpcChannel.HistorySearch, query),
+    rename: (id, displayName) => invoke(IpcChannel.HistoryRename, id, displayName),
+    remove: (id) => invoke(IpcChannel.HistoryRemove, id),
+    clear: () => invoke(IpcChannel.HistoryClear),
+    relocate: (id, filterLabels) => invoke(IpcChannel.HistoryRelocate, id, filterLabels),
+    showInFolder: (id) => invoke(IpcChannel.HistoryShowInFolder, id),
+    retranscribe: (id) => invoke(IpcChannel.HistoryRetranscribe, id),
     onAdded: (listener) => on(IpcChannel.HistoryAdded, listener)
   },
   queue: {

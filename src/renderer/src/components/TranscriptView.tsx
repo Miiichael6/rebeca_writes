@@ -840,7 +840,9 @@ function TranscriptView(): React.JSX.Element {
   return (
     <section className="transcript" aria-label={t('transcript.title')} onKeyDown={onKeyDown}>
       <div className="transcript-header">
-        <h2 title={entry?.fileName}>{entry?.fileName ?? t('transcript.title')}</h2>
+        <h2 title={entry?.fileName}>
+          {entry ? (entry.displayName ?? entry.fileName) : t('transcript.title')}
+        </h2>
         {searched.trim() && (
           <span className="search-count" role="status">
             {hasResults

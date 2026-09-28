@@ -13,9 +13,20 @@ import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
-import { createHistoryEntry, updateHistorySegment } from './services/history'
+import {
+  clearHistoryEntries,
+  createHistoryEntry,
+  getHistoryEntry,
+  listHistoryEntries,
+  relocateHistoryEntry,
+  removeHistoryEntry,
+  renameHistoryEntry,
+  searchHistoryEntries,
+  showHistoryEntryInFolder,
+  updateHistorySegment
+} from './services/history'
 import { pickMediaFile } from './services/mediaOpen'
-import { openQueueJob, pickFilesToQueue, queue } from './services/queue'
+import { openQueueJob, pickFilesToQueue, queue, retranscribeEntry } from './services/queue'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
 import { loadSettings, updateSettings } from './services/settings'
 import {
@@ -102,6 +113,17 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.HistoryUpdateSegment, (_event, id, index, text) =>
     updateHistorySegment(id, index, text)
   )
+  handle(IpcChannel.HistoryList, () => listHistoryEntries())
+  handle(IpcChannel.HistoryGet, (_event, id) => getHistoryEntry(id))
+  handle(IpcChannel.HistorySearch, (_event, query) => searchHistoryEntries(query))
+  handle(IpcChannel.HistoryRename, (_event, id, displayName) => renameHistoryEntry(id, displayName))
+  handle(IpcChannel.HistoryRemove, (_event, id) => removeHistoryEntry(id))
+  handle(IpcChannel.HistoryClear, () => clearHistoryEntries())
+  handle(IpcChannel.HistoryRelocate, (event, id, filterLabels) =>
+    relocateHistoryEntry(BrowserWindow.fromWebContents(event.sender), id, filterLabels)
+  )
+  handle(IpcChannel.HistoryShowInFolder, (_event, id) => showHistoryEntryInFolder(id))
+  handle(IpcChannel.HistoryRetranscribe, (_event, id) => retranscribeEntry(id))
 
   handle(IpcChannel.QueueGet, () => queue().getState())
   handle(IpcChannel.QueuePickFiles, (event, filterLabels) =>

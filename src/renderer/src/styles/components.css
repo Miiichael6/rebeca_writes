@@ -523,11 +523,27 @@
   font-weight: 600;
 }
 
-.dialog-body p {
+.dialog-text {
   color: var(--text-1);
   font-size: var(--text-lg);
   line-height: 1.45;
   user-select: text;
+}
+
+.dialog-field {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+}
+
+.dialog-field .input {
+  width: 100%;
+}
+
+.dialog-hint {
+  margin-top: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--text-md);
 }
 
 .dialog-actions {

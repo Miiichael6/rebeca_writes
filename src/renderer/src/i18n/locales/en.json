@@ -28,7 +28,22 @@
     "pending_other": "{{count}} pending",
     "clearTitle": "Clear history?",
     "clearConfirm": "Clear",
-    "clearBody": "All saved transcriptions will be deleted. Original files and exported .srt files are not touched."
+    "clearBody": "All saved transcriptions will be deleted. Original files and exported .srt files are not touched.",
+    "menuLabel": "Entry actions",
+    "menuOpen": "Open",
+    "menuShowInFolder": "Show in File Explorer",
+    "menuRetranscribe": "Transcribe again",
+    "menuRename": "Rename",
+    "menuRemove": "Remove from history",
+    "renameTitle": "Rename",
+    "renameLabel": "Name in history",
+    "renameHint": "Only changes the displayed name; the file isn't renamed.",
+    "renameConfirm": "Rename",
+    "removeTitle": "Remove from history?",
+    "removeConfirm": "Remove",
+    "removeBody": "The transcription of “{{name}}” will be removed. The original file isn't touched.",
+    "retranscribeQueued": "“{{name}}” was added to the queue.",
+    "retranscribeFailed": "“{{name}}” is already in the queue."
   },
   "historyGroups": {
     "today": "Today",

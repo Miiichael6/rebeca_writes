@@ -5,6 +5,7 @@ import type {
   BackendFallback,
   BackendInfo,
   HistoryEntry,
+  HistoryOpened,
   MediaPreviewEvent,
   HistoryEntryInput,
   OpenedMedia,
@@ -48,6 +49,15 @@ export const IpcChannel = {
   MediaPreviewCacheSize: 'media:previewCacheSize',
   HistoryCreate: 'history:create',
   HistoryUpdateSegment: 'history:updateSegment',
+  HistoryList: 'history:list',
+  HistoryGet: 'history:get',
+  HistorySearch: 'history:search',
+  HistoryRename: 'history:rename',
+  HistoryRemove: 'history:remove',
+  HistoryClear: 'history:clear',
+  HistoryRelocate: 'history:relocate',
+  HistoryShowInFolder: 'history:showInFolder',
+  HistoryRetranscribe: 'history:retranscribe',
   HistoryAdded: 'history:added',
   QueueGet: 'queue:get',
   QueuePickFiles: 'queue:pickFiles',
@@ -99,6 +109,21 @@ export interface IpcInvokeMap {
     args: [id: string, index: number, text: string]
     result: Segment | null
   }
+  [IpcChannel.HistoryList]: { args: []; result: HistoryEntry[] }
+  [IpcChannel.HistoryGet]: { args: [id: string]; result: HistoryOpened | null }
+  [IpcChannel.HistorySearch]: { args: [query: string]; result: string[] }
+  [IpcChannel.HistoryRename]: {
+    args: [id: string, displayName: string]
+    result: HistoryEntry | null
+  }
+  [IpcChannel.HistoryRemove]: { args: [id: string]; result: boolean }
+  [IpcChannel.HistoryClear]: { args: []; result: void }
+  [IpcChannel.HistoryRelocate]: {
+    args: [id: string, filterLabels: Record<MediaFilterKey, string>]
+    result: { entry: HistoryEntry; media: OpenedMedia } | null
+  }
+  [IpcChannel.HistoryShowInFolder]: { args: [id: string]; result: void }
+  [IpcChannel.HistoryRetranscribe]: { args: [id: string]; result: boolean }
   [IpcChannel.QueueGet]: { args: []; result: QueueState }
   [IpcChannel.QueuePickFiles]: {
     args: [filterLabels: Record<MediaFilterKey, string>]
@@ -202,11 +227,38 @@ export interface TranscribaApi {
     getPreviewCacheSize: () => Promise<number>
   }
   history: {
-    /**
-     * Crea una entrada `pending` en `userData/history/`. El resto del historial (listar,
-     * abrir, borrar) llega en la tarea 18.
-     */
+    /** Crea una entrada `pending` en `userData/history/`. */
     create: (input: HistoryEntryInput) => Promise<HistoryEntry>
+    /** Entradas de la más nueva a la más vieja. */
+    list: () => Promise<HistoryEntry[]>
+    /**
+     * Entrada con sus segmentos. Si el archivo original existe lo registra en `media://`; si
+     * no, `media` es `null`. `null` si la entrada no existe.
+     */
+    get: (id: string) => Promise<HistoryOpened | null>
+    /** Ids de las entradas cuya transcripción contiene el texto (sin mayúsculas ni tildes). */
+    search: (query: string) => Promise<string[]>
+    /** Cambia solo el nombre mostrado; vacío lo restaura al nombre del archivo. */
+    rename: (id: string, displayName: string) => Promise<HistoryEntry | null>
+    /** Quita la entrada y su transcripción; el archivo original no se toca. */
+    remove: (id: string) => Promise<boolean>
+    /**
+     * Borra todo el historial y la caché de vistas previas. Nunca toca los medios originales
+     * ni los .srt exportados.
+     */
+    clear: () => Promise<void>
+    /**
+     * "Buscar archivo...": diálogo para elegir el archivo movido; apunta la entrada a él.
+     * `null` si se cancela o la entrada no existe.
+     */
+    relocate: (
+      id: string,
+      filterLabels: Record<MediaFilterKey, string>
+    ) => Promise<{ entry: HistoryEntry; media: OpenedMedia } | null>
+    /** Abre el Explorador con el archivo original seleccionado. */
+    showInFolder: (id: string) => Promise<void>
+    /** Vuelve a encolar el archivo con los ajustes actuales; `false` si no se pudo. */
+    retranscribe: (id: string) => Promise<boolean>
     /**
      * Cambia el texto de un segmento (edición en línea). Guarda el de whisper en
      * `originalText`; pasar ese mismo texto lo restaura. `null` si la entrada no está en disco.

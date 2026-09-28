@@ -148,6 +148,22 @@ describe('HistoryStore', () => {
     expect((await readdir(root)).sort()).toEqual(['history', 'video.mp4', 'video.srt'])
   })
 
+  it('search busca en el texto sin mayúsculas ni tildes, también en disco', async () => {
+    const store = new HistoryStore({ dir, debounceMs: 5 })
+    const a = await store.create(input('a.mp4', 1000))
+    const b = await store.create(input('b.mp4', 2000))
+    await store.appendSegments(a.id, [seg(0, 'Hablamos de la CANCIÓN'), seg(1, 'y del ñandú')])
+    await store.appendSegments(b.id, [seg(0, 'otra cosa')])
+    await store.flush()
+
+    const fresh = new HistoryStore({ dir })
+    expect(await fresh.search('cancion')).toEqual([a.id])
+    expect(await fresh.search('  Nandu ')).toEqual([a.id])
+    expect(await fresh.search('cosa')).toEqual([b.id])
+    expect(await fresh.search('nada')).toEqual([])
+    expect(await fresh.search('   ')).toEqual([])
+  })
+
   it('un index.json corrupto se respalda y el historial arranca vacío', async () => {
     const store = new HistoryStore({ dir })
     await store.create(input('a.mp4'))

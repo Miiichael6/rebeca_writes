@@ -12,6 +12,7 @@ import { Button, Toaster } from './components/ui'
 import { useModelsSync } from './store/models'
 import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
+import { useHistorySync } from './store/history'
 import { useQueueSync } from './store/queue'
 import { useSettingsSync } from './store/settings'
 import { toast } from './store/toast'
@@ -66,6 +67,7 @@ function App(): React.JSX.Element {
   usePreviewSync()
   useTranscriptionSync()
   useQueueSync()
+  useHistorySync()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
 

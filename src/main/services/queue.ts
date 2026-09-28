@@ -16,6 +16,7 @@ import {
 } from '../engine/transcribeManager'
 import { probe } from './ffmpeg'
 import { history } from './history'
+import { isValidHistoryId } from './historyStore'
 import { openMedia, pickMediaFiles } from './mediaOpen'
 import { QueueService, type RunHooks, type RunOutcome } from './queueService'
 import { QueueStore } from './queueStore'
@@ -136,6 +137,29 @@ export async function pickFilesToQueue(
     { model, language, translate }
   )
   return { added }
+}
+
+/**
+ * `history:retranscribe`: encola el archivo de una entrada con los ajustes actuales. Reutiliza
+ * la entrada del historial: al empezar, `transcribeManager` vacía sus segmentos.
+ */
+export async function retranscribeEntry(id: unknown): Promise<boolean> {
+  const saved = isValidHistoryId(id) ? await history().get(id) : null
+  if (!saved) return false
+  // Ya está en la cola sin terminar: no se encola dos veces.
+  const { jobs } = await queue().getState()
+  const queued = jobs.some(
+    (j) => j.historyId === saved.entry.id && (j.status === 'pending' || j.status === 'processing')
+  )
+  if (queued) return false
+  const { model, language, translate } = getSettings()
+  const { filePath, fileName } = saved.entry
+  const added = await queue().add([{ filePath, fileName, historyId: saved.entry.id }], {
+    model,
+    language,
+    translate
+  })
+  return added > 0
 }
 
 /** `queue:openJob`: abre la vista del trabajo (la ruta sale de la cola, no del renderer). */

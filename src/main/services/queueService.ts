@@ -23,6 +23,8 @@ export type FrozenOptions = Pick<QueueJob, 'model' | 'language' | 'translate' | 
 export interface NewQueueFile {
   filePath: string
   fileName: string
+  /** Reutiliza esta entrada del historial en vez de crear otra ("Volver a transcribir"). */
+  historyId?: string
 }
 
 export interface QueueDeps {
@@ -102,6 +104,7 @@ export class QueueService {
         id: randomUUID(),
         filePath: file.filePath,
         fileName: file.fileName,
+        ...(file.historyId ? { historyId: file.historyId } : {}),
         ...frozen,
         status: 'pending',
         addedAt: now

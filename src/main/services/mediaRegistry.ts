@@ -45,3 +45,9 @@ export function unregisterMedia(id: string): void {
   pathsById.delete(id)
   idsByPath.delete(pathKey(filePath))
 }
+
+/** Como `unregisterMedia`, pero a partir de la ruta (para cuando no se guardó el id). */
+export function unregisterMediaPath(filePath: string): void {
+  const id = idsByPath.get(pathKey(filePath))
+  if (id) unregisterMedia(id)
+}

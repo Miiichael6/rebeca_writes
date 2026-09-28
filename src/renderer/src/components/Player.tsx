@@ -153,7 +153,7 @@ function Player(): React.JSX.Element {
 
   return (
     <div className="player">
-      {entry && !media && <Unavailable entryId={entry.id} />}
+      {entry && media === null && <Unavailable entryId={entry.id} />}
 
       {entry && media && (
         <div

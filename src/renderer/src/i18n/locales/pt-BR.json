@@ -29,7 +29,22 @@
     "pending_other": "{{count}} pendentes",
     "clearTitle": "Limpar o histórico?",
     "clearConfirm": "Limpar",
-    "clearBody": "Todas as transcrições salvas serão excluídas. Os arquivos originais e os .srt exportados não são alterados."
+    "clearBody": "Todas as transcrições salvas serão excluídas. Os arquivos originais e os .srt exportados não são alterados.",
+    "menuLabel": "Ações da entrada",
+    "menuOpen": "Abrir",
+    "menuShowInFolder": "Mostrar no Explorador",
+    "menuRetranscribe": "Transcrever novamente",
+    "menuRename": "Renomear",
+    "menuRemove": "Remover do histórico",
+    "renameTitle": "Renomear",
+    "renameLabel": "Nome no histórico",
+    "renameHint": "Só altera o nome exibido; o arquivo não é renomeado.",
+    "renameConfirm": "Renomear",
+    "removeTitle": "Remover do histórico?",
+    "removeConfirm": "Remover",
+    "removeBody": "A transcrição de “{{name}}” será removida. O arquivo original não é alterado.",
+    "retranscribeQueued": "“{{name}}” foi adicionado à fila.",
+    "retranscribeFailed": "“{{name}}” já está na fila."
   },
   "historyGroups": {
     "today": "Hoje",

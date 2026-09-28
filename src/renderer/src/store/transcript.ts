@@ -7,7 +7,6 @@ import type {
   TranscriptStatus
 } from '@shared/types'
 import { editSegment } from '@shared/editSegment'
-import { mockSegmentsFor } from './mocks'
 
 /** Transcripción en curso. Hay una como mucho: la cola (tarea 17) las lanza de una en una. */
 export interface LiveJob {
@@ -35,10 +34,28 @@ interface TranscriptState {
 }
 
 /**
- * Resultados de esta sesión por id de entrada, para volver a verlos al cambiar de archivo.
- * Con el historial real (tarea 18) se leen del disco.
+ * Resultados por id de entrada, para volver a verlos al cambiar de archivo: los de esta
+ * sesión y los que se leyeron del historial en disco (`setLoadedResult`).
  */
 const results = new Map<string, { segments: Segment[]; error: ErrorCode | null }>()
+
+/**
+ * Guarda los segmentos que el main leyó del historial. Solo para entradas terminadas
+ * (`done`, `error`, `cancelled`): una pendiente o en curso no tiene resultado que recordar.
+ */
+export function setLoadedResult(
+  entryId: string,
+  segments: Segment[],
+  error: ErrorCode | null
+): void {
+  results.set(entryId, { segments, error })
+}
+
+/** Olvida los resultados guardados de una entrada (al borrarla) o de todas (`undefined`). */
+export function forgetResults(entryId?: string): void {
+  if (entryId === undefined) results.clear()
+  else results.delete(entryId)
+}
 
 function stateFor(
   entry: HistoryEntry | null,
@@ -50,13 +67,20 @@ function stateFor(
   }
   const saved = results.get(entry.id)
   if (saved) {
-    return saved.error
-      ? { entry, segments: saved.segments, status: 'error', error: saved.error }
-      : { entry, segments: saved.segments, status: 'done', error: null }
+    // El motivo del fallo no se guarda en disco: una entrada `error` cargada lo tiene en `null`.
+    if (saved.error || entry.status === 'error') {
+      return { entry, segments: saved.segments, status: 'error', error: saved.error }
+    }
+    // Cancelada: se conserva lo que llegó a salir y se puede volver a lanzar.
+    if (entry.status === 'cancelled') {
+      return { entry, segments: saved.segments, status: 'ready', error: null }
+    }
+    return { entry, segments: saved.segments, status: 'done', error: null }
   }
   switch (entry.status) {
+    // `done` sin resultado aún: `history:get` está leyendo los segmentos.
     case 'done':
-      return { entry, segments: mockSegmentsFor(entry.id), status: 'done', error: null }
+      return { entry, segments: [], status: 'done', error: null }
     case 'error':
       return { entry, segments: [], status: 'error', error: null }
     // Una entrada en `transcribing` sin trabajo vivo quedó cortada: se puede volver a lanzar.
@@ -163,7 +187,7 @@ export function applySegmentEdit(index: number, text: string): string | null {
   if (!entry || !current || !canEdit(state) || current.text === text) return null
   const next = segments.slice()
   next[index] = editSegment(current, text)
-  // Para verla igual al volver a este archivo en la sesión (los mocks no están en disco).
+  // Para verla igual al volver a este archivo en la sesión.
   if (state.status === 'done' || state.status === 'error') {
     results.set(entry.id, { segments: next, error: state.error })
   }

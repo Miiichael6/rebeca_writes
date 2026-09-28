@@ -1,4 +1,5 @@
 import type { Segment } from '@shared/types'
+import { normalize } from '@shared/normalize'
 
 /**
  * Búsqueda en la transcripción (spec §4.1): sin distinguir mayúsculas ni tildes. Se compara
@@ -6,13 +7,7 @@ import type { Segment } from '@shared/types'
  * normalizado recuerda de qué tramo del original viene.
  */
 
-/** Marcas combinantes que deja `normalize('NFD')`: tildes, diéresis, la virgulilla de la ñ... */
-const DIACRITICS = /\p{M}/gu
-
-/** Minúsculas y sin diacríticos: "Canción" → "cancion", "Ñandú" → "nandu". */
-export function normalize(text: string): string {
-  return text.toLowerCase().normalize('NFD').replace(DIACRITICS, '')
-}
+export { normalize }
 
 export interface NormalizedText {
   text: string

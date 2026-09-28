@@ -33,7 +33,7 @@ function Toolbar(): React.JSX.Element {
   const status = useTranscriptStore((s) => s.status)
   const entryId = useTranscriptStore((s) => s.entry?.id)
   const runningEntryId = useTranscriptStore((s) => s.job?.entryId)
-  const hasMedia = useHistoryStore((s) => (entryId ? entryId in s.media : false))
+  const hasMedia = useHistoryStore((s) => (entryId ? s.media[entryId] != null : false))
   const blocker = startBlocker(entryId, hasMedia, runningEntryId)
   // El modelo y el idioma no cambian a mitad de la transcripción del archivo abierto.
   const locked = status === 'transcribing'
