@@ -1,11 +1,11 @@
 import { Copy, Download } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { copyTranscript } from '@renderer/lib/copyTranscript'
-import { toast } from '@renderer/store/toast'
+import { exportAs, exportFileName, saveSrtNextToFile } from '@renderer/lib/exportTranscript'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
-import { Button, Checkbox, Menu, type MenuItem } from './ui'
+import { Button, Checkbox, ConfirmDialog, Menu, type MenuItem } from './ui'
 
 function BottomBar(): React.JSX.Element {
   const { t } = useTranslation()
@@ -13,21 +13,36 @@ function BottomBar(): React.JSX.Element {
   const autoScroll = useSettingsStore((s) => s.settings.autoScroll)
   const segments = useTranscriptStore((s) => s.segments)
   const [exportOpen, setExportOpen] = useState(false)
+  /** Ruta del `.srt` que ya existe y espera confirmación para reemplazarlo. */
+  const [replacePath, setReplacePath] = useState<string | null>(null)
   const closeExport = useCallback(() => setExportOpen(false), [])
   const empty = segments.length === 0
 
   const exportItems = useMemo((): MenuItem[] => {
-    // Los exportadores reales son de la tarea 20.
-    const notYet = (): void => toast(t('bottomBar.exportComingSoon'))
+    const saveBeside = (): void => {
+      void saveSrtNextToFile().then(setReplacePath)
+    }
     return [
-      { label: t('bottomBar.exportTxtTimestamps'), onSelect: notYet },
-      { label: t('bottomBar.exportTxt'), onSelect: notYet },
-      { label: t('bottomBar.exportVtt'), onSelect: notYet },
-      { label: t('bottomBar.exportLrc'), onSelect: notYet },
-      { label: t('bottomBar.exportSrt'), onSelect: notYet },
-      { label: t('bottomBar.saveSrtNextToFile'), onSelect: notYet, separator: true }
+      { label: t('bottomBar.exportTxtTimestamps'), onSelect: () => void exportAs('txtTimestamps') },
+      { label: t('bottomBar.exportTxt'), onSelect: () => void exportAs('txt') },
+      { label: t('bottomBar.exportVtt'), onSelect: () => void exportAs('vtt') },
+      { label: t('bottomBar.exportLrc'), onSelect: () => void exportAs('lrc') },
+      { label: t('bottomBar.exportSrt'), onSelect: () => void exportAs('srt') },
+      { label: t('bottomBar.saveSrtNextToFile'), onSelect: saveBeside, separator: true }
     ]
   }, [t])
+
+  // Ctrl+E abre el menú Exportar (spec §6).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent): void => {
+      if (!e.ctrlKey || e.altKey || e.shiftKey || e.metaKey || e.key.toLowerCase() !== 'e') return
+      if (e.repeat || document.querySelector('dialog[open]')) return
+      e.preventDefault()
+      if (!empty) setExportOpen(true)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [empty])
 
   return (
     <footer className="bottombar">
@@ -53,6 +68,8 @@ function BottomBar(): React.JSX.Element {
           icon={<Download size={14} strokeWidth={1.5} />}
           aria-haspopup="menu"
           aria-expanded={exportOpen}
+          aria-keyshortcuts="Control+E"
+          title={`${t('bottomBar.export')} (Ctrl+E)`}
           disabled={empty}
           onClick={() => setExportOpen((o) => !o)}
         >
@@ -66,6 +83,19 @@ function BottomBar(): React.JSX.Element {
           aria-label={t('bottomBar.export')}
         />
       </div>
+
+      <ConfirmDialog
+        open={replacePath !== null}
+        title={t('bottomBar.replaceTitle')}
+        confirmLabel={t('bottomBar.replace')}
+        onConfirm={() => {
+          setReplacePath(null)
+          void saveSrtNextToFile(true)
+        }}
+        onCancel={() => setReplacePath(null)}
+      >
+        {t('bottomBar.replaceBody', { name: exportFileName(replacePath ?? '') })}
+      </ConfirmDialog>
     </footer>
   )
 }

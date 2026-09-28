@@ -582,6 +582,29 @@
   animation: toast-in var(--duration) var(--ease);
 }
 
+.toast-action {
+  margin-left: var(--space-2);
+  padding: 2px var(--space-2);
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.toast-action:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.toast-action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

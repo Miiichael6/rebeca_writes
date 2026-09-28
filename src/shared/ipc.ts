@@ -1,9 +1,11 @@
 import type { ResolvedTheme } from './theme'
 import type { Settings, SettingsPatch } from './settings'
+import type { ExportFormat, ExportOptions } from './exporters'
 import type { MediaFilterKey } from './formats'
 import type {
   BackendFallback,
   BackendInfo,
+  ExportSaved,
   HistoryEntry,
   HistoryOpened,
   MediaPreviewEvent,
@@ -13,6 +15,7 @@ import type {
   QueueAddResult,
   QueueDrainedEvent,
   QueueState,
+  SaveSrtBesideResult,
   Segment,
   TranscribeDoneEvent,
   TranscribeErrorEvent,
@@ -60,6 +63,9 @@ export const IpcChannel = {
   HistoryShowInFolder: 'history:showInFolder',
   HistoryRetranscribe: 'history:retranscribe',
   HistoryAdded: 'history:added',
+  ExportSave: 'export:save',
+  ExportSaveSrtBeside: 'export:saveSrtBeside',
+  ExportShowInFolder: 'export:showInFolder',
   QueueGet: 'queue:get',
   QueuePickFiles: 'queue:pickFiles',
   QueueAddPaths: 'queue:addPaths',
@@ -127,6 +133,21 @@ export interface IpcInvokeMap {
   }
   [IpcChannel.HistoryShowInFolder]: { args: [id: string]; result: void }
   [IpcChannel.HistoryRetranscribe]: { args: [id: string]; result: boolean }
+  [IpcChannel.ExportSave]: {
+    args: [
+      entryId: string,
+      format: ExportFormat,
+      segments: Segment[],
+      options: ExportOptions,
+      filterLabel: string
+    ]
+    result: ExportSaved | null
+  }
+  [IpcChannel.ExportSaveSrtBeside]: {
+    args: [entryId: string, segments: Segment[], overwrite: boolean]
+    result: SaveSrtBesideResult
+  }
+  [IpcChannel.ExportShowInFolder]: { args: [path: string]; result: void }
   [IpcChannel.QueueGet]: { args: []; result: QueueState }
   [IpcChannel.QueuePickFiles]: {
     args: [filterLabels: Record<MediaFilterKey, string>]
@@ -271,6 +292,30 @@ export interface TranscribaApi {
     updateSegment: (id: string, index: number, text: string) => Promise<Segment | null>
     /** Avisa de las entradas que crea el main (la cola, al empezar cada trabajo). */
     onAdded: (listener: (entry: HistoryEntry) => void) => () => void
+  }
+  export: {
+    /**
+     * "Guardar como" con el nombre del archivo y la extensión del formato; escribe en UTF-8
+     * los segmentos que se ven (con las ediciones). `null` si se cancela.
+     */
+    save: (
+      entryId: string,
+      format: ExportFormat,
+      segments: Segment[],
+      options: ExportOptions,
+      filterLabel: string
+    ) => Promise<ExportSaved | null>
+    /**
+     * `<archivo>.<idioma>.srt` junto al original (Jellyfin, Plex). Sin `overwrite` no pisa
+     * uno que ya exista: devuelve `exists` para que el renderer pregunte.
+     */
+    saveSrtBeside: (
+      entryId: string,
+      segments: Segment[],
+      overwrite: boolean
+    ) => Promise<SaveSrtBesideResult>
+    /** Abre el Explorador con un archivo exportado en esta sesión seleccionado. */
+    showInFolder: (path: string) => Promise<void>
   }
   queue: {
     getState: () => Promise<QueueState>

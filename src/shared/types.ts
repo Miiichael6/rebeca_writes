@@ -27,6 +27,8 @@ export interface HistoryEntry {
   /** Código de idioma elegido, o `auto`. */
   language: string
   detectedLanguage?: string
+  /** Se tradujo al inglés (`-tr`): el `.srt` junto al archivo se llama `.en.srt`. */
+  translate?: boolean
   backend?: Backend
   /** Fecha de creación en ms (epoch). */
   createdAt: number
@@ -255,3 +257,15 @@ export interface TranscribeErrorEvent {
   code: ErrorCode
   detail?: string
 }
+
+/** Resultado de exportar con el diálogo "Guardar como". `null` si se cancela. */
+export interface ExportSaved {
+  path: string
+}
+
+/**
+ * "Guardar .srt junto al archivo". `exists`: ya hay uno con ese nombre y no se pidió
+ * reemplazarlo; `missing`: el archivo original ya no está en su carpeta.
+ */
+export type SaveSrtBesideResult =
+  { status: 'saved'; path: string } | { status: 'exists'; path: string } | { status: 'missing' }

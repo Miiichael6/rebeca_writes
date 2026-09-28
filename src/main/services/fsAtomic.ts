@@ -30,12 +30,12 @@ async function renameWithRetry(from: string, to: string): Promise<void> {
   }
 }
 
-async function writeNow(path: string, data: unknown): Promise<void> {
+async function writeNow(path: string, text: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true })
   const tmp = `${path}.tmp`
   const handle = await open(tmp, 'w')
   try {
-    await handle.writeFile(JSON.stringify(data, null, 2), 'utf8')
+    await handle.writeFile(text, 'utf8')
     // Sin fsync, un corte de luz puede dejar el rename hecho y el contenido aún sin escribir.
     await handle.sync()
   } finally {
@@ -54,8 +54,13 @@ async function writeNow(path: string, data: unknown): Promise<void> {
  * archivo anterior entero o el nuevo entero. Las escrituras a la misma ruta van en orden.
  */
 export function writeJsonAtomic(path: string, data: unknown): Promise<void> {
+  return writeTextAtomic(path, JSON.stringify(data, null, 2))
+}
+
+/** Como `writeJsonAtomic`, con texto ya formateado (UTF-8 sin BOM): los exportadores. */
+export function writeTextAtomic(path: string, text: string): Promise<void> {
   const previous = chains.get(path) ?? Promise.resolve()
-  const next = previous.catch(() => {}).then(() => writeNow(path, data))
+  const next = previous.catch(() => {}).then(() => writeNow(path, text))
   chains.set(path, next)
   const cleanup = (): void => {
     if (chains.get(path) === next) chains.delete(path)

@@ -72,6 +72,13 @@ const api: TranscribaApi = {
     retranscribe: (id) => invoke(IpcChannel.HistoryRetranscribe, id),
     onAdded: (listener) => on(IpcChannel.HistoryAdded, listener)
   },
+  export: {
+    save: (entryId, format, segments, options, filterLabel) =>
+      invoke(IpcChannel.ExportSave, entryId, format, segments, options, filterLabel),
+    saveSrtBeside: (entryId, segments, overwrite) =>
+      invoke(IpcChannel.ExportSaveSrtBeside, entryId, segments, overwrite),
+    showInFolder: (path) => invoke(IpcChannel.ExportShowInFolder, path)
+  },
   queue: {
     getState: () => invoke(IpcChannel.QueueGet),
     pickFiles: (filterLabels) => invoke(IpcChannel.QueuePickFiles, filterLabels),

@@ -33,6 +33,7 @@ import {
   queue,
   retranscribeEntry
 } from './services/queue'
+import { saveExport, saveSrtBesideEntry, showExportInFolder } from './services/exporter'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
 import { loadSettings, updateSettings } from './services/settings'
 import {
@@ -130,6 +131,21 @@ export function registerIpcHandlers(): void {
   )
   handle(IpcChannel.HistoryShowInFolder, (_event, id) => showHistoryEntryInFolder(id))
   handle(IpcChannel.HistoryRetranscribe, (_event, id) => retranscribeEntry(id))
+
+  handle(IpcChannel.ExportSave, (event, entryId, format, segments, options, filterLabel) =>
+    saveExport(
+      BrowserWindow.fromWebContents(event.sender),
+      entryId,
+      format,
+      segments,
+      options,
+      filterLabel
+    )
+  )
+  handle(IpcChannel.ExportSaveSrtBeside, (_event, entryId, segments, overwrite) =>
+    saveSrtBesideEntry(entryId, segments, overwrite)
+  )
+  handle(IpcChannel.ExportShowInFolder, (_event, path) => showExportInFolder(path))
 
   handle(IpcChannel.QueueGet, () => queue().getState())
   handle(IpcChannel.QueuePickFiles, (event, filterLabels) =>

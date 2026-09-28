@@ -138,7 +138,8 @@ export function startTranscription(job: TranscribeJob): void {
           history().update(historyId, {
             status: 'transcribing',
             model: job.model,
-            language: job.language
+            language: job.language,
+            translate: !!job.translate
           })
         )
     )

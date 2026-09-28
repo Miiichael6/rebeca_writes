@@ -1,8 +1,8 @@
-import { readdir, writeFile } from 'fs/promises'
+import { readdir } from 'fs/promises'
 import { basename, dirname, join } from 'path'
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { srtFileName, hasSiblingSrt, toSrt } from '@shared/exporters'
+import { hasSiblingSrt, srtLanguage } from '@shared/exporters'
 import type { MediaFilterKey } from '@shared/formats'
 import { IpcChannel } from '@shared/ipc'
 import { transcribeOptionsFrom } from '@shared/settings'
@@ -14,7 +14,6 @@ import type {
   QueueJob,
   Segment
 } from '@shared/types'
-import { AUTO_LANGUAGE } from '@shared/whisper'
 import {
   onTranscriptionProgress,
   runTranscription,
@@ -22,6 +21,7 @@ import {
   waitTranscriptionIdle
 } from '../engine/transcribeManager'
 import { probe } from './ffmpeg'
+import { writeSrtBeside } from './exporter'
 import { expandPaths } from './fileInput'
 import { history } from './history'
 import { isValidHistoryId } from './historyStore'
@@ -64,12 +64,12 @@ async function historyEntryFor(job: QueueJob): Promise<HistoryEntry> {
  * el que hubiera con ese nombre: la opción es automática y no puede preguntar.
  */
 async function saveSrtBeside(job: QueueJob, segments: Segment[], language: string): Promise<void> {
-  const lang = job.translate ? 'en' : language === AUTO_LANGUAGE ? 'und' : language
-  const path = join(dirname(job.filePath), srtFileName(job.fileName, lang))
+  // `language` ya es el detectado si el trabajo pidió `auto`.
+  const lang = srtLanguage({ language, translate: job.translate })
   try {
-    await writeFile(path, toSrt(segments), 'utf8')
+    await writeSrtBeside(job.filePath, lang, segments, true)
   } catch (err) {
-    log.error(`Cola: no se pudo guardar ${path}`, err)
+    log.error(`Cola: no se pudo guardar el .srt de ${job.filePath}`, err)
   }
 }
 
