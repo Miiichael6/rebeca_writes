@@ -71,6 +71,8 @@
     "nextResult": "Resultado siguiente",
     "searchPlaceholder": "Buscar...",
     "searchLabel": "Buscar en la transcripción",
+    "searchCount": "{{current}} de {{total}}",
+    "searchNoResults": "Sin resultados",
     "progressLabel": "Progreso de la transcripción",
     "remaining": "quedan ~{{time}}",
     "emptyIdle": "Abre un archivo para empezar",

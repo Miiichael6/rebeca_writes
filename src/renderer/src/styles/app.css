@@ -480,6 +480,26 @@
   appearance: none;
 }
 
+.search-count {
+  flex-shrink: 0;
+  margin-right: 4px;
+  color: var(--text-2);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.segment mark {
+  background: var(--mark-bg);
+  color: inherit;
+  border-radius: 2px;
+}
+
+.segment mark.current {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+
 .search svg {
   position: absolute;
   right: 10px;

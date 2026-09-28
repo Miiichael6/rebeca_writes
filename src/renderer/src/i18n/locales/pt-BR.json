@@ -71,6 +71,8 @@
     "nextResult": "Próximo resultado",
     "searchPlaceholder": "Pesquisar...",
     "searchLabel": "Pesquisar na transcrição",
+    "searchCount": "{{current}} de {{total}}",
+    "searchNoResults": "Nenhum resultado",
     "progressLabel": "Progresso da transcrição",
     "remaining": "faltam ~{{time}}",
     "emptyIdle": "Abra um arquivo para começar",

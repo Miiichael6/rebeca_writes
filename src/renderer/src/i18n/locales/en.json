@@ -70,6 +70,8 @@
     "nextResult": "Next result",
     "searchPlaceholder": "Search...",
     "searchLabel": "Search the transcription",
+    "searchCount": "{{current}} of {{total}}",
+    "searchNoResults": "No results",
     "progressLabel": "Transcription progress",
     "remaining": "~{{time}} left",
     "emptyIdle": "Open a file to get started",
