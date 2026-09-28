@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
-import type { OpenedMedia } from '@shared/types'
 import { mediaUrl } from '@shared/media'
 
 /** Velocidades del reproductor (spec §4.1: de 0.5x a 2x). */
@@ -10,8 +9,20 @@ export type PlaybackRate = (typeof PLAYBACK_RATES)[number]
 /** Salto de `←/→` (spec §6). */
 export const SKIP_SECONDS = 5
 
+/** Lo que se carga en el reproductor. Ver `playbackFor` en `store/preview.ts`. */
+export interface PlayerSource {
+  /** Id del medio. Con la misma clave, un `src` nuevo es la vista previa del mismo archivo. */
+  key: string
+  /** Id de `media://` que suena, o `null` si todavía no hay nada que reproducir. */
+  sourceId: string | null
+  hasVideo: boolean
+  duration: number
+}
+
 interface PlayerState {
-  /** URL `media://` del archivo cargado, o `null` si no hay ninguno. */
+  /** Medio cargado (`PlayerSource.key`). */
+  key: string | null
+  /** URL `media://` que suena, o `null` si no hay ninguna. */
   src: string | null
   /** `false` si el archivo es solo audio: se muestra el fondo neutro con el nombre. */
   hasVideo: boolean
@@ -25,7 +36,11 @@ interface PlayerState {
 
   /** El único `<video>` de la app lo registra el Player al montarse. */
   attach: (element: HTMLVideoElement | null) => void
-  load: (media: OpenedMedia | null, fallbackDuration?: number) => void
+  /**
+   * Carga un medio. Si es el mismo (`key`) con otro `src` (llegó la vista previa), cambia
+   * de fuente manteniendo la posición y si estaba sonando.
+   */
+  load: (source: PlayerSource | null) => void
   play: () => void
   pause: () => void
   toggle: () => void
@@ -39,6 +54,8 @@ interface PlayerState {
 
 // El elemento vive fuera del estado: no es un dato que pinte nada y no debe disparar renders.
 let element: HTMLVideoElement | null = null
+/** Posición y estado a recuperar cuando el `<video>` cargue la fuente nueva. */
+let resume: { time: number; play: boolean } | null = null
 
 function clampTime(t: number, duration: number): number {
   const max = duration > 0 ? duration : Number.POSITIVE_INFINITY
@@ -51,6 +68,7 @@ function clampTime(t: number, duration: number): number {
  * Volumen, silencio y velocidad los fija el store y se aplican al elemento.
  */
 export const usePlayerStore = create<PlayerState>()((set, get) => ({
+  key: null,
   src: null,
   hasVideo: true,
   currentTime: 0,
@@ -68,13 +86,26 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     el.muted = muted
     el.playbackRate = rate
   },
-  load: (media, fallbackDuration = 0) => {
-    const info = media?.info
+  load: (source) => {
+    const src = source?.sourceId ? mediaUrl(source.sourceId) : null
+    const state = get()
+    if (source && source.key === state.key) {
+      if (src !== state.src) {
+        // Solo se reanuda si había algo sonando; si no había fuente, se empieza de cero.
+        resume = state.src
+          ? { time: element?.currentTime ?? state.currentTime, play: state.playing }
+          : null
+      }
+      set({ src, hasVideo: source.hasVideo, duration: source.duration || state.duration })
+      return
+    }
+    resume = null
     set({
-      src: media ? mediaUrl(media.id) : null,
-      hasVideo: info ? info.videoCodec !== null : true,
+      key: source?.key ?? null,
+      src,
+      hasVideo: source?.hasVideo ?? true,
       currentTime: 0,
-      duration: info?.durationSec || fallbackDuration,
+      duration: source?.duration ?? 0,
       playing: false
     })
   },
@@ -134,7 +165,8 @@ export function bindVideoEvents(el: HTMLVideoElement): () => void {
   }
   const onPause = (): void => {
     stopTicking()
-    set({ playing: false, currentTime: el.currentTime })
+    // Al cambiar a la vista previa (`emptied`) el tiempo vale 0 un momento: no se refleja.
+    set(resume ? { playing: false } : { playing: false, currentTime: el.currentTime })
   }
   const onTime = (): void => set({ currentTime: el.currentTime })
   const onDuration = (): void => {
@@ -144,6 +176,14 @@ export function bindVideoEvents(el: HTMLVideoElement): () => void {
     // Cargar otro archivo devuelve playbackRate a 1: se vuelve a aplicar la elegida.
     el.playbackRate = usePlayerStore.getState().rate
     onDuration()
+    if (resume) {
+      const { time, play } = resume
+      resume = null
+      el.currentTime = time
+      set({ currentTime: time })
+      // Puede rechazar si otra carga lo interrumpe; no hay nada que mostrar.
+      if (play) el.play().catch(() => {})
+    }
   }
   // Por si el sistema cambia el volumen del elemento (p. ej. teclas multimedia).
   const onVolume = (): void => set({ volume: el.volume, muted: el.muted })

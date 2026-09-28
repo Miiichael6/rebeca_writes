@@ -59,7 +59,9 @@
     "volume": "Volume",
     "speed": "Velocidade",
     "unavailable": "O arquivo não está disponível. Ele pode ter sido movido ou excluído.",
-    "locateFile": "Procurar arquivo..."
+    "locateFile": "Procurar arquivo...",
+    "preparingPreview": "Preparando pré-visualização... {{percent}}%",
+    "previewFailed": "Não foi possível preparar a pré-visualização deste formato."
   },
   "transcript": {
     "title": "Transcrição",

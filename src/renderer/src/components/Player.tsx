@@ -1,5 +1,5 @@
-import { FileWarning, Music, Pause, Play, Volume2, VolumeX } from 'lucide-react'
-import { useCallback, useEffect, type CSSProperties } from 'react'
+import { FileWarning, Loader2, Music, Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import { useCallback, useEffect, useMemo, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { formatClock } from '@renderer/lib/time'
@@ -12,6 +12,8 @@ import {
   usePlayerStore,
   type PlaybackRate
 } from '@renderer/store/player'
+import { playbackFor, previewOf } from '@renderer/lib/preview'
+import { usePreviewStore } from '@renderer/store/preview'
 import { useTranscriptStore } from '@renderer/store/transcript'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Select, Slider } from './ui'
@@ -112,10 +114,25 @@ function Player(): React.JSX.Element {
   )
   const { attach, load, toggle, setVolume, toggleMute, setRate } = usePlayerStore.getState()
 
+  const previewStatus = usePreviewStore((s) => (media ? previewOf(s.byMedia, media) : null))
+  const playback = useMemo(
+    () => (media && previewStatus ? playbackFor(media, previewStatus) : null),
+    [media, previewStatus]
+  )
+
   const fallbackDuration = entry?.durationSec ?? 0
   useEffect(() => {
-    load(media ?? null, fallbackDuration)
-  }, [media, fallbackDuration, load])
+    load(
+      media && playback
+        ? {
+            key: media.id,
+            sourceId: playback.sourceId,
+            hasVideo: playback.hasVideo,
+            duration: media.info?.durationSec || fallbackDuration
+          }
+        : null
+    )
+  }, [media, playback, fallbackDuration, load])
 
   // Ref con limpieza (React 19): registra el elemento en el store mientras está montado.
   const videoRef = useCallback(
@@ -150,6 +167,17 @@ function Player(): React.JSX.Element {
             <div className="player-audio">
               <Music size={40} strokeWidth={1.25} aria-hidden />
               <span className="player-stage-name">{entry.fileName}</span>
+              {playback?.preparing != null && (
+                <span className="player-preview" role="status">
+                  <Loader2 size={14} strokeWidth={1.75} aria-hidden />
+                  {t('player.preparingPreview', { percent: playback.preparing })}
+                </span>
+              )}
+              {playback?.failed && (
+                <span className="player-preview" role="status">
+                  {t('player.previewFailed')}
+                </span>
+              )}
             </div>
           )}
           {showCaptions && <Captions />}

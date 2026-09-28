@@ -311,6 +311,20 @@
   font-size: var(--text-lg);
 }
 
+.player-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.player-preview svg {
+  color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+
 /* Subtítulos: capa propia (no <track>) para seguir los segmentos en vivo. */
 .player-captions {
   position: absolute;
@@ -779,7 +793,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .queue-job.processing .queue-job-icon {
+  .queue-job.processing .queue-job-icon,
+  .player-preview svg {
     animation: none;
   }
 }

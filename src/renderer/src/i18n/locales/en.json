@@ -58,7 +58,9 @@
     "volume": "Volume",
     "speed": "Speed",
     "unavailable": "The file isn't available. It may have been moved or deleted.",
-    "locateFile": "Find file..."
+    "locateFile": "Find file...",
+    "preparingPreview": "Preparing preview... {{percent}}%",
+    "previewFailed": "Couldn’t prepare a preview for this format."
   },
   "transcript": {
     "title": "Transcription",

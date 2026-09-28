@@ -10,6 +10,7 @@ import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Button, Toaster } from './components/ui'
 import { useModelsSync } from './store/models'
+import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
 import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
@@ -58,6 +59,7 @@ function App(): React.JSX.Element {
   useThemeSync()
   useBackendFallbackToast()
   useModelsSync()
+  usePreviewSync()
   const view = useUiStore((s) => s.view)
   const [showDemo, setShowDemo] = useState(false)
 

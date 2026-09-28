@@ -39,9 +39,17 @@ export function mediaFileFilters(
  * Lista blanca de lo que Chromium reproduce sin vista previa (tarea 11). `format_name`
  * de ffprobe: `mov,mp4,m4a,3gp,3g2,mj2` para MP4/MOV y `matroska,webm` para MKV/WebM.
  */
-const PLAYABLE_CONTAINERS = ['mp4', 'matroska', 'webm', 'ogg', 'mp3', 'wav', 'flac']
-const PLAYABLE_VIDEO_CODECS = ['h264', 'vp8', 'vp9', 'av1']
-const PLAYABLE_AUDIO_CODECS = ['aac', 'opus', 'mp3', 'vorbis', 'flac', 'pcm_s16le', 'pcm_f32le']
+export const PLAYABLE_CONTAINERS = ['mp4', 'matroska', 'webm', 'ogg', 'mp3', 'wav', 'flac']
+export const PLAYABLE_VIDEO_CODECS = ['h264', 'vp8', 'vp9', 'av1']
+export const PLAYABLE_AUDIO_CODECS = [
+  'aac',
+  'opus',
+  'mp3',
+  'vorbis',
+  'flac',
+  'pcm_s16le',
+  'pcm_f32le'
+]
 
 /**
  * Si Chromium puede reproducir el archivo tal cual. `videoCodec` es `null` en archivos

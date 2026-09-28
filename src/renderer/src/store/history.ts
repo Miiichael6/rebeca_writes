@@ -20,7 +20,10 @@ interface HistoryState {
   setFilter: (filter: string) => void
   /** "Buscar archivo...": elige el archivo en disco y lo asocia a la entrada (en memoria; se persiste en la 18). */
   locateFile: (id: string) => Promise<void>
-  /** Vacía el historial. Por ahora solo en memoria; el borrado real es de la tarea 18. */
+  /**
+   * Vacía el historial y la caché de vistas previas (spec §5). Las entradas solo se borran
+   * en memoria; el borrado en disco es de la tarea 18.
+   */
   clear: () => void
 }
 
@@ -57,6 +60,7 @@ export const useHistoryStore = create<HistoryState>()((set, get) => ({
   clear: () => {
     set({ entries: [], selectedId: null, media: {} })
     useTranscriptStore.getState().open(null)
+    window.api.media.clearPreviewCache().catch(() => {})
   }
 }))
 

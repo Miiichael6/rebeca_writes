@@ -89,7 +89,26 @@ export interface OpenedMedia {
   filePath: string
   fileName: string
   info: MediaInfo | null
+  /** Vista previa para códecs que Chromium no reproduce (tarea 11). */
+  preview: PreviewStatus
 }
+
+/**
+ * Qué reproduce el `<video>` para un medio. Los `id` son de la lista blanca de `media://`.
+ * - `none`: el original tal cual.
+ * - `ready`: la vista previa ya generada.
+ * - `pending`: se está generando; mientras tanto suena `audioId` (el original si Chromium
+ *   lee su audio, o un audio AAC provisional) o nada si el audio aún no está.
+ * - `failed`: no se pudo generar; suena `audioId` si lo hay.
+ */
+export type PreviewStatus =
+  | { state: 'none' }
+  | { state: 'ready'; id: string }
+  | { state: 'pending'; audioId: string | null; percent: number }
+  | { state: 'failed'; audioId: string | null }
+
+/** Cambio en la vista previa del medio `mediaId`; `cleared` = se vació la caché. */
+export type MediaPreviewEvent = { mediaId: string; status: PreviewStatus } | { cleared: true }
 
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'error' | 'cancelled'
 

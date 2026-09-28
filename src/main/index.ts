@@ -9,6 +9,7 @@ import { getBackendInfo } from './engine/backend'
 import { resolvedTheme, titleBarOverlay, watchNativeTheme } from './theme'
 import { WINDOW_COLORS } from '@shared/theme'
 import { handleMediaProtocol, registerMediaScheme } from './services/mediaProtocol'
+import { disposePreviews } from './services/previews'
 
 app.setName(APP_NAME)
 registerMediaScheme()
@@ -96,6 +97,8 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
+app.on('will-quit', () => disposePreviews())
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()

@@ -4,6 +4,7 @@ import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
 import { pickMediaFile } from './services/mediaOpen'
+import { clearPreviewCache, previewCacheSize } from './services/previews'
 import {
   addCustomModel,
   cancelDownload,
@@ -55,6 +56,8 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.MediaPickFile, (event, filterLabels) =>
     pickMediaFile(BrowserWindow.fromWebContents(event.sender), filterLabels)
   )
+  handle(IpcChannel.MediaClearPreviewCache, () => clearPreviewCache())
+  handle(IpcChannel.MediaPreviewCacheSize, () => previewCacheSize())
 
   handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
   handle(IpcChannel.TranscribeCancel, (_event, jobId) => cancelTranscription(String(jobId)))

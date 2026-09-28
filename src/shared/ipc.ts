@@ -3,6 +3,7 @@ import type { MediaFilterKey } from './formats'
 import type {
   BackendFallback,
   BackendInfo,
+  MediaPreviewEvent,
   OpenedMedia,
   TranscribeDoneEvent,
   TranscribeErrorEvent,
@@ -30,6 +31,9 @@ export const IpcChannel = {
   ModelsProgress: 'models:progress',
   ModelsChanged: 'models:changed',
   MediaPickFile: 'media:pickFile',
+  MediaPreview: 'media:preview',
+  MediaClearPreviewCache: 'media:clearPreviewCache',
+  MediaPreviewCacheSize: 'media:previewCacheSize',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -57,6 +61,8 @@ export interface IpcInvokeMap {
     args: [filterLabels: Record<MediaFilterKey, string>]
     result: OpenedMedia | null
   }
+  [IpcChannel.MediaClearPreviewCache]: { args: []; result: void }
+  [IpcChannel.MediaPreviewCacheSize]: { args: []; result: number }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
 }
@@ -67,6 +73,7 @@ export interface IpcEventMap {
   [IpcChannel.BackendFallback]: BackendFallback
   [IpcChannel.ModelsProgress]: ModelProgress
   [IpcChannel.ModelsChanged]: void
+  [IpcChannel.MediaPreview]: MediaPreviewEvent
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -115,6 +122,12 @@ export interface TranscribaApi {
      * llegan traducidos desde el renderer.
      */
     pickFile: (filterLabels: Record<MediaFilterKey, string>) => Promise<OpenedMedia | null>
+    /** Avisa cuando avanza, termina o falla la vista previa de un medio, o se vacía la caché. */
+    onPreview: (listener: (event: MediaPreviewEvent) => void) => () => void
+    /** Borra todas las vistas previas ("Borrar historial" y "Vaciar caché"). */
+    clearPreviewCache: () => Promise<void>
+    /** Bytes que ocupa la caché de vistas previas. */
+    getPreviewCacheSize: () => Promise<number>
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

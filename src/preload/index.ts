@@ -44,7 +44,10 @@ const api: TranscribaApi = {
     onChanged: (listener) => on(IpcChannel.ModelsChanged, () => listener())
   },
   media: {
-    pickFile: (filterLabels) => invoke(IpcChannel.MediaPickFile, filterLabels)
+    pickFile: (filterLabels) => invoke(IpcChannel.MediaPickFile, filterLabels),
+    onPreview: (listener) => on(IpcChannel.MediaPreview, listener),
+    clearPreviewCache: () => invoke(IpcChannel.MediaClearPreviewCache),
+    getPreviewCacheSize: () => invoke(IpcChannel.MediaPreviewCacheSize)
   },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),

@@ -5,6 +5,7 @@ import { mediaFileFilters, type MediaFilterKey } from '@shared/formats'
 import type { OpenedMedia } from '@shared/types'
 import { probe } from './ffmpeg'
 import { registerMedia } from './mediaRegistry'
+import { previewStatusFor } from './previews'
 
 /**
  * Registra un archivo en la lista blanca de `media://` y lo analiza con ffprobe. Solo se
@@ -18,7 +19,11 @@ export async function openMedia(filePath: string): Promise<OpenedMedia> {
     log.warn(`probe falló para ${filePath}`, err)
     return null
   })
-  return { id, filePath, fileName: basename(filePath), info }
+  const preview = await previewStatusFor(filePath, id, info).catch((err) => {
+    log.warn(`No se pudo consultar la vista previa de ${filePath}`, err)
+    return { state: 'none' } as const
+  })
+  return { id, filePath, fileName: basename(filePath), info, preview }
 }
 
 /** Diálogo para elegir un solo archivo de audio o video; `null` si se cancela. */
