@@ -324,12 +324,31 @@
     "modelInUse": "El modelo se está usando en una transcripción.",
     "invalidModel": "El archivo no es un modelo GGML de whisper válido.",
     "cudaInvalid": "El motor CUDA no pudo usar tu GPU NVIDIA. Actualiza el controlador de NVIDIA e inténtalo de nuevo; mientras tanto se sigue usando la CPU.",
-    "backendInUse": "El motor se está usando en una transcripción. Espera a que termine."
+    "backendInUse": "El motor se está usando en una transcripción. Espera a que termine.",
+    "offline": "Sin conexión a internet. Revisa tu red e inténtalo de nuevo.",
+    "checkFailed": "No se pudo buscar actualizaciones. Inténtalo más tarde.",
+    "updateDownloadFailed": "No se pudo descargar la actualización. Inténtalo de nuevo."
   },
   "fileFilters": {
     "allMedia": "Todos los medios",
     "video": "Video",
     "audio": "Audio",
     "allFiles": "Todos los archivos"
+  },
+  "updates": {
+    "check": "Buscar actualizaciones",
+    "checking": "Buscando…",
+    "upToDate": "Estás al día.",
+    "available": "Hay una versión nueva ({{version}})",
+    "download": "Actualizar",
+    "downloading": "Descargando actualización",
+    "ready": "Actualización lista",
+    "restart": "Reiniciar y actualizar",
+    "deferred": {
+      "transcribing": "Se instalará al terminar la transcripción o al cerrar la app.",
+      "cudaDownload": "Se instalará al terminar la descarga de CUDA o al cerrar la app."
+    },
+    "autoCheck": "Buscar actualizaciones al iniciar",
+    "notes": "Novedades de esta versión"
   }
 }

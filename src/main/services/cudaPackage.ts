@@ -56,6 +56,11 @@ function notifyChanged(): void {
   }
 }
 
+/** Hay una descarga o instalación de CUDA en curso. */
+export function isCudaBusy(): boolean {
+  return job !== null
+}
+
 export async function cudaPackageStatus(): Promise<CudaPackageStatus> {
   const removable = existsSync(join(cudaDir(), 'whisper-cli.exe'))
   const state = job

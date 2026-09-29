@@ -300,3 +300,28 @@ export interface ExportSaved {
  */
 export type SaveSrtBesideResult =
   { status: 'saved'; path: string } | { status: 'exists'; path: string } | { status: 'missing' }
+
+/** Fallos de la búsqueda o descarga de una actualización (tarea 25). */
+export type UpdateErrorCode = 'offline' | 'checkFailed' | 'downloadFailed' | 'noDiskSpace'
+
+/** Estado del actualizador; el main lo emite por `updates:status` en cada cambio. */
+export type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'upToDate'; checkedAt: number }
+  | { state: 'available'; version: string; releaseNotes?: string; sizeBytes: number }
+  | {
+      state: 'downloading'
+      version: string
+      received: number
+      total: number
+      bytesPerSec: number
+      etaSec: number | null
+    }
+  | { state: 'ready'; version: string }
+  | { state: 'error'; code: UpdateErrorCode }
+
+/** Por qué no se puede reiniciar ahora para instalar. */
+export type UpdateInstallBlocker = 'transcribing' | 'cudaDownload'
+
+export type UpdateInstallResult = { ok: true } | { ok: false; reason: UpdateInstallBlocker | 'notReady' }

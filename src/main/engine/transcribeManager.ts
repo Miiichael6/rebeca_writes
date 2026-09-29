@@ -164,6 +164,11 @@ export function cancelAllTranscriptions(): void {
   engine.cancelAll()
 }
 
+/** Hay alguna transcripción en marcha (manual o de la cola). */
+export function isTranscribing(): boolean {
+  return running.size > 0
+}
+
 /** Resuelve cuando no queda ninguna transcripción en marcha (la cola no pisa a una manual). */
 export function waitTranscriptionIdle(): Promise<void> {
   if (running.size === 0) return Promise.resolve()

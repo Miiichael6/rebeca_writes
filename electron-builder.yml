@@ -42,6 +42,12 @@ nsis:
   artifactName: ${productName}-Setup-${version}.${ext}
   # userData (historial, modelos) se conserva al desinstalar.
   deleteAppDataOnUninstall: false
+# Releases en GitHub (D5: repo público). `draft`: se publica a mano tras revisarlo.
+publish:
+  provider: github
+  owner: Miiichael6
+  repo: rebeca_writes
+  releaseType: draft
 npmRebuild: false
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

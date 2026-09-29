@@ -64,6 +64,9 @@ export interface Settings {
   theme: ThemeMode
   uiLanguage: UiLanguageSetting
 
+  /** Buscar actualizaciones al iniciar (tarea 25). */
+  autoCheckUpdates: boolean
+
   /** Límite de la caché de vistas previas en GB. */
   previewCacheMaxGB: number
   queue: QueueSettings
@@ -118,6 +121,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     videoHeight: 360,
     theme: 'system',
     uiLanguage: 'system',
+    autoCheckUpdates: true,
     previewCacheMaxGB: 5,
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }

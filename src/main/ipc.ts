@@ -42,6 +42,7 @@ import {
   removeCudaPackage
 } from './services/cudaPackage'
 import { loadSettings, updateSettings } from './services/settings'
+import { checkForUpdates, downloadUpdate, getUpdateStatus, installUpdate } from './services/updater'
 import {
   addCustomModel,
   cancelDownload,
@@ -180,4 +181,9 @@ export function registerIpcHandlers(): void {
 
   handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
   handle(IpcChannel.TranscribeCancel, (_event, jobId) => cancelTranscription(String(jobId)))
+
+  handle(IpcChannel.UpdatesGetStatus, () => getUpdateStatus())
+  handle(IpcChannel.UpdatesCheck, () => checkForUpdates())
+  handle(IpcChannel.UpdatesDownload, () => downloadUpdate())
+  handle(IpcChannel.UpdatesInstall, () => installUpdate())
 }

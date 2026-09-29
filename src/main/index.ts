@@ -18,6 +18,7 @@ import { addPathsToQueue, initQueue, queue } from './services/queue'
 import { pathsFromArgv } from './services/fileInput'
 import { IpcChannel } from '@shared/ipc'
 import { cancelAllTranscriptions } from './engine/transcribeManager'
+import { scheduleAutoCheck } from './services/updater'
 import { getSettings, loadSettings, onSettingsChanged, updateSettings } from './services/settings'
 
 app.setName(APP_NAME)
@@ -193,6 +194,7 @@ app.whenReady().then(async () => {
   getBackendInfo().catch((err) => log.error('No se pudo resolver el backend', err))
 
   createWindow()
+  scheduleAutoCheck()
   // Arranque en frío con archivos ("Abrir con"). Si la cola pregunta si retomar, esperan a
   // la respuesta y "Descartar" no los quita.
   void queueFromArgv(process.argv, process.cwd())

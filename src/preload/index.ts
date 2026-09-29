@@ -117,6 +117,13 @@ const api: AppApi = {
     onProgress: (listener) => on(IpcChannel.TranscribeProgress, listener),
     onDone: (listener) => on(IpcChannel.TranscribeDone, listener),
     onError: (listener) => on(IpcChannel.TranscribeError, listener)
+  },
+  updates: {
+    getStatus: () => invoke(IpcChannel.UpdatesGetStatus),
+    check: () => invoke(IpcChannel.UpdatesCheck),
+    download: () => invoke(IpcChannel.UpdatesDownload),
+    install: () => invoke(IpcChannel.UpdatesInstall),
+    onStatus: (listener) => on(IpcChannel.UpdatesStatus, listener)
   }
 }
 

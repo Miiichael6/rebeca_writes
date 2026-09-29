@@ -25,7 +25,9 @@ import type {
   TranscribeErrorEvent,
   TranscribeJob,
   TranscribeProgressEvent,
-  TranscribeSegmentEvent
+  TranscribeSegmentEvent,
+  UpdateInstallResult,
+  UpdateStatus
 } from './types'
 import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
@@ -97,7 +99,12 @@ export const IpcChannel = {
   TranscribeSegment: 'transcribe:segment',
   TranscribeProgress: 'transcribe:progress',
   TranscribeDone: 'transcribe:done',
-  TranscribeError: 'transcribe:error'
+  TranscribeError: 'transcribe:error',
+  UpdatesGetStatus: 'updates:get-status',
+  UpdatesCheck: 'updates:check',
+  UpdatesDownload: 'updates:download',
+  UpdatesInstall: 'updates:install',
+  UpdatesStatus: 'updates:status'
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -185,6 +192,10 @@ export interface IpcInvokeMap {
   }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
+  [IpcChannel.UpdatesGetStatus]: { args: []; result: UpdateStatus }
+  [IpcChannel.UpdatesCheck]: { args: []; result: UpdateStatus }
+  [IpcChannel.UpdatesDownload]: { args: []; result: UpdateStatus }
+  [IpcChannel.UpdatesInstall]: { args: []; result: UpdateInstallResult }
 }
 
 /** Eventos que el main envía al renderer (`webContents.send`) y su payload. */
@@ -205,6 +216,7 @@ export interface IpcEventMap {
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
   [IpcChannel.TranscribeError]: TranscribeErrorEvent
+  [IpcChannel.UpdatesStatus]: UpdateStatus
 }
 
 /** API que el preload expone en `window.api`. */
@@ -398,5 +410,16 @@ export interface AppApi {
     onProgress: (listener: (event: TranscribeProgressEvent) => void) => () => void
     onDone: (listener: (event: TranscribeDoneEvent) => void) => () => void
     onError: (listener: (event: TranscribeErrorEvent) => void) => () => void
+  }
+  /** Actualizaciones desde GitHub Releases (tarea 25). */
+  updates: {
+    getStatus: () => Promise<UpdateStatus>
+    /** Busca una versión nueva; resuelve con el estado resultante. */
+    check: () => Promise<UpdateStatus>
+    /** Descarga la versión encontrada; el progreso llega por `onStatus`. */
+    download: () => Promise<UpdateStatus>
+    /** Cierra e instala. `ok: false` si hay una transcripción o la descarga de CUDA en curso. */
+    install: () => Promise<UpdateInstallResult>
+    onStatus: (listener: (status: UpdateStatus) => void) => () => void
   }
 }

@@ -73,6 +73,7 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     videoHeight: int(VIDEO_HEIGHT_MIN, VIDEO_HEIGHT_MAX),
     theme: oneOf(['light', 'dark', 'system'] as const),
     uiLanguage: oneOf(['system', ...SUPPORTED_UI_LANGUAGES.map((l) => l.code)] as const),
+    autoCheckUpdates: bool,
     previewCacheMaxGB: positive
   }
 }

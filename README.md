@@ -64,6 +64,19 @@ Deja `dist/RebeccaWrites-Setup-<versión>.exe` (NSIS, x64, con selección de car
 - Los binarios (`whisper-cli`, ffmpeg, ffprobe) se ejecutan desde `app.asar.unpacked`.
 - Si en tu shell existe `ELECTRON_RUN_AS_NODE=1` (p. ej. terminales de algunos editores), el `.exe` se comporta como Node y no abre ventana: quítala antes de probarlo.
 
+## Publicar una versión
+
+Las versiones se publican en [GitHub Releases](https://github.com/Miiichael6/rebeca_writes/releases) y la app instalada se actualiza sola con un clic (`electron-updater`).
+
+1. `npm version minor` (o `patch`): sube `package.json` y crea el tag `vX.Y.Z`.
+2. `git push && git push --tags`.
+3. `$env:GH_TOKEN = '…'; npm run release`: compila y sube el `.exe`, el `.blockmap` y `latest.yml` como **borrador**. El token es *fine-grained* con permiso `Contents: write` sobre este repo; nunca se guarda en el repo.
+4. En GitHub → Releases: revisar el borrador, escribir las notas y pulsar **Publish**.
+
+Un tag ya publicado no se mueve: si una versión sale con un fallo, se publica `X.Y.Z+1`.
+
+La `v1.0.0` no trae el actualizador; la primera versión con él (`v1.1.0`) se instala a mano. Para probar el flujo sin publicar, ver el paso 7 de `plans/tasks/in_progress/25_actualizaciones_automaticas.md`.
+
 ## Estructura
 
 | Carpeta          | Contenido                                                                                                              |

@@ -32,6 +32,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 - [x] **D2** ¿Backend CUDA dentro del instalador (+~500 MB) o descargable desde la app? → afecta 05, 22 — **Descargable** (2026-09-28)
 - [x] **D3** ¿Se reutiliza el scaffold actual de `src/` o se rehace la fase 1? → afecta 01–04 — **Se reutiliza** (2026-09-27)
 - [x] **D4** ¿`npm run build` debe generar el instalador (criterio §9) o se deja en `build:win`? → afecta 22 — **Se deja en `build:win`** (2026-09-28)
+- [x] **D5** ¿El repo es público o los Releases van en otro repo? → afecta 25 — **Repo público** `Miiichael6/rebeca_writes` (2026-09-28)
 
 ## Tablero
 
@@ -61,7 +62,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 22 | [Empaquetado](done/22_empaquetado.md) | 7 Build | todas | ✅ Terminada |
 | 23 | [Calidad y aceptación](done/23_calidad_aceptacion.md) | 7 Cierre | 22 | ✅ Terminada |
 | 23.1 | ↳ [Descarga del backend CUDA](done/23.1_descarga_cuda.md) | 7 Cierre | 23 | ✅ Terminada |
-| 24 | [Prueba manual de aceptación y v1.0.0](pending/24_prueba_manual_aceptacion.md) | 7 Cierre | 23 | ⬜ Pendiente |
+| 24 | [Prueba manual de aceptación y v1.0.0](in_progress/24_prueba_manual_aceptacion.md) | 7 Cierre | 23 | 🔄 En progreso |
+| 25 | [Publicación y actualizaciones automáticas](in_progress/25_actualizaciones_automaticas.md) | 8 Distribución | 22 | 🔄 En progreso |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -78,4 +80,5 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 08 + 15 → 20
 todas → 22 → 23 → 24
               23 → 23.1
+        22 → 25 (actualizaciones; primera versión con ellas: v1.1.0)
 ```

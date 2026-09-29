@@ -7,6 +7,7 @@ import QueuePanel from './components/QueuePanel'
 import SettingsPage from './components/settings/SettingsPage'
 import Sidebar from './components/Sidebar'
 import TitleBar from './components/TitleBar'
+import UpdateButton from './components/UpdateButton'
 import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Toaster } from './components/ui'
@@ -21,6 +22,7 @@ import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
 import { useTranscriptionSync } from './store/transcription'
 import { useThemeSync, useUiStore } from './store/ui'
+import { useUpdatesSync } from './store/updates'
 
 function MainView(): React.JSX.Element {
   const entryId = useTranscriptStore((s) => s.entry?.id)
@@ -86,12 +88,15 @@ function App(): React.JSX.Element {
   useTranscriptionSync()
   useQueueSync()
   useHistorySync()
+  useUpdatesSync()
   useOpenFileShortcut()
   const view = useUiStore((s) => s.view)
 
   return (
     <div className="window">
-      <TitleBar />
+      <TitleBar>
+        <UpdateButton />
+      </TitleBar>
 
       {view === 'settings' ? <SettingsPage /> : <MainView />}
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { APP_NAME } from '@shared/app'
 import logo from '@renderer/assets/logo.svg'
 import LicensesDialog from './LicensesDialog'
+import UpdatesSection from './UpdatesSection'
 
 /** Acerca de: nombre, versión, registros y reconocimientos de terceros. */
 function AboutSection(): React.JSX.Element {
@@ -32,6 +33,7 @@ function AboutSection(): React.JSX.Element {
             {t('settings.thirdParty')}
           </button>
         </div>
+        <UpdatesSection />
       </div>
       {licensesOpen && <LicensesDialog onClose={() => setLicensesOpen(false)} />}
     </div>
