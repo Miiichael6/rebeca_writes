@@ -1,6 +1,6 @@
 # 23 · Calidad y criterios de aceptación finales
 
-**Estado:** 🔄 En progreso
+**Estado:** ✅ Terminada
 **Fase:** 7 — Cierre · **Depende de:** 22 · **Doc:** §6, §9
 
 ## Objetivo
@@ -37,7 +37,7 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 ### Paso 5 — Criterios de aceptación §9
 - [x] ~~Carpeta con 50 videos de formatos mixtos → se encolan y procesan solos~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
 - [x] ~~Reproducir mientras se transcribe, ver el texto en vivo, clic para saltar~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [ ] → ver 23.1 (CUDA automático con NVIDIA; Vulkan o CPU sin NVIDIA, sin instalar nada)
+- [x] → ver 23.1 (CUDA automático con NVIDIA; Vulkan o CPU sin NVIDIA, sin instalar nada)
 - [x] El instalador no pide Python, CUDA, ffmpeg ni Whisper
 - [x] ~~Búsqueda, copiar, unir líneas, desplazamiento automático~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
 - [x] ~~Exportar en los 5 formatos y guardar .srt junto al video~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
@@ -51,14 +51,14 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 - [x] Renombrar la app a **RebeccaWrites** (`APP_NAME`, `APP_ID`, package, electron-builder, README, CLAUDE.md)
 
 ### Paso 7 — Cierre
-- [ ] Actualizar el tablero en `00_README.md` (la 23 en ✅ cuando cierre la 23.1)
+- [x] Actualizar el tablero en `00_README.md` (la 23 en ✅ cuando cierre la 23.1)
 - [x] ~~Tag `v1.0.0`~~ → pasa a la [24](../pending/24_prueba_manual_aceptacion.md), después de la prueba manual
 
 ## Subtareas
-- [ ] [23.1 · Descarga del backend CUDA desde la app](../pending/23.1_descarga_cuda.md) — ⬜ Pendiente
+- [x] [23.1 · Descarga del backend CUDA desde la app](23.1_descarga_cuda.md) — ✅ Terminada
 
 ## Criterios de aceptación
-- [ ] Todos los puntos de §9 marcados o derivados: la prueba manual va a la 24 y CUDA a la 23.1
+- [x] Todos los puntos de §9 marcados o derivados: la prueba manual va a la 24 y CUDA a la 23.1
 
 ## Bitácora
 - 2026-09-28 — **Automático:** `npm run test` 291/291, `typecheck` y `lint` limpios. `npm run build:win` genera `dist/Transcriba-Setup-1.0.0.exe` (128 MB); según D4 el instalador sale de `build:win`, no de `build`. Que el instalador no pide Python/CUDA/ffmpeg/Whisper quedó probado en Windows Sandbox en la 22.
@@ -68,5 +68,6 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 - 2026-09-28 — **Marca:** sin coincidencias de "WizWhisp", "NowSmart" ni la palabra "Pro" fuera de `plans/`. ⚠️ `APP_NAME` sigue siendo `Transcriba` (instalador `Transcriba-Setup`, `appId com.transcriba.app`), pero CLAUDE.md ya dice que el nombre es **RebecaWrites**. Falta que el usuario decida si se renombra antes de la v1.0.0.
 - 2026-09-28 — **Bloqueo §9:** esta PC tiene una RTX 3050 y en dev usa CUDA (`resources/bin/cuda`, 1,1 GB). El instalador lo excluye (D2 = descargable) y la descarga desde la app no existe (05, paso 6.4), así que la app instalada cae a CPU. El criterio "CUDA automático con NVIDIA" no se cumple. No se pone el tag `v1.0.0`.
 - 2026-09-28 — **Falta prueba manual en la app instalada:** paso 1 (UI fluida; más de 3 h), paso 2 (atajos en vivo), navegación con teclado, y en el §9 la carpeta de 50 videos, reproducir mientras transcribe, búsqueda/copiar/unir/autoscroll, exportar en 5 formatos + .srt, borrar historial y retomar la cola. Los tests cubren parte (`historyStore`: `clear` solo borra dentro de su carpeta; `queueService`: al arrancar con pendientes espera a Retomar), pero no sustituyen la prueba.
-- 2026-09-28 — **Decisiones del usuario:** (1) CUDA se descarga desde la app → subtarea [23.1](../pending/23.1_descarga_cuda.md). Se subdivide porque es una funcionalidad con sus propios criterios (descarga, validación, UI). (2) El nombre pasa a **RebeccaWrites**, con dos c, como lo escribió el usuario (CLAUDE.md y la carpeta del repo decían "RebecaWrites"). (3) La prueba manual y el tag `v1.0.0` van a la nueva tarea [24](../pending/24_prueba_manual_aceptacion.md).
+- 2026-09-28 — **Decisiones del usuario:** (1) CUDA se descarga desde la app → subtarea [23.1](23.1_descarga_cuda.md). Se subdivide porque es una funcionalidad con sus propios criterios (descarga, validación, UI). (2) El nombre pasa a **RebeccaWrites**, con dos c, como lo escribió el usuario (CLAUDE.md y la carpeta del repo decían "RebecaWrites"). (3) La prueba manual y el tag `v1.0.0` van a la nueva tarea [24](../pending/24_prueba_manual_aceptacion.md).
 - 2026-09-28 — **Renombrado:** `APP_NAME = 'RebeccaWrites'`, `APP_ID = 'com.rebeccawrites.app'`, `name`/`productName` en package, `executableName: rebeccawrites`. `TranscribaApi` pasa a llamarse `AppApi`, para que el nombre no vuelva a aparecer en los tipos. Como `userData` depende de `app.setName(APP_NAME)`, en la PC de desarrollo se movió a mano `%APPDATA%\Transcriba` → `%APPDATA%\RebeccaWrites` (modelos, historial y settings). No se añadió migración en el código porque no hubo ninguna versión publicada.
+- 2026-09-28 — Cerrada al terminar la 23.1. Lo que requiere clics en la app instalada (incluida la UI de CUDA) queda en la 24.

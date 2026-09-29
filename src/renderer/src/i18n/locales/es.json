@@ -297,7 +297,17 @@
       "cuda": "CUDA",
       "vulkan": "GPU (Vulkan)",
       "cpu": "CPU"
-    }
+    },
+    "cudaTitle": "Aceleración NVIDIA (CUDA)",
+    "cudaDescription": "Tu GPU NVIDIA puede transcribir mucho más rápido con el motor CUDA. Descarga de {{size}}.",
+    "cudaReady": "Descargado. Las transcripciones usan tu GPU NVIDIA.",
+    "cudaInstalling": "Instalando y comprobando la GPU…",
+    "cudaNotDownloaded": "Descárgalo abajo, en Aceleración NVIDIA.",
+    "cudaRemoveTitle": "¿Quitar la aceleración NVIDIA?",
+    "cudaRemoveBody": "Se borra el motor CUDA descargado y las transcripciones vuelven a usar la CPU (o Vulkan). Puedes volver a descargarlo cuando quieras.",
+    "cudaOffer": "Tu GPU NVIDIA puede transcribir mucho más rápido.",
+    "cudaOfferAction": "Ver",
+    "cudaInstalled": "Aceleración NVIDIA lista. Las próximas transcripciones usarán CUDA."
   },
   "errors": {
     "noAudioStream": "El archivo no tiene pista de audio.",
@@ -309,10 +319,12 @@
     "unknown": "Ocurrió un error inesperado.",
     "modelNotFound": "El modelo no existe.",
     "noDiskSpace": "No hay espacio suficiente en el disco. Libera espacio e inténtalo de nuevo.",
-    "downloadFailed": "No se pudo descargar el modelo. Revisa tu conexión y pulsa Reanudar.",
-    "sizeMismatch": "El modelo descargado está dañado (tamaño incorrecto). Vuelve a descargarlo.",
+    "downloadFailed": "No se pudo completar la descarga. Revisa tu conexión y pulsa Reanudar.",
+    "sizeMismatch": "El archivo descargado está dañado. Vuelve a descargarlo.",
     "modelInUse": "El modelo se está usando en una transcripción.",
-    "invalidModel": "El archivo no es un modelo GGML de whisper válido."
+    "invalidModel": "El archivo no es un modelo GGML de whisper válido.",
+    "cudaInvalid": "El motor CUDA no pudo usar tu GPU NVIDIA. Actualiza el controlador de NVIDIA e inténtalo de nuevo; mientras tanto se sigue usando la CPU.",
+    "backendInUse": "El motor se está usando en una transcripción. Espera a que termine."
   },
   "fileFilters": {
     "allMedia": "Todos los medios",

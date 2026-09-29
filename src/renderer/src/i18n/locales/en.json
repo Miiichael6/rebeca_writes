@@ -290,7 +290,17 @@
       "cuda": "CUDA",
       "vulkan": "GPU (Vulkan)",
       "cpu": "CPU"
-    }
+    },
+    "cudaTitle": "NVIDIA acceleration (CUDA)",
+    "cudaDescription": "Your NVIDIA GPU can transcribe much faster with the CUDA engine. {{size}} download.",
+    "cudaReady": "Downloaded. Transcriptions use your NVIDIA GPU.",
+    "cudaInstalling": "Installing and checking the GPU…",
+    "cudaNotDownloaded": "Download it below, under NVIDIA acceleration.",
+    "cudaRemoveTitle": "Remove NVIDIA acceleration?",
+    "cudaRemoveBody": "The downloaded CUDA engine is deleted and transcriptions go back to the CPU (or Vulkan). You can download it again at any time.",
+    "cudaOffer": "Your NVIDIA GPU can transcribe much faster.",
+    "cudaOfferAction": "View",
+    "cudaInstalled": "NVIDIA acceleration is ready. Upcoming transcriptions will use CUDA."
   },
   "errors": {
     "noAudioStream": "The file has no audio track.",
@@ -302,10 +312,12 @@
     "unknown": "An unexpected error occurred.",
     "modelNotFound": "The model does not exist.",
     "noDiskSpace": "There is not enough disk space. Free up some space and try again.",
-    "downloadFailed": "The model could not be downloaded. Check your connection and click Resume.",
-    "sizeMismatch": "The downloaded model is corrupted (wrong size). Download it again.",
+    "downloadFailed": "The download could not be completed. Check your connection and click Resume.",
+    "sizeMismatch": "The downloaded file is corrupted. Download it again.",
     "modelInUse": "The model is being used by a transcription.",
-    "invalidModel": "The file is not a valid whisper GGML model."
+    "invalidModel": "The file is not a valid whisper GGML model.",
+    "cudaInvalid": "The CUDA engine could not use your NVIDIA GPU. Update your NVIDIA driver and try again; the CPU is still used in the meantime.",
+    "backendInUse": "The engine is being used by a transcription. Wait for it to finish."
   },
   "fileFilters": {
     "allMedia": "All media",

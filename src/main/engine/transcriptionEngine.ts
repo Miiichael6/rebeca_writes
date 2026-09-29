@@ -18,7 +18,7 @@ import type {
 import { probe, toWav, MediaError } from '../services/ffmpeg'
 import { jobTempDir } from '../services/tempFiles'
 import { resolveModelPath } from '../services/models'
-import { getBackendInfo, notifyFallback } from './backend'
+import { acquireBackend, getBackendInfo, notifyFallback } from './backend'
 import {
   BackendLoadError,
   BackendNotInstalledError,
@@ -168,8 +168,10 @@ export class TranscriptionEngine extends EventEmitter {
             translate: job.translate,
             options: job.options
           })
-          log.info(`Transcripción ${job.id}: whisper-cli (${b}) ${args.join(' ')}`)
-          return this.runWhisper(job.id, active, b, getWhisperCli(b), args)
+          const cli = getWhisperCli(b)
+          log.info(`Transcripción ${job.id}: ${cli} ${args.join(' ')}`)
+          const release = acquireBackend(b)
+          return this.runWhisper(job.id, active, b, cli, args).finally(release)
         },
         notifyFallback
       )

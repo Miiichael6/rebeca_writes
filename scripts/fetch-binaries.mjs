@@ -22,10 +22,14 @@ import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import whisperRelease from '../src/shared/whisperRelease.json' with { type: 'json' }
 
 const REPO = 'ggml-org/whisper.cpp'
-/** Release probada. Los tags `vX.Y.Z` salen sin binarios; los publica el tag de build `bNNNN`. */
-const WHISPER_RELEASE = 'b5130'
+/**
+ * Release probada. Los tags `vX.Y.Z` salen sin binarios; los publica el tag de build `bNNNN`.
+ * Vive en `src/shared/whisperRelease.json` porque la app descarga CUDA de la misma release.
+ */
+const WHISPER_RELEASE = whisperRelease.release
 
 /** Zip de cada backend dentro de la release. */
 const ASSETS = {

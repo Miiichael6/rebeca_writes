@@ -1,0 +1,8 @@
+{
+  "release": "b5130",
+  "cuda": {
+    "asset": "whisper-cublas-12.4.0-bin-x64.zip",
+    "sizeBytes": 674539285,
+    "sha256": "af520ddd034d985b55dfeea3e465ed93653ba2aee1a55e865033edc548c272a7"
+  }
+}

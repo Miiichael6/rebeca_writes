@@ -60,7 +60,38 @@ export interface BackendInfo {
   backend: Backend
   detected: Backend
   installed: Backend[]
+  /** Hay una GPU NVIDIA (responde `nvidia-smi`), tenga o no CUDA instalado. */
+  nvidia: boolean
+  /** Hay NVIDIA pero no CUDA: se ofrece descargar el paquete (tarea 23.1). */
+  cudaDownloadable: boolean
 }
+
+/** Estado del paquete CUDA descargable (`userData/backends/cuda`). */
+export interface CudaPackageStatus {
+  state: 'missing' | 'downloading' | 'installing' | 'installed'
+  /** Bytes del `.part` de una descarga a medias (para "Reanudar"). */
+  partBytes: number
+  sizeBytes: number
+  /** CUDA está en `userData/backends` y se puede quitar; el que trae la app no. */
+  removable: boolean
+}
+
+/** Progreso de `backend:cuda-progress`: la descarga y después la instalación (sin porcentaje). */
+export interface CudaProgress {
+  phase: 'downloading' | 'installing'
+  received: number
+  total: number
+  bytesPerSec: number
+  etaSec: number | null
+}
+
+export type CudaErrorCode =
+  'noDiskSpace' | 'downloadFailed' | 'sizeMismatch' | 'cudaInvalid' | 'backendInUse'
+
+export type CudaDownloadResult =
+  { status: 'done' } | { status: 'cancelled' } | { status: 'error'; code: CudaErrorCode }
+
+export type CudaActionResult = { ok: true } | { ok: false; code: CudaErrorCode }
 
 /** Aviso de fallback: `from` falló al cargar y la transcripción siguió con `to`. */
 export interface BackendFallback {

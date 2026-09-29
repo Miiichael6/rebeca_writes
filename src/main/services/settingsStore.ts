@@ -10,6 +10,7 @@ import {
   type SettingsPatch,
   type WindowBounds
 } from '@shared/settings'
+import type { Backend } from '@shared/types'
 import { BACKEND_ORDER } from '@shared/whisper'
 import { DebouncedJsonWriter, readJsonSafe } from './fsAtomic'
 
@@ -45,12 +46,18 @@ const oneOf =
 
 const backendOrNull = oneOf([...BACKEND_ORDER, null])
 
+/** Lista de backends sin repetidos y en el orden de preferencia. */
+const backendList: Validator<Backend[]> = (v) =>
+  Array.isArray(v) ? BACKEND_ORDER.filter((b) => v.includes(b)) : undefined
+
 type FlatKey = Exclude<keyof Settings, 'version' | 'queue' | 'window'>
 
 function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> } {
   return {
     backend: backendOrNull,
     detectedBackend: backendOrNull,
+    installedBackends: backendList,
+    cudaOffered: bool,
     model: text(200),
     language: text(20),
     translate: bool,

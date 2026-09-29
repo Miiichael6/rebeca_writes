@@ -297,7 +297,17 @@
       "cuda": "CUDA",
       "vulkan": "GPU (Vulkan)",
       "cpu": "CPU"
-    }
+    },
+    "cudaTitle": "Aceleração NVIDIA (CUDA)",
+    "cudaDescription": "Sua GPU NVIDIA pode transcrever muito mais rápido com o motor CUDA. Download de {{size}}.",
+    "cudaReady": "Baixado. As transcrições usam sua GPU NVIDIA.",
+    "cudaInstalling": "Instalando e verificando a GPU…",
+    "cudaNotDownloaded": "Baixe-o abaixo, em Aceleração NVIDIA.",
+    "cudaRemoveTitle": "Remover a aceleração NVIDIA?",
+    "cudaRemoveBody": "O motor CUDA baixado é apagado e as transcrições voltam a usar a CPU (ou Vulkan). Você pode baixá-lo novamente quando quiser.",
+    "cudaOffer": "Sua GPU NVIDIA pode transcrever muito mais rápido.",
+    "cudaOfferAction": "Ver",
+    "cudaInstalled": "Aceleração NVIDIA pronta. As próximas transcrições usarão CUDA."
   },
   "errors": {
     "noAudioStream": "O arquivo não tem faixa de áudio.",
@@ -309,10 +319,12 @@
     "unknown": "Ocorreu um erro inesperado.",
     "modelNotFound": "O modelo não existe.",
     "noDiskSpace": "Não há espaço suficiente no disco. Libere espaço e tente novamente.",
-    "downloadFailed": "Não foi possível baixar o modelo. Verifique sua conexão e clique em Retomar.",
-    "sizeMismatch": "O modelo baixado está corrompido (tamanho incorreto). Baixe-o novamente.",
+    "downloadFailed": "Não foi possível concluir o download. Verifique sua conexão e clique em Retomar.",
+    "sizeMismatch": "O arquivo baixado está corrompido. Baixe-o novamente.",
     "modelInUse": "O modelo está sendo usado em uma transcrição.",
-    "invalidModel": "O arquivo não é um modelo GGML do whisper válido."
+    "invalidModel": "O arquivo não é um modelo GGML do whisper válido.",
+    "cudaInvalid": "O motor CUDA não conseguiu usar sua GPU NVIDIA. Atualize o driver da NVIDIA e tente novamente; enquanto isso, a CPU continua sendo usada.",
+    "backendInUse": "O motor está sendo usado em uma transcrição. Aguarde até terminar."
   },
   "fileFilters": {
     "allMedia": "Todas as mídias",

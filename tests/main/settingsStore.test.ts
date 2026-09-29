@@ -62,6 +62,19 @@ describe('mergeSettings', () => {
     const withCuda = mergeSettings(defaults, { backend: 'cuda' }, CPUS)
     expect(mergeSettings(withCuda, { backend: null }, CPUS).backend).toBeNull()
   })
+
+  it('normaliza la lista de backends instalados: sin repetidos, en orden y sin desconocidos', () => {
+    const next = mergeSettings(
+      defaults,
+      { installedBackends: ['cpu', 'metal', 'cuda', 'cpu'] },
+      CPUS
+    )
+    expect(next.installedBackends).toEqual(['cuda', 'cpu'])
+    expect(mergeSettings(next, { installedBackends: 'cuda' }, CPUS).installedBackends).toEqual([
+      'cuda',
+      'cpu'
+    ])
+  })
 })
 
 describe('migrateSettings', () => {

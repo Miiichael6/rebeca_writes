@@ -35,6 +35,10 @@ export interface Settings {
   backend: Backend | null
   /** Backend autodetectado; `null` = la detección aún no corrió. */
   detectedBackend: Backend | null
+  /** Backends instalados cuando corrió la detección; si cambian se vuelve a detectar. */
+  installedBackends: Backend[]
+  /** Ya se mostró el aviso "Tu GPU NVIDIA puede transcribir mucho más rápido". */
+  cudaOffered: boolean
 
   // Barra superior e inferior.
   model: string
@@ -97,6 +101,8 @@ export function createDefaultSettings(cpuCount: number): Settings {
     version: SETTINGS_VERSION,
     backend: null,
     detectedBackend: null,
+    installedBackends: [],
+    cudaOffered: false,
     model: 'small',
     language: AUTO_LANGUAGE,
     translate: false,

@@ -1,3 +1,5 @@
+import whisperRelease from './whisperRelease.json'
+
 /** Idioma "detectar automáticamente" en `whisper-cli -l`. */
 export const AUTO_LANGUAGE = 'auto'
 
@@ -22,3 +24,14 @@ export function languageTag(code: string): string {
 
 /** Backends de whisper.cpp en orden de preferencia; el fallback baja por esta lista (spec §2.1). */
 export const BACKEND_ORDER = ['cuda', 'vulkan', 'cpu'] as const
+
+/**
+ * Release de whisper.cpp probada y paquete CUDA que se descarga desde la app (tarea 23.1). Están
+ * en JSON para que `scripts/fetch-binaries.mjs` use los mismos valores.
+ */
+export const WHISPER_RELEASE = whisperRelease.release
+
+export const CUDA_PACKAGE = {
+  ...whisperRelease.cuda,
+  url: `https://github.com/ggml-org/whisper.cpp/releases/download/${whisperRelease.release}/${whisperRelease.cuda.asset}`
+} as const

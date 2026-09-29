@@ -10,6 +10,7 @@ import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Toaster } from './components/ui'
+import { useBackendSync, useCudaOfferToast } from './store/backend'
 import { useModelsSync } from './store/models'
 import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
@@ -78,6 +79,8 @@ function App(): React.JSX.Element {
   useThemeSync()
   useSettingsSync()
   useBackendFallbackToast()
+  useBackendSync()
+  useCudaOfferToast()
   useModelsSync()
   usePreviewSync()
   useTranscriptionSync()

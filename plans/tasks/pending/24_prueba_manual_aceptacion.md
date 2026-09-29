@@ -32,6 +32,8 @@ Recorrer a mano, en la app instalada, todo lo que la 23 no pudo comprobar con te
 - [ ] Carpeta con 50 videos de formatos mixtos → se encolan y procesan solos
 - [ ] Reproducir mientras se transcribe, ver el texto en vivo, clic para saltar
 - [ ] CUDA automático con NVIDIA (tras la 23.1); Vulkan o CPU sin NVIDIA, sin instalar nada
+- [ ] CUDA desde la app (23.1), con `%APPDATA%\RebeccaWritesackends` vacío: aparece el toast "Ver" una sola vez y la tarjeta en Configuración; Descargar → Cancelar → Reanudar → termina e instala; la siguiente transcripción usa `backends\cuda\whisper-cli.exe` (log y Administrador de tareas)
+- [ ] Quitar CUDA desde la tarjeta (con confirmación) → vuelve a CPU sin reiniciar; no deja quitarlo mientras transcribe
 - [ ] Búsqueda, copiar, unir líneas, desplazamiento automático
 - [ ] Exportar en los 5 formatos y guardar .srt junto al video (abrirlo en VLC)
 - [ ] Borrar historial pide confirmación y no toca los originales ni los .srt exportados

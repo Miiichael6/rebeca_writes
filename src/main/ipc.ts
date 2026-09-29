@@ -35,6 +35,12 @@ import {
 } from './services/queue'
 import { saveExport, saveSrtBesideEntry, showExportInFolder } from './services/exporter'
 import { clearPreviewCache, previewCacheSize } from './services/previews'
+import {
+  cancelCudaDownload,
+  cudaPackageStatus,
+  downloadCudaPackage,
+  removeCudaPackage
+} from './services/cudaPackage'
 import { loadSettings, updateSettings } from './services/settings'
 import {
   addCustomModel,
@@ -103,6 +109,10 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.ThemeGetResolved, () => resolvedTheme())
 
   handle(IpcChannel.BackendGetInfo, () => getBackendInfo())
+  handle(IpcChannel.BackendCudaStatus, () => cudaPackageStatus())
+  handle(IpcChannel.BackendCudaDownload, () => downloadCudaPackage())
+  handle(IpcChannel.BackendCudaCancel, () => cancelCudaDownload())
+  handle(IpcChannel.BackendCudaRemove, () => removeCudaPackage())
 
   handle(IpcChannel.ModelsList, () => listModels())
   handle(IpcChannel.ModelsDownload, (_event, id) => downloadModel(String(id)))

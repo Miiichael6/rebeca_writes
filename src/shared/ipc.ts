@@ -5,6 +5,10 @@ import type { MediaFilterKey } from './formats'
 import type {
   BackendFallback,
   BackendInfo,
+  CudaActionResult,
+  CudaDownloadResult,
+  CudaPackageStatus,
+  CudaProgress,
   ExportSaved,
   HistoryEntry,
   HistoryOpened,
@@ -41,6 +45,12 @@ export const IpcChannel = {
   ThemeChanged: 'theme:changed',
   BackendGetInfo: 'backend:get-info',
   BackendFallback: 'backend:fallback',
+  BackendChanged: 'backend:changed',
+  BackendCudaStatus: 'backend:cuda-status',
+  BackendCudaDownload: 'backend:cuda-download',
+  BackendCudaCancel: 'backend:cuda-cancel',
+  BackendCudaRemove: 'backend:cuda-remove',
+  BackendCudaProgress: 'backend:cuda-progress',
   ModelsList: 'models:list',
   ModelsDownload: 'models:download',
   ModelsCancel: 'models:cancel',
@@ -105,6 +115,10 @@ export interface IpcInvokeMap {
   [IpcChannel.SettingsSet]: { args: [patch: SettingsPatch]; result: Settings }
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
   [IpcChannel.BackendGetInfo]: { args: []; result: BackendInfo }
+  [IpcChannel.BackendCudaStatus]: { args: []; result: CudaPackageStatus }
+  [IpcChannel.BackendCudaDownload]: { args: []; result: CudaDownloadResult }
+  [IpcChannel.BackendCudaCancel]: { args: []; result: void }
+  [IpcChannel.BackendCudaRemove]: { args: []; result: CudaActionResult }
   [IpcChannel.ModelsList]: { args: []; result: ModelStatus[] }
   [IpcChannel.ModelsDownload]: { args: [id: string]; result: ModelDownloadResult }
   [IpcChannel.ModelsCancel]: { args: [id: string]; result: void }
@@ -178,6 +192,8 @@ export interface IpcEventMap {
   [IpcChannel.SettingsChanged]: Settings
   [IpcChannel.ThemeChanged]: ResolvedTheme
   [IpcChannel.BackendFallback]: BackendFallback
+  [IpcChannel.BackendChanged]: void
+  [IpcChannel.BackendCudaProgress]: CudaProgress
   [IpcChannel.ModelsProgress]: ModelProgress
   [IpcChannel.ModelsChanged]: void
   [IpcChannel.MediaPreview]: MediaPreviewEvent
@@ -230,6 +246,19 @@ export interface AppApi {
     getInfo: () => Promise<BackendInfo>
     /** Avisa cuando un backend falla al cargar y se reintenta con el siguiente. */
     onFallback: (listener: (fallback: BackendFallback) => void) => () => void
+    /** Avisa cuando cambian los backends instalados o la detección (se instaló o quitó CUDA). */
+    onChanged: (listener: () => void) => () => void
+    /** Paquete CUDA descargable (tarea 23.1). */
+    cuda: {
+      getStatus: () => Promise<CudaPackageStatus>
+      /** Descarga (o reanuda), valida e instala; resuelve al terminar, cancelar o fallar. */
+      download: () => Promise<CudaDownloadResult>
+      /** Cancela la descarga conservando el `.part`. */
+      cancel: () => Promise<void>
+      /** Borra el paquete descargado y vuelve a detectar. No se puede mientras se use. */
+      remove: () => Promise<CudaActionResult>
+      onProgress: (listener: (progress: CudaProgress) => void) => () => void
+    }
   }
   models: {
     /** Modelos del catálogo y personalizados, con su estado y tamaño en disco. */

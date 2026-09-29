@@ -42,7 +42,15 @@ const api: AppApi = {
   },
   backend: {
     getInfo: () => invoke(IpcChannel.BackendGetInfo),
-    onFallback: (listener) => on(IpcChannel.BackendFallback, listener)
+    onFallback: (listener) => on(IpcChannel.BackendFallback, listener),
+    onChanged: (listener) => on(IpcChannel.BackendChanged, () => listener()),
+    cuda: {
+      getStatus: () => invoke(IpcChannel.BackendCudaStatus),
+      download: () => invoke(IpcChannel.BackendCudaDownload),
+      cancel: () => invoke(IpcChannel.BackendCudaCancel),
+      remove: () => invoke(IpcChannel.BackendCudaRemove),
+      onProgress: (listener) => on(IpcChannel.BackendCudaProgress, listener)
+    }
   },
   models: {
     list: () => invoke(IpcChannel.ModelsList),
