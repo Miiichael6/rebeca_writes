@@ -308,7 +308,7 @@
     "cancelled": "Transcrição cancelada.",
     "unknown": "Ocorreu um erro inesperado.",
     "modelNotFound": "O modelo não existe.",
-    "noDiskSpace": "Não há espaço suficiente no disco para baixar o modelo.",
+    "noDiskSpace": "Não há espaço suficiente no disco. Libere espaço e tente novamente.",
     "downloadFailed": "Não foi possível baixar o modelo. Verifique sua conexão e clique em Retomar.",
     "sizeMismatch": "O modelo baixado está corrompido (tamanho incorreto). Baixe-o novamente.",
     "modelInUse": "O modelo está sendo usado em uma transcrição.",

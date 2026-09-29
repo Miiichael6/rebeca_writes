@@ -59,7 +59,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 20 | [Exportadores](done/20_exportadores.md) | 6 Exportar | 08, 15 | ✅ Terminada (falta probar a mano en VLC y Jellyfin/Plex) |
 | 21 | [Página de Configuración](done/21_configuracion.md) | 6 Config | 05, 06, 12 | ✅ Terminada |
 | 22 | [Empaquetado](done/22_empaquetado.md) | 7 Build | todas | ✅ Terminada |
-| 23 | [Calidad y aceptación](pending/23_calidad_aceptacion.md) | 7 Cierre | 22 | ⬜ Pendiente |
+| 23 | [Calidad y aceptación](in_progress/23_calidad_aceptacion.md) | 7 Cierre | 22 | 🔄 En progreso |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 

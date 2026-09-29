@@ -301,7 +301,7 @@
     "cancelled": "Transcription cancelled.",
     "unknown": "An unexpected error occurred.",
     "modelNotFound": "The model does not exist.",
-    "noDiskSpace": "There is not enough disk space to download the model.",
+    "noDiskSpace": "There is not enough disk space. Free up some space and try again.",
     "downloadFailed": "The model could not be downloaded. Check your connection and click Resume.",
     "sizeMismatch": "The downloaded model is corrupted (wrong size). Download it again.",
     "modelInUse": "The model is being used by a transcription.",

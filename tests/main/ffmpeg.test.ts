@@ -6,6 +6,7 @@ import { join } from 'path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { isChromiumPlayable, mediaFileFilters } from '@shared/formats'
 import {
+  conversionErrorCode,
   createProgressParser,
   ffmpegPath,
   MediaError,
@@ -155,6 +156,20 @@ describe('createProgressParser', () => {
     const push = createProgressParser(0, (p) => seen.push(p))
     push('out_time_ms=5000000\nprogress=continue\nprogress=end\n')
     expect(seen).toEqual([100])
+  })
+})
+
+describe('conversionErrorCode', () => {
+  it('reconoce el disco lleno en el stderr de ffmpeg', () => {
+    const stderr =
+      'Error writing trailer of C:\\tmp\\audio.wav: No space left on device\n' +
+      'Error closing file C:\\tmp\\audio.wav: No space left on device'
+    expect(conversionErrorCode(stderr)).toBe('noDiskSpace')
+  })
+
+  it('cualquier otro fallo es conversionFailed', () => {
+    expect(conversionErrorCode('Invalid data found when processing input')).toBe('conversionFailed')
+    expect(conversionErrorCode('')).toBe('conversionFailed')
   })
 })
 

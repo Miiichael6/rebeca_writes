@@ -308,7 +308,7 @@
     "cancelled": "Transcripción cancelada.",
     "unknown": "Ocurrió un error inesperado.",
     "modelNotFound": "El modelo no existe.",
-    "noDiskSpace": "No hay espacio suficiente en el disco para descargar el modelo.",
+    "noDiskSpace": "No hay espacio suficiente en el disco. Libera espacio e inténtalo de nuevo.",
     "downloadFailed": "No se pudo descargar el modelo. Revisa tu conexión y pulsa Reanudar.",
     "sizeMismatch": "El modelo descargado está dañado (tamaño incorrecto). Vuelve a descargarlo.",
     "modelInUse": "El modelo se está usando en una transcripción.",

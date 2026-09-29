@@ -30,7 +30,7 @@
   --text-disabled: #6e6e6e;
   --accent-text: #ff7a66; /* 5.5 sobre --bg-card, 6.4 sobre --bg-app */
 
-  --track: #5c5c5c;
+  --track: #7a7a7a; /* riel de sliders y progreso: ≥3:1 sobre card y app (WCAG 1.4.11) */
   --thumb: #454545;
 
   --info: #4c9aff;

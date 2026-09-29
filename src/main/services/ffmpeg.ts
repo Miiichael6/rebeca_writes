@@ -14,7 +14,10 @@ import type { AudioTrack, ErrorCode, MediaInfo } from '@shared/types'
 /** Error de medios con código traducible. `detail` (stderr de ffmpeg) solo va al log. */
 export class MediaError extends Error {
   constructor(
-    readonly code: Extract<ErrorCode, 'noAudioStream' | 'unreadableMedia' | 'conversionFailed'>,
+    readonly code: Extract<
+      ErrorCode,
+      'noAudioStream' | 'unreadableMedia' | 'conversionFailed' | 'noDiskSpace'
+    >,
     readonly detail = ''
   ) {
     super(detail ? `${code}: ${detail}` : code)
@@ -194,6 +197,14 @@ export function wavArgs(file: string, out: string, track = 0, normalize = false)
 }
 
 /**
+ * Código de error de una conversión fallida. Con el disco lleno ffmpeg no devuelve
+ * ENOSPC a Node: solo lo escribe en stderr ("No space left on device").
+ */
+export function conversionErrorCode(stderr: string): 'noDiskSpace' | 'conversionFailed' {
+  return /no space left on device/i.test(stderr) ? 'noDiskSpace' : 'conversionFailed'
+}
+
+/**
  * Convierte la pista elegida a `<outDir>/audio.wav` y devuelve su ruta. Al cancelar
  * con `signal` mata ffmpeg, borra `outDir` y rechaza con el `AbortError`.
  */
@@ -226,7 +237,7 @@ export async function toWav(file: string, options: ToWavOptions): Promise<string
         signal?.removeEventListener('abort', onAbort)
         if (signal?.aborted) reject(signal.reason)
         else if (code === 0) resolve()
-        else reject(new MediaError('conversionFailed', lastLines(stderr)))
+        else reject(new MediaError(conversionErrorCode(stderr), lastLines(stderr)))
       })
     })
   } catch (err) {
