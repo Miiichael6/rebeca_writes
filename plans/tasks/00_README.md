@@ -64,6 +64,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 23.1 | ↳ [Descarga del backend CUDA](done/23.1_descarga_cuda.md) | 7 Cierre | 23 | ✅ Terminada |
 | 24 | [Prueba manual de aceptación y v1.0.0](in_progress/24_prueba_manual_aceptacion.md) | 7 Cierre | 23 | 🔄 En progreso |
 | 25 | [Publicación y actualizaciones automáticas](in_progress/25_actualizaciones_automaticas.md) | 8 Distribución | 22 | 🔄 En progreso |
+| 26 | [Animaciones y microinteracciones](in_progress/26_animaciones_microinteracciones.md) | 9 Pulido | 22 | 🔄 En progreso |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -81,4 +82,5 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 todas → 22 → 23 → 24
               23 → 23.1
         22 → 25 (actualizaciones; primera versión con ellas: v1.1.0)
+        22 → 26 (animaciones y Select propio)
 ```

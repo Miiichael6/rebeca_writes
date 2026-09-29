@@ -49,15 +49,21 @@
   --control-height: 32px;
   --title-bar-height: 40px; /* = TITLE_BAR_HEIGHT en src/shared/theme.ts */
 
-  /* Movimiento */
+  /* Movimiento. Los @keyframes compartidos están en motion.css. */
   --ease: cubic-bezier(0, 0, 0, 1);
+  /* Salidas: arrancan rápido y se apagan, al revés que las entradas. */
+  --ease-out: cubic-bezier(0.4, 0, 1, 1);
+  /* Rebote corto para los paneles que se despliegan. */
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1.15);
   --duration-fast: 83ms;
   --duration: 167ms;
+  --duration-slow: 250ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0ms;
     --duration: 0ms;
+    --duration-slow: 0ms;
   }
 }

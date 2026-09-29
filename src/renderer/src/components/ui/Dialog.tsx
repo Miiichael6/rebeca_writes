@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
+import { useId, useRef, type ReactNode, type RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useModalDialog } from '@renderer/lib/useModalDialog'
 import { Button } from './Button'
 
 export interface ConfirmDialogProps {
@@ -35,27 +36,20 @@ export function ConfirmDialog({
   onCancel
 }: ConfirmDialogProps): React.JSX.Element {
   const { t } = useTranslation()
-  const ref = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
 
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) {
-      dialog.showModal()
-      // El foco empieza en Cancelar: un Enter por accidente no confirma una acción destructiva.
-      // (showModal enfoca el primer botón, así que `autoFocus` no basta.)
-      ;(initialFocus ?? (focusConfirm ? confirmRef : cancelRef)).current?.focus()
-    }
-    if (!open && dialog.open) dialog.close()
-  }, [open, focusConfirm, initialFocus])
+  // El foco empieza en Cancelar: un Enter por accidente no confirma una acción destructiva.
+  // (showModal enfoca el primer botón, así que `autoFocus` no basta.)
+  const { ref, state } = useModalDialog(open, () =>
+    (initialFocus ?? (focusConfirm ? confirmRef : cancelRef)).current?.focus()
+  )
 
   return (
     <dialog
       ref={ref}
-      className="dialog"
+      className={`dialog ${state}`}
       aria-labelledby={titleId}
       onCancel={(e) => {
         // Esc: dejamos que el padre decida (controla `open`).

@@ -1,10 +1,13 @@
 import { ChevronDown } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { useCallback, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { appendQuery, EMPTY_QUERY, matchPrefix, moveIndex } from '@renderer/lib/listbox'
+import { MOTION_FAST } from '@renderer/lib/motion'
+import { useMountTransition } from '@renderer/lib/useMountTransition'
+import { useOutsidePointer } from '@renderer/lib/useOutsidePointer'
+import { SelectList } from './SelectList'
+import type { SelectOption } from './selectOption'
 
-export interface SelectOption<T extends string> {
-  value: T
-  label: string
-}
+export type { SelectOption } from './selectOption'
 
 export interface SelectProps<T extends string> {
   value: T
@@ -17,6 +20,18 @@ export interface SelectProps<T extends string> {
   style?: CSSProperties
 }
 
+/** Teclas que abren la lista desde el botón. */
+const OPENING_KEYS = ['Enter', ' ', 'ArrowDown', 'ArrowUp', 'Home', 'End']
+
+function isTypeAheadKey(e: KeyboardEvent): boolean {
+  return e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.altKey && !e.metaKey
+}
+
+/**
+ * Desplegable propio (botón + listbox flotante). Sustituye al `<select>` nativo, cuya lista pinta
+ * Windows y no se puede ni tematizar ni animar. El foco se queda en el botón y la opción
+ * resaltada se anuncia con `aria-activedescendant`, como el combobox de las APG.
+ */
 export function Select<T extends string>({
   value,
   onChange,
@@ -26,23 +41,102 @@ export function Select<T extends string>({
   style,
   ...rest
 }: SelectProps<T>): React.JSX.Element {
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(0)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const query = useRef(EMPTY_QUERY)
+  const { mounted, state } = useMountTransition(open, MOTION_FAST)
+
+  const uid = useId()
+  const listId = `${uid}list`
+  const optionId = useCallback((index: number) => `${listId}-${index}`, [listId])
+  const selected = options.findIndex((o) => o.value === value)
+  const current = options[selected]
+
+  const close = (): void => setOpen(false)
+  useOutsidePointer(open, () => anchorRef.current, close)
+
+  const openList = (from: number = selected < 0 ? 0 : selected): void => {
+    setActive(from)
+    setOpen(true)
+  }
+
+  const pick = (index: number): void => {
+    const option = options[index]
+    if (option) onChange(option.value)
+    close()
+  }
+
+  const search = (char: string): void => {
+    query.current = appendQuery(query.current, char, Date.now())
+    const labels = options.map((o) => o.label)
+    const found = matchPrefix(labels, query.current.text, open ? active : selected)
+    if (found === null) return
+    if (open) setActive(found)
+    else onChange(options[found].value)
+  }
+
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>): void => {
+    if (isTypeAheadKey(e)) {
+      e.preventDefault()
+      search(e.key)
+      return
+    }
+    if (!open) {
+      if (!OPENING_KEYS.includes(e.key)) return
+      e.preventDefault()
+      openList(moveIndex(e.key, selected, options.length) ?? undefined)
+      return
+    }
+    const moved = moveIndex(e.key, active, options.length)
+    if (moved !== null) {
+      e.preventDefault()
+      setActive(moved)
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      pick(active)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      close()
+    } else if (e.key === 'Tab') {
+      close()
+    }
+  }
+
   return (
-    <div className="field select">
-      <select
+    <div className="field select" ref={anchorRef}>
+      <button
+        type="button"
         id={id}
-        value={value}
+        className="select-button"
         disabled={disabled}
         style={style}
+        role="combobox"
         aria-label={rest['aria-label']}
-        onChange={(e) => onChange(e.target.value as T)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? listId : undefined}
+        aria-activedescendant={open ? optionId(active) : undefined}
+        onClick={() => (open ? close() : openList())}
+        onKeyDown={onKeyDown}
       >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+        {current?.label ?? ''}
+      </button>
       <ChevronDown size={16} strokeWidth={1.5} aria-hidden />
+      {mounted && (
+        <SelectList
+          options={options}
+          value={value}
+          active={active}
+          id={listId}
+          aria-label={rest['aria-label']}
+          labelledBy={rest['aria-label'] ? undefined : id}
+          optionId={optionId}
+          onPick={pick}
+          onHover={setActive}
+          state={state}
+        />
+      )}
     </div>
   )
 }

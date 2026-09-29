@@ -11,6 +11,7 @@ import UpdateButton from './components/UpdateButton'
 import Toolbar from './components/Toolbar'
 import TranscriptView from './components/TranscriptView'
 import { Toaster } from './components/ui'
+import { useViewTransition } from './lib/useViewTransition'
 import { useBackendSync, useCudaOfferToast } from './store/backend'
 import { useModelsSync } from './store/models'
 import { usePreviewSync } from './store/preview'
@@ -90,10 +91,11 @@ function App(): React.JSX.Element {
   useHistorySync()
   useUpdatesSync()
   useOpenFileShortcut()
-  const view = useUiStore((s) => s.view)
+  // La vista que se va termina su salida antes de que entre la otra (no conviven).
+  const { value: view, state } = useViewTransition(useUiStore((s) => s.view))
 
   return (
-    <div className="window">
+    <div className="window" data-view-state={state}>
       <TitleBar>
         <UpdateButton />
       </TitleBar>

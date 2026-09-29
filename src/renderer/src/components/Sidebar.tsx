@@ -5,11 +5,15 @@ import { mediaKindOf } from '@shared/media'
 import type { HistoryEntry } from '@shared/types'
 import { filterHistory } from '@renderer/lib/historyFilter'
 import { groupHistory } from '@renderer/lib/historyGroups'
+import { useListExit } from '@renderer/lib/useListExit'
 import { useHistoryStore } from '@renderer/store/history'
 import { selectPendingCount, useQueueStore } from '@renderer/store/queue'
 import { toast } from '@renderer/store/toast'
 import { useUiStore } from '@renderer/store/ui'
-import { Button, ConfirmDialog, Menu, type MenuItem } from './ui'
+import { Button, ConfirmDialog, ContextMenu, type MenuItem } from './ui'
+
+/** Clave estable para `useListExit`; fuera del componente para no recrearla en cada render. */
+const entryKey = (entry: HistoryEntry): string => entry.id
 
 /** Nombre que se ve en el historial: el que puso el usuario o el del archivo. */
 function shownName(entry: HistoryEntry): string {
@@ -38,11 +42,14 @@ function ProgressRing({ value }: { value: number }): React.JSX.Element {
 function HistoryItem({
   entry,
   selected,
+  exiting,
   onSelect,
   onContextMenu
 }: {
   entry: HistoryEntry
   selected: boolean
+  /** Ya no está en el historial (o no pasa el filtro): se pinta su salida antes de quitarla. */
+  exiting: boolean
   onSelect: () => void
   onContextMenu: (e: MouseEvent<HTMLButtonElement>) => void
 }): React.JSX.Element {
@@ -50,7 +57,7 @@ function HistoryItem({
   const Icon = mediaKindOf(entry.fileName) === 'audio' ? FileMusic : FileVideoCamera
   return (
     <button
-      className={`history-item${selected ? ' selected' : ''}`}
+      className={`history-item${selected ? ' selected' : ''}${exiting ? ' exiting' : ''}`}
       title={entry.filePath}
       aria-current={selected || undefined}
       onClick={onSelect}
@@ -107,10 +114,13 @@ function Sidebar(): React.JSX.Element {
   const [newName, setNewName] = useState('')
   const renameRef = useRef<HTMLInputElement>(null)
 
-  const groups = useMemo(
-    () => groupHistory(filterHistory(entries, filter, textMatches)),
+  const filtered = useMemo(
+    () => filterHistory(entries, filter, textMatches),
     [entries, filter, textMatches]
   )
+  // Las entradas quitadas siguen en su grupo mientras dura su animación de salida.
+  const shown = useListExit(filtered, entryKey)
+  const groups = useMemo(() => groupHistory(shown.items), [shown.items])
 
   const queueAgain = async (entry: HistoryEntry): Promise<void> => {
     const added = await retranscribe(entry.id).catch(() => false)
@@ -208,6 +218,7 @@ function Sidebar(): React.JSX.Element {
                 key={entry.id}
                 entry={entry}
                 selected={entry.id === selectedId}
+                exiting={shown.exiting.has(entry.id)}
                 onSelect={() => select(entry.id)}
                 onContextMenu={(e) => openMenu(entry, e)}
               />
@@ -221,17 +232,13 @@ function Sidebar(): React.JSX.Element {
         )}
       </nav>
 
-      {menu && (
-        <div
-          className="menu-anchor segment-menu"
-          style={{
-            left: Math.min(menu.x, window.innerWidth - 272),
-            top: Math.min(menu.y, window.innerHeight - 200)
-          }}
-        >
-          <Menu open onClose={closeMenu} items={menuItems} aria-label={t('sidebar.menuLabel')} />
-        </div>
-      )}
+      <ContextMenu
+        at={menu}
+        onClose={closeMenu}
+        items={menuItems}
+        height={200}
+        aria-label={t('sidebar.menuLabel')}
+      />
 
       <Button
         className="queue-btn"

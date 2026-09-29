@@ -1,4 +1,5 @@
 import './styles/tokens.css'
+import './styles/motion.css'
 import './styles/theme-light.css'
 import './styles/theme-dark.css'
 import './styles/base.css'

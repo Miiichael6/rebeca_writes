@@ -35,7 +35,7 @@ function AboutSection(): React.JSX.Element {
         </div>
         <UpdatesSection />
       </div>
-      {licensesOpen && <LicensesDialog onClose={() => setLicensesOpen(false)} />}
+      <LicensesDialog open={licensesOpen} onClose={() => setLicensesOpen(false)} />
     </div>
   )
 }

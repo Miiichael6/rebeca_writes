@@ -12,13 +12,15 @@ import {
   Plus,
   X
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { JobStatus, QueueJob } from '@shared/types'
 import { AUTO_LANGUAGE, languageTag } from '@shared/whisper'
 import { filterLabels, useHistoryStore } from '@renderer/store/history'
 import { useModelsStore } from '@renderer/store/models'
 import { moveJob } from '@renderer/lib/queueOrder'
+import { useListExit } from '@renderer/lib/useListExit'
+import { useModalDialog } from '@renderer/lib/useModalDialog'
 import { announceQueued, reorderQueue, useQueueStore } from '@renderer/store/queue'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useUiStore } from '@renderer/store/ui'
@@ -32,11 +34,16 @@ const STATUS_ICONS: Record<JobStatus, typeof X> = {
   cancelled: CircleSlash
 }
 
+/** Clave estable para `useListExit`; fuera del componente para no recrearla en cada render. */
+const jobKey = (job: QueueJob): string => job.id
+
 interface JobRowProps {
   job: QueueJob
   details: string
   dragging: boolean
   dropTarget: boolean
+  /** Ya no está en la cola: se pinta su salida antes de quitar la fila. */
+  exiting: boolean
   onOpen: () => void
   onRemove: () => void
   onMove: (delta: -1 | 1) => void
@@ -51,6 +58,7 @@ function JobRow({
   details,
   dragging,
   dropTarget,
+  exiting,
   onOpen,
   onRemove,
   onMove,
@@ -66,6 +74,7 @@ function JobRow({
   const classes = ['queue-job', job.status]
   if (dragging) classes.push('dragging')
   if (dropTarget) classes.push('drop-target')
+  if (exiting) classes.push('exiting')
 
   const status = job.skipped ? t('queue.skipped') : t(`queue.status.${job.status}`)
   // `span` y no `div`: va dentro de un `<button>` cuando el trabajo está en proceso.
@@ -91,7 +100,7 @@ function JobRow({
   return (
     <li
       className={classes.join(' ')}
-      draggable={pending}
+      draggable={pending && !exiting}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = 'move'
         onDragStart()
@@ -157,20 +166,15 @@ function QueuePanel(): React.JSX.Element {
   const open = useUiStore((s) => s.queueOpen)
   const setQueueOpen = useUiStore((s) => s.setQueueOpen)
   const jobs = useQueueStore((s) => s.jobs)
+  // Las filas quitadas siguen pintadas mientras dura su animación de salida.
+  const rows = useListExit(jobs, jobKey)
   const paused = useQueueStore((s) => s.paused)
   const resumePending = useQueueStore((s) => s.resumePending)
   const options = useSettingsStore((s) => s.settings.queue)
   const models = useModelsStore((s) => s.models)
-  const ref = useRef<HTMLDialogElement>(null)
   const [dragId, setDragId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const { ref, state } = useModalDialog(open)
 
   const describe = useMemo(() => {
     const names = new Intl.DisplayNames([i18n.language], { type: 'language', fallback: 'code' })
@@ -217,7 +221,7 @@ function QueuePanel(): React.JSX.Element {
     <>
       <dialog
         ref={ref}
-        className="drawer"
+        className={`drawer ${state}`}
         aria-labelledby="queue-title"
         onCancel={(e) => {
           e.preventDefault()
@@ -303,20 +307,21 @@ function QueuePanel(): React.JSX.Element {
             </p>
           )}
 
-          {jobs.length === 0 ? (
+          {rows.items.length === 0 ? (
             <p className="drawer-empty">{t('queue.empty')}</p>
           ) : (
             <ul className="queue-list" onDragLeave={() => setOverId(null)}>
-              {jobs.map((job, index) => (
+              {rows.items.map((job) => (
                 <JobRow
                   key={job.id}
                   job={job}
                   details={describe(job)}
                   dragging={dragId === job.id}
                   dropTarget={overId === job.id && dragId !== null && dragId !== job.id}
+                  exiting={rows.exiting.has(job.id)}
                   onOpen={() => void openJob(job.id)}
                   onRemove={() => void window.api.queue.remove(job.id)}
-                  onMove={(delta) => move(job.id, jobs[index + delta]?.id)}
+                  onMove={(delta) => move(job.id, jobs[jobs.indexOf(job) + delta]?.id)}
                   onDragStart={() => setDragId(job.id)}
                   onDragOver={() => setOverId(job.id)}
                   onDragEnd={() => {

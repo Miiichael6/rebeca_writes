@@ -2,8 +2,10 @@ import { FileWarning, Loader2, Music, Pause, Play, Volume2, VolumeX } from 'luci
 import { useCallback, useEffect, useMemo, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
+import { MOTION } from '@renderer/lib/motion'
 import { formatClock } from '@renderer/lib/time'
 import { findActiveSegment } from '@renderer/lib/segments'
+import { useMountTransition } from '@renderer/lib/useMountTransition'
 import { useHistoryStore } from '@renderer/store/history'
 import {
   bindVideoEvents,
@@ -97,6 +99,8 @@ function Player(): React.JSX.Element {
   const entry = useTranscriptStore((s) => s.entry)
   const media = useHistoryStore((s) => (entry ? s.media[entry.id] : undefined))
   const videoVisible = useUiStore((s) => s.videoVisible)
+  // El panel se pliega y despliega animado; `mounted` dice cuándo ya se puede ocultar del todo.
+  const stage = useMountTransition(videoVisible, MOTION)
   const { videoHeight, showCaptions } = useSettingsStore(
     useShallow((s) => ({
       videoHeight: s.settings.videoHeight,
@@ -157,10 +161,10 @@ function Player(): React.JSX.Element {
 
       {entry && media && (
         <div
-          className={`player-stage ${hasVideo ? 'video' : 'audio'}`}
+          className={`player-stage ${hasVideo ? 'video' : 'audio'} ${stage.state}`}
           style={{ '--video-height': `${videoHeight}px` } as CSSProperties}
           // Oculto con CSS y no desmontado: el `<video>` sigue sonando (spec §4.1).
-          hidden={!videoVisible}
+          hidden={!stage.mounted}
           onClick={toggle}
         >
           <video ref={videoRef} src={src ?? undefined} preload="metadata" playsInline />

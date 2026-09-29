@@ -44,6 +44,17 @@
   min-height: 0;
 }
 
+/* Cambio entre la vista principal y Configuración (useViewTransition en App). */
+.window[data-view-state='entering'] > .app,
+.window[data-view-state='entering'] > .settings-page {
+  animation: slide-up var(--duration) var(--ease);
+}
+
+.window[data-view-state='exiting'] > .app,
+.window[data-view-state='exiting'] > .settings-page {
+  animation: slide-down var(--duration) var(--ease-out) forwards;
+}
+
 /* ---------- Página de componentes (temporal, solo dev) ---------- */
 .ui-demo {
   flex: 1;
@@ -112,6 +123,27 @@
 
 .history-item > svg {
   flex-shrink: 0;
+}
+
+/* Alta y baja de una fila de lista (historial y cola): la baja la sostiene `useListExit`. */
+.history-item,
+.queue-job {
+  animation: row-in var(--duration) var(--ease);
+}
+
+.history-item {
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.history-item:active {
+  transform: scale(0.98);
+}
+
+.history-item.exiting,
+.queue-job.exiting {
+  overflow: hidden;
+  pointer-events: none;
+  animation: row-out var(--duration) var(--ease-out) forwards;
 }
 
 .history-item:hover {
@@ -222,7 +254,7 @@
   font-size: 13px;
 }
 
-/* Anchos fijos: si no, el <select> nativo toma el ancho de su opción más larga. */
+/* Anchos fijos: si no, el botón del Select cambia de tamaño con cada opción elegida. */
 #toolbar-model {
   width: 136px;
 }
@@ -269,6 +301,15 @@
 /* El panel se oculta sin desmontar el <video>, que sigue sonando. */
 .player-stage[hidden] {
   display: none;
+}
+
+/* Al plegarse encoge el alto además de desvanecerse, para que la transcripción suba sin salto. */
+.player-stage.entering {
+  animation: collapse-in var(--duration) var(--ease);
+}
+
+.player-stage.exiting {
+  animation: collapse-out var(--duration) var(--ease-out) forwards;
 }
 
 .player-stage video {
@@ -387,6 +428,11 @@
   background: transparent;
   color: var(--text-2);
   cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.player-btn:active:not(:disabled) {
+  transform: scale(0.92);
 }
 
 .player-btn:hover:not(:disabled) {
@@ -421,7 +467,7 @@
   width: 72px;
 }
 
-.player-controls .select select {
+.player-controls .select-button {
   min-width: 76px;
   height: 28px;
   font-size: var(--text-sm);
@@ -614,6 +660,11 @@
   padding: 2px 8px;
   border-radius: var(--radius-sm);
   cursor: pointer;
+}
+
+/* Segmento recién llegado por streaming (useRecentItems marca cuáles). */
+.segment.arriving {
+  animation: slide-up var(--duration) var(--ease);
 }
 
 .segment:hover {
@@ -1014,15 +1065,11 @@ button.queue-job-open:hover .queue-job-name {
   overflow: hidden;
 }
 
-.queue-job-progress > div {
+.queue-job-progress > span {
+  display: block;
   height: 100%;
   background: var(--accent);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  transition: width var(--duration) linear;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1043,7 +1090,14 @@ button.queue-job-open:hover .queue-job-name {
   background: var(--bg-overlay);
   /* Los eventos de arrastre siguen llegando a la ventana; el aviso no los intercepta. */
   pointer-events: none;
+}
+
+.drop-overlay.entering {
   animation: drop-in var(--duration) var(--ease);
+}
+
+.drop-overlay.exiting {
+  animation: drop-out var(--duration) var(--ease-out) forwards;
 }
 
 .drop-overlay-card {
@@ -1070,12 +1124,6 @@ button.queue-job-open:hover .queue-job-name {
   color: var(--text-1);
   font-size: var(--text-lg);
   font-weight: 600;
-}
-
-@keyframes drop-in {
-  from {
-    opacity: 0;
-  }
 }
 
 /* Configuración (tarea 21) */

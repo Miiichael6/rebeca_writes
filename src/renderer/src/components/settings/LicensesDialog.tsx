@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { APP_NAME } from '@shared/app'
+import { useModalDialog } from '@renderer/lib/useModalDialog'
 import { Button } from '../ui'
 
 /** Forma de cada entrada de `assets/third-party-licenses.json` (lo genera `npm run licenses`). */
@@ -16,14 +17,21 @@ interface ThirdPartyLicense {
  * Reconocimientos de software de terceros. El JSON (~60 KB) se carga al abrir, no con la
  * página de Configuración.
  */
-function LicensesDialog({ onClose }: { onClose: () => void }): React.JSX.Element {
+function LicensesDialog({
+  open,
+  onClose
+}: {
+  open: boolean
+  onClose: () => void
+}): React.JSX.Element {
   const { t } = useTranslation()
-  const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const [licenses, setLicenses] = useState<ThirdPartyLicense[] | null>(null)
+  const { ref, state } = useModalDialog(open)
 
+  // El JSON solo se pide la primera vez que se abre el diálogo, no con la página.
   useEffect(() => {
-    ref.current?.showModal()
+    if (!open || licenses) return
     let alive = true
     import('@renderer/assets/third-party-licenses.json')
       .then((m) => alive && setLicenses(m.default as ThirdPartyLicense[]))
@@ -31,12 +39,12 @@ function LicensesDialog({ onClose }: { onClose: () => void }): React.JSX.Element
     return () => {
       alive = false
     }
-  }, [])
+  }, [open, licenses])
 
   return (
     <dialog
       ref={ref}
-      className="dialog dialog-wide"
+      className={`dialog dialog-wide ${state}`}
       aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault()

@@ -14,6 +14,7 @@ import {
 } from '@renderer/lib/search'
 import { findActiveSegment } from '@renderer/lib/segments'
 import { formatClock, formatTimestamp } from '@renderer/lib/time'
+import { useRecentItems } from '@renderer/lib/useRecentItems'
 import {
   registerTranscriptScroller,
   scrollToSegment,
@@ -23,7 +24,7 @@ import { usePlayerStore } from '@renderer/store/player'
 import { useSettingsStore } from '@renderer/store/settings'
 import { toast } from '@renderer/store/toast'
 import { canEdit, useTranscriptStore } from '@renderer/store/transcript'
-import { Button, Menu, type MenuItem } from './ui'
+import { Button, ContextMenu, type MenuItem } from './ui'
 
 /** Altura estimada de un segmento de una línea; la real se mide al pintarlo. */
 const ESTIMATED_ROW_PX = 26
@@ -186,6 +187,8 @@ interface SegmentRowProps {
   segment: Segment
   index: number
   active: boolean
+  /** Acaba de llegar por streaming: aparece animado (no al reciclarlo el virtualizador). */
+  arriving: boolean
   start: number
   measure: (el: Element | null) => void
   onSeek: (t: number) => void
@@ -233,6 +236,7 @@ const SegmentRow = memo(function SegmentRow({
   segment,
   index,
   active,
+  arriving,
   start,
   measure,
   onSeek,
@@ -249,7 +253,7 @@ const SegmentRow = memo(function SegmentRow({
       ref={measure}
       data-index={index}
       data-seg={index}
-      className={`segment${active ? ' active' : ''}`}
+      className={`segment${active ? ' active' : ''}${arriving ? ' arriving' : ''}`}
       style={{ transform: `translateY(${start}px)` }}
       aria-current={active || undefined}
       role="button"
@@ -417,6 +421,7 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
   const scrollRef = useRef<HTMLDivElement>(null)
   const joinLines = useSettingsStore((s) => s.settings.joinLines)
   const autoScroll = useSettingsStore((s) => s.settings.autoScroll)
+  const arriving = useRecentItems(segments.length)
   const playing = usePlayerStore((s) => s.playing)
   const transcribing = useTranscriptStore((s) => s.job !== null && s.job.entryId === s.entry?.id)
   // El selector devuelve un índice: la lista solo se vuelve a pintar al cambiar de segmento.
@@ -662,6 +667,7 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
                 segment={segments[item.index]}
                 index={item.index}
                 active={item.index === activeIndex}
+                arriving={arriving(item.index)}
                 start={item.start}
                 measure={virtualizer.measureElement}
                 onSeek={seek}
@@ -687,23 +693,13 @@ function SegmentList({ segments, matches, currentMatch }: SegmentListProps): Rea
           {t('transcript.backToCurrent')}
         </Button>
       )}
-      {menu && menuItems.length > 0 && (
-        // Ancla de tamaño cero en el puntero; el menú se abre debajo y no se sale de la ventana.
-        <div
-          className="menu-anchor segment-menu"
-          style={{
-            left: Math.min(menu.x, window.innerWidth - 272),
-            top: Math.min(menu.y, window.innerHeight - 100)
-          }}
-        >
-          <Menu
-            open
-            onClose={closeMenu}
-            items={menuItems}
-            aria-label={t('transcript.segmentMenu')}
-          />
-        </div>
-      )}
+      <ContextMenu
+        at={menuItems.length > 0 ? menu : null}
+        onClose={closeMenu}
+        items={menuItems}
+        height={100}
+        aria-label={t('transcript.segmentMenu')}
+      />
     </div>
   )
 }

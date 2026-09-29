@@ -19,7 +19,7 @@ function startOfDay(ms: number): number {
  * Agrupa el historial por fecha (Hoy, Ayer, Esta semana, Este mes, Anteriores), del más reciente
  * al más antiguo. Las semanas empiezan el lunes. Solo devuelve los grupos con entradas.
  */
-export function groupHistory(entries: HistoryEntry[], now = Date.now()): HistoryGroup[] {
+export function groupHistory(entries: readonly HistoryEntry[], now = Date.now()): HistoryGroup[] {
   const today = startOfDay(now)
   const yesterday = today - DAY_MS
   const weekday = (new Date(today).getDay() + 6) % 7 // lunes = 0

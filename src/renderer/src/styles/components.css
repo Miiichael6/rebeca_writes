@@ -15,7 +15,14 @@
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease);
+  transition:
+    background var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+/* Pulsación: un hundido corto, como los controles de Windows 11. */
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .btn:hover {
@@ -186,6 +193,18 @@
   border-radius: var(--radius-sm);
   background: var(--bg-control);
   color: transparent;
+  transition:
+    background var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+
+.checkbox-box > svg {
+  transform: scale(0.4);
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.checkbox input:checked + .checkbox-box > svg {
+  transform: scale(1);
 }
 
 .checkbox:hover .checkbox-box {
@@ -213,7 +232,9 @@
   border: 1px solid var(--border-control-strong);
   border-radius: 50%;
   background: var(--bg-control);
-  transition: border-width var(--duration-fast) var(--ease);
+  transition:
+    border-width var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
 }
 
 .radio input:checked + .radio-dot {
@@ -265,7 +286,7 @@
 }
 
 .input,
-.select select,
+.select-button,
 .number-input input,
 .textarea {
   height: var(--control-height);
@@ -278,7 +299,7 @@
 }
 
 .input:hover,
-.select select:hover,
+.select-button:hover,
 .number-input input:hover,
 .textarea:hover {
   background: var(--bg-control-hover);
@@ -291,7 +312,7 @@
   border-bottom: 2px solid var(--accent);
 }
 
-.select select:focus-visible {
+.select-button:focus-visible {
   outline: 2px solid var(--text-1);
   outline-offset: 1px;
 }
@@ -305,23 +326,95 @@
   width: 100%;
 }
 
-.select select {
-  appearance: none;
+.select-button {
   min-width: 120px;
   padding-right: 34px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
 }
 
-.select select option {
-  background: var(--bg-card);
-  color: var(--text-1);
-}
-
-.select svg {
+.select > svg {
   position: absolute;
   right: 10px;
   color: var(--text-2);
   pointer-events: none;
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.select:has(.select-button[aria-expanded='true']) > svg {
+  transform: rotate(180deg);
+}
+
+/* Lista flotante del Select: mismo lenguaje que el menú (relleno, borde, sombra). */
+.select-list {
+  position: absolute;
+  z-index: 100;
+  left: 0;
+  top: calc(100% + 4px);
+  min-width: 100%;
+  max-height: 280px;
+  padding: var(--space-1);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-flyout);
+}
+
+.select-list.entering {
+  animation: menu-in var(--duration-fast) var(--ease);
+}
+
+.select-list.exiting {
+  pointer-events: none;
+  animation: menu-out var(--duration-fast) var(--ease-out) forwards;
+}
+
+.select-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 34px;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.select-option.active {
+  background: var(--bg-subtle-hover);
+}
+
+.select-option:active {
+  background: var(--bg-subtle-pressed);
+}
+
+.select-option[aria-selected='true'] {
+  background: var(--bg-selected);
+}
+
+.select-option[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.select-option-check {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  color: var(--accent);
 }
 
 .number-input input {
@@ -379,7 +472,7 @@
 .textarea:disabled,
 .input:disabled,
 .number-input input:disabled,
-.select select:disabled {
+.select-button:disabled {
   background: var(--bg-control-disabled);
   color: var(--text-disabled);
   cursor: default;
@@ -506,6 +599,7 @@
 }
 
 /* ---------- Dialog ---------- */
+/* La entrada y la salida las conduce `useModalDialog` con las clases `entering` / `exiting`. */
 .dialog {
   width: min(460px, calc(100vw - 48px));
   margin: auto; /* el reset global pone margin: 0 y el modal dejaría de estar centrado */
@@ -519,6 +613,22 @@
 
 .dialog::backdrop {
   background: var(--bg-overlay);
+}
+
+.dialog.entering {
+  animation: scale-in var(--duration) var(--ease);
+}
+
+.dialog.exiting {
+  animation: scale-out var(--duration) var(--ease-out) forwards;
+}
+
+.dialog.entering::backdrop {
+  animation: backdrop-in var(--duration) var(--ease);
+}
+
+.dialog.exiting::backdrop {
+  animation: backdrop-out var(--duration) var(--ease-out) forwards;
 }
 
 .dialog-body {
@@ -614,13 +724,6 @@
   outline-offset: 1px;
 }
 
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
 /* ---------- Menu ---------- */
 .menu-anchor {
   position: relative;
@@ -635,7 +738,15 @@
   border-radius: var(--radius);
   background: var(--bg-card);
   box-shadow: var(--shadow-flyout);
-  animation: menu-in var(--duration) var(--ease);
+}
+
+.menu.entering {
+  animation: menu-in var(--duration-fast) var(--ease);
+}
+
+.menu.exiting {
+  pointer-events: none;
+  animation: menu-out var(--duration-fast) var(--ease-out) forwards;
 }
 
 .menu-top-end {
@@ -676,13 +787,6 @@
   background: var(--border);
 }
 
-@keyframes menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-}
-
 /* ---------- Drawer (panel lateral modal) ---------- */
 .drawer {
   inset: var(--title-bar-height) 0 0 auto;
@@ -699,12 +803,24 @@
   box-shadow: var(--shadow-dialog);
 }
 
-.drawer[open] {
-  animation: drawer-in var(--duration) var(--ease);
+.drawer.entering {
+  animation: drawer-in var(--duration) var(--ease-spring);
+}
+
+.drawer.exiting {
+  animation: drawer-out var(--duration) var(--ease-out) forwards;
 }
 
 .drawer::backdrop {
   background: var(--bg-overlay);
+}
+
+.drawer.entering::backdrop {
+  animation: backdrop-in var(--duration) var(--ease);
+}
+
+.drawer.exiting::backdrop {
+  animation: backdrop-out var(--duration) var(--ease-out) forwards;
 }
 
 .drawer-content {
@@ -731,11 +847,4 @@
 .drawer-empty {
   padding: var(--space-5);
   color: var(--text-3);
-}
-
-@keyframes drawer-in {
-  from {
-    transform: translateX(24px);
-    opacity: 0;
-  }
 }

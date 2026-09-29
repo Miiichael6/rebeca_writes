@@ -1,8 +1,9 @@
 import { FileUp, Layers, Plus } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ModelStatus } from '@shared/models'
 import { formatBytes } from '@renderer/lib/format'
+import { useModalDialog } from '@renderer/lib/useModalDialog'
 import { useModelsStore } from '@renderer/store/models'
 import { Button, Card, ConfirmDialog } from '../ui'
 import DownloadProgress from './DownloadProgress'
@@ -92,7 +93,6 @@ function AddCustomDialog({
   onClose: () => void
 }): React.JSX.Element {
   const { t } = useTranslation()
-  const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const nameId = useId()
   const [path, setPath] = useState<string | null>(null)
@@ -100,17 +100,12 @@ function AddCustomDialog({
   const [error, setError] = useState<string | null>(null)
   const addCustom = useModelsStore((s) => s.addCustom)
 
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) {
-      setPath(null)
-      setName('')
-      setError(null)
-      dialog.showModal()
-    }
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  // El formulario se vacía al abrir, no al cerrar: así no parpadea durante la salida.
+  const { ref, state } = useModalDialog(open, () => {
+    setPath(null)
+    setName('')
+    setError(null)
+  })
 
   const pick = async (): Promise<void> => {
     const file = await window.api.models.pickCustomFile()
@@ -130,7 +125,7 @@ function AddCustomDialog({
   return (
     <dialog
       ref={ref}
-      className="dialog"
+      className={`dialog ${state}`}
       aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault()

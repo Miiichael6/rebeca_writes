@@ -1,4 +1,7 @@
 import { Fragment, useEffect, useRef, type KeyboardEvent } from 'react'
+import { MOTION_FAST } from '@renderer/lib/motion'
+import { useMountTransition } from '@renderer/lib/useMountTransition'
+import { useOutsidePointer } from '@renderer/lib/useOutsidePointer'
 
 export interface MenuItem {
   label: string
@@ -18,7 +21,8 @@ export interface MenuProps {
 
 /**
  * Menú desplegable (flyout de Windows 11). Va dentro de un `.menu-anchor` junto al botón que lo
- * abre. Se cierra con Esc, con un clic fuera o al elegir un ítem; ↑ ↓ mueven el foco.
+ * abre. Se cierra con Esc, con un clic fuera o al elegir un ítem; ↑ ↓ mueven el foco. Al cerrarse
+ * sigue montado hasta que acaba su animación de salida.
  */
 export function Menu({
   open,
@@ -28,20 +32,16 @@ export function Menu({
   ...rest
 }: MenuProps): React.JSX.Element | null {
   const ref = useRef<HTMLDivElement>(null)
+  const { mounted, state } = useMountTransition(open, MOTION_FAST)
 
   useEffect(() => {
-    if (!open) return
-    ref.current?.querySelector<HTMLButtonElement>('button')?.focus()
-    const onPointerDown = (e: PointerEvent): void => {
-      // Un clic en el botón que abre el menú lo gestiona el propio botón.
-      const anchor = ref.current?.closest('.menu-anchor')
-      if (!anchor?.contains(e.target as Node)) onClose()
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open, onClose])
+    if (open) ref.current?.querySelector<HTMLButtonElement>('button')?.focus()
+  }, [open])
 
-  if (!open) return null
+  // Un clic en el botón que abre el menú lo gestiona el propio botón.
+  useOutsidePointer(open, () => ref.current?.closest('.menu-anchor'), onClose)
+
+  if (!mounted) return null
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
     const buttons = [...(ref.current?.querySelectorAll('button') ?? [])]
@@ -62,7 +62,7 @@ export function Menu({
   return (
     <div
       ref={ref}
-      className={`menu menu-${placement}`}
+      className={`menu menu-${placement} ${state}`}
       role="menu"
       aria-label={rest['aria-label']}
       onKeyDown={onKeyDown}
