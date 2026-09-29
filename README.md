@@ -1,17 +1,20 @@
-# mi-app
+# Transcriba
 
-An Electron application with React and TypeScript
+App de escritorio para Windows que transcribe video y audio a texto 100 % en local con [whisper.cpp](https://github.com/ggml-org/whisper.cpp). Electron + React 19 + TypeScript (electron-vite). Spec completa en [plans/about_this_project.md](plans/about_this_project.md).
 
-## Recommended IDE Setup
+## Requisitos de desarrollo
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- Windows 10/11 x64
+- [Node.js](https://nodejs.org/) 20 o superior y npm
+- [Git](https://git-scm.com/)
+- Editor recomendado: VSCode + ESLint + Prettier
 
-## Project Setup
-
-### Install
+## Puesta en marcha
 
 ```bash
 $ npm install
+$ npm run fetch:bin -- --only=cpu   # binarios de whisper.cpp (ver abajo)
+$ npm run dev
 ```
 
 ### Binarios de whisper.cpp
@@ -24,7 +27,7 @@ $ npm run fetch:bin -- --latest    # la release más reciente que publique ambos
 $ npm run fetch:bin -- --only=cpu  # solo CPU (~11 MB; CUDA pesa ~1,1 GB)
 ```
 
-Quedan en `resources/bin/{cpu,cuda}/` (`whisper-cli.exe` + DLLs + `.version`). El script es idempotente: si la versión instalada coincide no descarga nada (`--force` para forzar). Si la API de GitHub limita las peticiones, define `GITHUB_TOKEN`.
+Quedan en `resources/bin/{cpu,cuda}/` (`whisper-cli.exe` + DLLs + `.version`). Además copia desde `System32` el runtime de Visual C++ (`msvcp140`, `vcruntime140`, `vcruntime140_1`, `vcomp140`), porque sin él `whisper-cli` no arranca en un Windows limpio. Para eso, la máquina de build necesita el [Visual C++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe). El script es idempotente: si la versión instalada coincide no descarga nada (`--force` para forzar). Si la API de GitHub limita las peticiones, define `GITHUB_TOKEN`.
 
 #### Build Vulkan
 
@@ -40,21 +43,37 @@ $ cmake --build build --config Release -j
 
 Copia `build/bin/Release/whisper-cli.exe` y todas las `*.dll` de esa carpeta a `resources/bin/vulkan/`. Para comprobarla, `resources/bin/vulkan/whisper-cli.exe --help` debe mostrar `Found N Vulkan devices` y `loaded Vulkan backend`, que es lo que mira la autodetección.
 
-### Development
+### Desarrollo
 
 ```bash
-$ npm run dev
+$ npm run dev         # electron-vite con HMR
+$ npm run typecheck   # tsc (main/preload y renderer)
+$ npm run lint
+$ npm run test        # vitest run
 ```
 
-### Build
+## Generar el instalador
 
 ```bash
-# For windows
 $ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
 ```
+
+Deja `dist/Transcriba-Setup-<versión>.exe` (NSIS, x64, con selección de carpeta, accesos directos y asociaciones de archivo). Antes de empaquetar, `prebuild:win` comprueba que exista `resources/bin/cpu/whisper-cli.exe` y falla con un mensaje claro si falta (`npm run fetch:bin`). `npm run build` solo compila (typecheck + electron-vite) a `out/`. `npm run build:unpack` genera la carpeta `dist/win-unpacked` sin instalador.
+
+- El backend **CUDA no va en el instalador** (pesa ~1,1 GB): `resources/bin/cuda` se excluye del paquete y la app lo descargará aparte. Con solo CPU el instalador pesa ~130 MB.
+- Los binarios (`whisper-cli`, ffmpeg, ffprobe) se ejecutan desde `app.asar.unpacked`.
+- Si en tu shell existe `ELECTRON_RUN_AS_NODE=1` (p. ej. terminales de algunos editores), el `.exe` se comporta como Node y no abre ventana: quítala antes de probarlo.
+
+## Estructura
+
+| Carpeta          | Contenido                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `src/main/`      | Proceso principal: motor de transcripción, servicios (ffmpeg, cola, historial, modelos, ajustes), protocolo `media://` |
+| `src/preload/`   | `window.api` tipada vía `contextBridge`                                                                                |
+| `src/renderer/`  | UI React (Zustand, i18next, CSS con tokens)                                                                            |
+| `src/shared/`    | Tipos, canales IPC y constantes compartidas                                                                            |
+| `resources/bin/` | Binarios de whisper.cpp por backend (no versionados)                                                                   |
+| `scripts/`       | `fetch-binaries`, `check-binaries`, iconos, licencias                                                                  |
+| `plans/`         | Spec y tareas                                                                                                          |
+
+El nombre de la app sale de una única constante: `APP_NAME` en [src/shared/app.ts](src/shared/app.ts). Para el nombre del instalador, ejecutable y accesos directos cambia también `productName` en `package.json` y `electron-builder.yml`.

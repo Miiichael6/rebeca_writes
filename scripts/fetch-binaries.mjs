@@ -10,9 +10,13 @@
 // La API de GitHub limita a 60 peticiones/hora sin token; si hace falta, define GITHUB_TOKEN.
 // Vulkan no se publica para Windows x64: si la release no lo trae, se avisa y hay que compilarlo
 // (ver README).
+//
+// Las builds dependen del runtime de Visual C++ (msvcp140, vcruntime140…), que no viene con
+// Windows. Se copia "app-local" junto a whisper-cli.exe desde System32 de esta máquina, que
+// necesita tener instalado el Visual C++ Redistributable x64.
 
 import { createWriteStream, existsSync } from 'node:fs'
-import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
@@ -36,6 +40,10 @@ const keepFile = (name) => {
   const lower = name.toLowerCase()
   return lower === 'whisper-cli.exe' || (lower.endsWith('.dll') && !EXCLUDED_DLLS.has(lower))
 }
+
+/** Runtime de Visual C++ que importan whisper-cli y las ggml-*.dll (vcomp140 = OpenMP). */
+const VC_RUNTIME = ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcomp140.dll']
+const SYSTEM32 = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')
 
 const VERSION_FILE = '.version'
 const BIN_DIR = resolve(import.meta.dirname, '..', 'resources', 'bin')
@@ -116,7 +124,7 @@ async function download(url, dest, size) {
  * resuelve a GNU tar, que no abre zips.
  */
 async function extract(zip, dest) {
-  const tar = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe')
+  const tar = join(SYSTEM32, 'tar.exe')
   await exec(tar, ['-xf', zip, '-C', dest])
 }
 
@@ -161,6 +169,25 @@ async function install(backend, asset, tag) {
   console.log(`[${backend}] listo: ${files.length} archivos en resources/bin/${backend}/`)
 }
 
+/** Copia el runtime de Visual C++ a la carpeta del backend si falta. */
+async function copyVcRuntime(backend) {
+  const dir = join(BIN_DIR, backend)
+  if (!existsSync(join(dir, 'whisper-cli.exe'))) return
+  let copied = 0
+  for (const name of VC_RUNTIME) {
+    if (existsSync(join(dir, name))) continue
+    const source = join(SYSTEM32, name)
+    if (!existsSync(source)) {
+      throw new Error(
+        `Falta ${source}. Instala el Visual C++ Redistributable x64: https://aka.ms/vs/17/release/vc_redist.x64.exe`
+      )
+    }
+    await copyFile(source, join(dir, name))
+    copied++
+  }
+  if (copied > 0) console.log(`[${backend}] runtime de Visual C++: ${copied} DLL copiadas`)
+}
+
 async function main() {
   if (process.platform !== 'win32') {
     throw new Error(
@@ -177,6 +204,7 @@ async function main() {
     const current = await installedVersion(backend)
     if (current === tag && !force) {
       console.log(`[${backend}] ya está en ${tag}, se omite`)
+      await copyVcRuntime(backend)
       continue
     }
     const asset = release.assets.find((a) => ASSETS[backend].test(a.name))
@@ -186,6 +214,7 @@ async function main() {
       continue
     }
     await install(backend, asset, tag)
+    await copyVcRuntime(backend)
   }
   await rm(TMP_DIR, { recursive: true, force: true })
 }

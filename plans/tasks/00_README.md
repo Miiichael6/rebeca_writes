@@ -29,9 +29,9 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 ## Decisiones pendientes (bloquean tareas)
 
 - [x] **D1** ¿Hay captura de la ventana principal? Las 5 imágenes solo muestran Configuración y el menú Exportar. Si no, se diseña desde el texto §4.1. → afecta 03 — **Sí**, `images/main_view.png` (2026-09-27)
-- [ ] **D2** ¿Backend CUDA dentro del instalador (+~500 MB) o descargable desde la app? → afecta 05, 22
+- [x] **D2** ¿Backend CUDA dentro del instalador (+~500 MB) o descargable desde la app? → afecta 05, 22 — **Descargable** (2026-09-28)
 - [x] **D3** ¿Se reutiliza el scaffold actual de `src/` o se rehace la fase 1? → afecta 01–04 — **Se reutiliza** (2026-09-27)
-- [ ] **D4** ¿`npm run build` debe generar el instalador (criterio §9) o se deja en `build:win`? → afecta 22
+- [x] **D4** ¿`npm run build` debe generar el instalador (criterio §9) o se deja en `build:win`? → afecta 22 — **Se deja en `build:win`** (2026-09-28)
 
 ## Tablero
 
@@ -58,7 +58,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 19 | [Entrada de archivos](done/19_entrada_archivos.md) | 5 Cola | 17 | ✅ Terminada (falta probar a mano el arrastre y Ctrl+O) |
 | 20 | [Exportadores](done/20_exportadores.md) | 6 Exportar | 08, 15 | ✅ Terminada (falta probar a mano en VLC y Jellyfin/Plex) |
 | 21 | [Página de Configuración](done/21_configuracion.md) | 6 Config | 05, 06, 12 | ✅ Terminada |
-| 22 | [Empaquetado](pending/22_empaquetado.md) | 7 Build | todas | ⬜ Pendiente |
+| 22 | [Empaquetado](done/22_empaquetado.md) | 7 Build | todas | ✅ Terminada |
 | 23 | [Calidad y aceptación](pending/23_calidad_aceptacion.md) | 7 Cierre | 22 | ⬜ Pendiente |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.

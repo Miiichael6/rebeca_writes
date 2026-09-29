@@ -9,9 +9,15 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  # Solo desarrollo: plan, tests, scripts y configuración de agentes no van en el paquete.
+  - '!{plans,tests,scripts,.claude}/**'
+  - '!{CLAUDE.md,vitest.config.ts}'
   # ffprobe-static trae binarios de todas las plataformas; solo se empaqueta el de Windows x64.
   - '!node_modules/ffprobe-static/bin/{darwin,linux}/**'
   - '!node_modules/ffprobe-static/bin/win32/ia32/**'
+  # D2: CUDA (~1,1 GB) no va en el instalador; se descarga desde la app.
+  - '!resources/bin/cuda/**'
+  - '!resources/bin/.tmp/**'
 asarUnpack:
   - resources/**
   # Los exe de ffmpeg/ffprobe no se pueden ejecutar desde dentro del asar.
@@ -19,30 +25,23 @@ asarUnpack:
   - node_modules/ffprobe-static/bin/**
 win:
   executableName: transcriba
+  target:
+    - target: nsis
+      arch: x64
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  # Instalador asistido: permite elegir carpeta; accesos directos en escritorio y menú Inicio.
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${name}-${version}.${ext}
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  artifactName: ${productName}-Setup-${version}.${ext}
+  # userData (historial, modelos) se conserva al desinstalar.
+  deleteAppDataOnUninstall: false
 npmRebuild: false
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

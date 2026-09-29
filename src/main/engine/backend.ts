@@ -69,9 +69,10 @@ async function detect(): Promise<Detection> {
   const installed = installedBackends()
   const saved = await loadSettings()
 
-  // La detección solo corre en el primer arranque; después manda lo guardado.
+  // La detección solo corre en el primer arranque; después manda lo guardado. Se repite si el
+  // backend guardado ya no está instalado (p. ej. se borró el paquete CUDA descargable).
   let detected = saved.detectedBackend
-  if (!detected) {
+  if (!detected || !installed.includes(detected)) {
     const started = Date.now()
     detected = await detectBackend(installed)
     log.info(`Backend detectado: ${detected} en ${Date.now() - started} ms`)
@@ -81,7 +82,11 @@ async function detect(): Promise<Detection> {
   if (saved.detectedBackend !== detected || saved.backend !== backend) {
     await updateSettings({ detectedBackend: detected, backend })
   }
-  log.info(`Backend: ${backend} (detectado ${detected}, instalados: ${installed.join(', ')})`)
+  // El elegido se conserva aunque no esté instalado (vuelve a valer si se reinstala); se usa el detectado.
+  const effective = installed.includes(backend) ? backend : detected
+  log.info(
+    `Backend: ${effective} (elegido ${backend}, detectado ${detected}, instalados: ${installed.join(', ')})`
+  )
   return { detected, installed }
 }
 
