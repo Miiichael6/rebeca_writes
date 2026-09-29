@@ -192,7 +192,7 @@ export interface IpcEventMap {
 }
 
 /** API que el preload expone en `window.api`. */
-export interface TranscribaApi {
+export interface AppApi {
   app: {
     getVersion: () => Promise<string>
     /** Idiomas preferidos de Windows (BCP 47), del más al menos preferido. */

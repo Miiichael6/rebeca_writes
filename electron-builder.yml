@@ -1,5 +1,5 @@
-appId: com.transcriba.app
-productName: Transcriba
+appId: com.rebeccawrites.app
+productName: RebeccaWrites
 directories:
   buildResources: build
 files:
@@ -24,7 +24,7 @@ asarUnpack:
   - node_modules/ffmpeg-static/**
   - node_modules/ffprobe-static/bin/**
 win:
-  executableName: transcriba
+  executableName: rebeccawrites
   target:
     - target: nsis
       arch: x64

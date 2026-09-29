@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
-import { IpcChannel, type IpcEventMap, type IpcInvokeMap, type TranscribaApi } from '@shared/ipc'
+import { IpcChannel, type IpcEventMap, type IpcInvokeMap, type AppApi } from '@shared/ipc'
 
 function invoke<C extends keyof IpcInvokeMap>(
   channel: C,
@@ -19,7 +19,7 @@ function on<C extends keyof IpcEventMap>(
 }
 
 // Solo funciones concretas: el renderer nunca recibe `ipcRenderer`.
-const api: TranscribaApi = {
+const api: AppApi = {
   app: {
     getVersion: () => invoke(IpcChannel.AppGetVersion),
     getPreferredLanguages: () => invoke(IpcChannel.AppGetPreferredLanguages),

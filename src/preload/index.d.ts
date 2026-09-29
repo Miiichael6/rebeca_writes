@@ -1,7 +1,7 @@
-import type { TranscribaApi } from '../shared/ipc'
+import type { AppApi } from '../shared/ipc'
 
 declare global {
   interface Window {
-    api: TranscribaApi
+    api: AppApi
   }
 }

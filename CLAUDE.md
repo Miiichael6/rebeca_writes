@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Windows desktop app (working name **RebecaWrites**) that transcribes video/audio to text 100% locally with whisper.cpp. Built on electron-vite + React 19 + TypeScript. The repo is currently at the **scaffold stage**: `src/renderer` has a static layout (Sidebar, Toolbar, Player, TranscriptView, BottomBar) with no real logic; `src/main` and `src/preload` are still the electron-vite template.
+A Windows desktop app (name **RebeccaWrites**) that transcribes video/audio to text 100% locally with whisper.cpp. Built on electron-vite + React 19 + TypeScript. The repo is currently at the **scaffold stage**: `src/renderer` has a static layout (Sidebar, Toolbar, Player, TranscriptView, BottomBar) with no real logic; `src/main` and `src/preload` are still the electron-vite template.
 
 The full spec lives in [plans/about_this_project.md](plans/about_this_project.md) (Spanish). Reference screenshots are in [plans/images/](plans/images/). Read the spec before implementing any feature. It defines the stack, the transcription pipeline, UI behavior, the persistence format and the acceptance criteria.
 
@@ -45,7 +45,7 @@ Prettier style: single quotes, no semicolons, `printWidth: 100`, no trailing com
 
 **Key constraints from the spec that shape the code:**
 - Electron security is mandatory: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`. `src/main/index.ts` currently has `sandbox: false` from the template; task 01 changes it.
-- The app name must come from a single constant (`APP_NAME`). Don't hardcode "Transcriba", and never use the reference app's name, logo or brand text.
+- The app name must come from a single constant (`APP_NAME`). Don't hardcode the name (it was "Transcriba", now "RebeccaWrites"), and never use the reference app's name, logo or brand text.
 - Transcription pipeline: ffprobe → ffmpeg to a 16 kHz mono WAV (optional `loudnorm`) → `whisper-cli -pp`. Segments are parsed from stdout (`[hh:mm:ss.mmm --> hh:mm:ss.mmm]  text`) and progress from stderr (`progress = N%`), then streamed to the renderer live. On Windows, cancel with `taskkill /PID <pid> /T /F`.
 - Backend fallback order: CUDA → Vulkan → CPU, auto-detected on first run.
 - Local media is served through a custom `media://` protocol (`protocol.handle`) with hand-written `Range` support. Codecs Chromium can't play get an ffmpeg H.264 preview cached in `userData/preview-cache/`.

@@ -1,4 +1,4 @@
-# Transcriba
+# RebeccaWrites
 
 App de escritorio para Windows que transcribe video y audio a texto 100 % en local con [whisper.cpp](https://github.com/ggml-org/whisper.cpp). Electron + React 19 + TypeScript (electron-vite). Spec completa en [plans/about_this_project.md](plans/about_this_project.md).
 
@@ -58,7 +58,7 @@ $ npm run test        # vitest run
 $ npm run build:win
 ```
 
-Deja `dist/Transcriba-Setup-<versión>.exe` (NSIS, x64, con selección de carpeta, accesos directos y asociaciones de archivo). Antes de empaquetar, `prebuild:win` comprueba que exista `resources/bin/cpu/whisper-cli.exe` y falla con un mensaje claro si falta (`npm run fetch:bin`). `npm run build` solo compila (typecheck + electron-vite) a `out/`. `npm run build:unpack` genera la carpeta `dist/win-unpacked` sin instalador.
+Deja `dist/RebeccaWrites-Setup-<versión>.exe` (NSIS, x64, con selección de carpeta, accesos directos y asociaciones de archivo). Antes de empaquetar, `prebuild:win` comprueba que exista `resources/bin/cpu/whisper-cli.exe` y falla con un mensaje claro si falta (`npm run fetch:bin`). `npm run build` solo compila (typecheck + electron-vite) a `out/`. `npm run build:unpack` genera la carpeta `dist/win-unpacked` sin instalador.
 
 - El backend **CUDA no va en el instalador** (pesa ~1,1 GB): `resources/bin/cuda` se excluye del paquete y la app lo descargará aparte. Con solo CPU el instalador pesa ~130 MB.
 - Los binarios (`whisper-cli`, ffmpeg, ffprobe) se ejecutan desde `app.asar.unpacked`.
