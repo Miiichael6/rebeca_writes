@@ -47,11 +47,12 @@ Recorrer a mano, en la app instalada, todo lo que la 23 no pudo comprobar con te
 - [ ] Anotar en la Bitácora lo que falle; si es un bug, arreglarlo aquí (o subdividir si son muchos)
 - [ ] Marcar la 23 y la 24 como ✅ en `00_README.md` (todo ✅)
 - [ ] Commit: `chore: v1.0.0`
-- [ ] Tag `v1.0.0`
+- [x] Tag `v1.0.0` (creado antes de la prueba manual, ver Bitácora)
 
 ## Criterios de aceptación
 - [ ] Todos los puntos de §9 marcados en la app instalada
-- [ ] Tag `v1.0.0` creado sobre un árbol limpio con tests en verde
+- [x] Tag `v1.0.0` (creado antes de la prueba manual, ver Bitácora) creado sobre un árbol limpio con tests en verde
 
 ## Bitácora
 - 2026-09-28 — Creada a partir de la 23: la parte manual (y el tag) se separó para cerrar la 23 con lo que se verifica automáticamente o revisando el código.
+- 2026-09-28 — El usuario pidió crear y publicar el tag `v1.0.0` ya, sobre `db447a4`, antes de la prueba manual. Si la prueba destapa bugs, sus arreglos irán en un `v1.0.1` (no se mueve un tag ya publicado).
