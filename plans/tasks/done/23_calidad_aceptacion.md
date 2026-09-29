@@ -9,17 +9,17 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 ## Pasos
 
 ### Paso 1 — Rendimiento (§6)
-- [x] ~~La UI nunca se congela durante: transcripción, ffmpeg, vista previa, descarga de modelos, carpeta grande~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~Transcripción de más de 3 h fluida (lista virtualizada)~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
+- [x] ~~La UI nunca se congela durante: transcripción, ffmpeg, vista previa, descarga de modelos, carpeta grande~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~Transcripción de más de 3 h fluida (lista virtualizada)~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
 
 ### Paso 2 — Atajos de teclado
-- [x] ~~`Espacio` play/pausa~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~`Ctrl+F` buscar~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~`Ctrl+O` abrir~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~`Ctrl+C` con foco en la transcripción copia todo~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~`←/→` ±5 s~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~`Ctrl+E` exportar~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~Ninguno interfiere al escribir en un input~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
+- [x] ~~`Espacio` play/pausa~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~`Ctrl+F` buscar~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~`Ctrl+O` abrir~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~`Ctrl+C` con foco en la transcripción copia todo~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~`←/→` ±5 s~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~`Ctrl+E` exportar~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~Ninguno interfiere al escribir en un input~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
 
 ### Paso 3 — Mensajes de error (en español y traducidos)
 - [x] Falta el modelo
@@ -29,20 +29,20 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 - [x] Disco lleno durante la conversión con ffmpeg → `noDiskSpace` (antes salía `conversionFailed`)
 
 ### Paso 4 — Accesibilidad
-- [x] ~~Navegación completa con teclado y foco visible~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
+- [x] ~~Navegación completa con teclado y foco visible~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
 - [x] Riel de sliders y progreso ≥3:1 (WCAG 1.4.11): `--track` #8a8a8a claro / #7a7a7a oscuro
 - [x] `aria-label` en todos los botones de ícono
 - [x] Contraste AA en claro y oscuro
 
 ### Paso 5 — Criterios de aceptación §9
-- [x] ~~Carpeta con 50 videos de formatos mixtos → se encolan y procesan solos~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~Reproducir mientras se transcribe, ver el texto en vivo, clic para saltar~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
+- [x] ~~Carpeta con 50 videos de formatos mixtos → se encolan y procesan solos~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~Reproducir mientras se transcribe, ver el texto en vivo, clic para saltar~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
 - [x] → ver 23.1 (CUDA automático con NVIDIA; Vulkan o CPU sin NVIDIA, sin instalar nada)
 - [x] El instalador no pide Python, CUDA, ffmpeg ni Whisper
-- [x] ~~Búsqueda, copiar, unir líneas, desplazamiento automático~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~Exportar en los 5 formatos y guardar .srt junto al video~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~Borrar historial pide confirmación y no toca los originales~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
-- [x] ~~Cerrar a mitad de la cola y reabrir permite retomar~~ → prueba manual en la [24](../pending/24_prueba_manual_aceptacion.md)
+- [x] ~~Búsqueda, copiar, unir líneas, desplazamiento automático~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~Exportar en los 5 formatos y guardar .srt junto al video~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~Borrar historial pide confirmación y no toca los originales~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
+- [x] ~~Cerrar a mitad de la cola y reabrir permite retomar~~ → prueba manual en la [24](../in_progress/24_prueba_manual_aceptacion.md)
 - [x] `npm run test` pasa
 - [x] El build genera el instalador
 
@@ -52,7 +52,7 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 
 ### Paso 7 — Cierre
 - [x] Actualizar el tablero en `00_README.md` (la 23 en ✅ cuando cierre la 23.1)
-- [x] ~~Tag `v1.0.0`~~ → pasa a la [24](../pending/24_prueba_manual_aceptacion.md), después de la prueba manual
+- [x] ~~Tag `v1.0.0`~~ → pasa a la [24](../in_progress/24_prueba_manual_aceptacion.md), después de la prueba manual
 
 ## Subtareas
 - [x] [23.1 · Descarga del backend CUDA desde la app](23.1_descarga_cuda.md) — ✅ Terminada
@@ -68,6 +68,6 @@ Verificar todo el documento de requisitos contra la app instalada antes de darla
 - 2026-09-28 — **Marca:** sin coincidencias de "WizWhisp", "NowSmart" ni la palabra "Pro" fuera de `plans/`. ⚠️ `APP_NAME` sigue siendo `Transcriba` (instalador `Transcriba-Setup`, `appId com.transcriba.app`), pero CLAUDE.md ya dice que el nombre es **RebecaWrites**. Falta que el usuario decida si se renombra antes de la v1.0.0.
 - 2026-09-28 — **Bloqueo §9:** esta PC tiene una RTX 3050 y en dev usa CUDA (`resources/bin/cuda`, 1,1 GB). El instalador lo excluye (D2 = descargable) y la descarga desde la app no existe (05, paso 6.4), así que la app instalada cae a CPU. El criterio "CUDA automático con NVIDIA" no se cumple. No se pone el tag `v1.0.0`.
 - 2026-09-28 — **Falta prueba manual en la app instalada:** paso 1 (UI fluida; más de 3 h), paso 2 (atajos en vivo), navegación con teclado, y en el §9 la carpeta de 50 videos, reproducir mientras transcribe, búsqueda/copiar/unir/autoscroll, exportar en 5 formatos + .srt, borrar historial y retomar la cola. Los tests cubren parte (`historyStore`: `clear` solo borra dentro de su carpeta; `queueService`: al arrancar con pendientes espera a Retomar), pero no sustituyen la prueba.
-- 2026-09-28 — **Decisiones del usuario:** (1) CUDA se descarga desde la app → subtarea [23.1](23.1_descarga_cuda.md). Se subdivide porque es una funcionalidad con sus propios criterios (descarga, validación, UI). (2) El nombre pasa a **RebeccaWrites**, con dos c, como lo escribió el usuario (CLAUDE.md y la carpeta del repo decían "RebecaWrites"). (3) La prueba manual y el tag `v1.0.0` van a la nueva tarea [24](../pending/24_prueba_manual_aceptacion.md).
+- 2026-09-28 — **Decisiones del usuario:** (1) CUDA se descarga desde la app → subtarea [23.1](23.1_descarga_cuda.md). Se subdivide porque es una funcionalidad con sus propios criterios (descarga, validación, UI). (2) El nombre pasa a **RebeccaWrites**, con dos c, como lo escribió el usuario (CLAUDE.md y la carpeta del repo decían "RebecaWrites"). (3) La prueba manual y el tag `v1.0.0` van a la nueva tarea [24](../in_progress/24_prueba_manual_aceptacion.md).
 - 2026-09-28 — **Renombrado:** `APP_NAME = 'RebeccaWrites'`, `APP_ID = 'com.rebeccawrites.app'`, `name`/`productName` en package, `executableName: rebeccawrites`. `TranscribaApi` pasa a llamarse `AppApi`, para que el nombre no vuelva a aparecer en los tipos. Como `userData` depende de `app.setName(APP_NAME)`, en la PC de desarrollo se movió a mano `%APPDATA%\Transcriba` → `%APPDATA%\RebeccaWrites` (modelos, historial y settings). No se añadió migración en el código porque no hubo ninguna versión publicada.
 - 2026-09-28 — Cerrada al terminar la 23.1. Lo que requiere clics en la app instalada (incluida la UI de CUDA) queda en la 24.

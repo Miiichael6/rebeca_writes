@@ -1,6 +1,6 @@
 # 24 · Prueba manual de aceptación y v1.0.0
 
-**Estado:** ⬜ Pendiente
+**Estado:** 🔄 En progreso
 **Fase:** 7 — Cierre · **Depende de:** 23 · **Doc:** §6, §9
 
 ## Objetivo
@@ -9,7 +9,7 @@ Recorrer a mano, en la app instalada, todo lo que la 23 no pudo comprobar con te
 ## Pasos
 
 ### Paso 0 — Preparación
-- [ ] `npm run build:win`, desinstalar la versión anterior ("Transcriba") e instalar `RebeccaWrites-Setup-1.0.0.exe`
+- [x] `npm run build:win`, desinstalar la versión anterior ("Transcriba") e instalar `RebeccaWrites-Setup-1.0.0.exe`
 - [ ] Tener a mano: carpeta con ~50 videos de formatos mixtos, un audio de más de 3 h, un archivo sin pista de audio y un video con códec que Chromium no reproduce (HEVC)
 
 ### Paso 1 — Rendimiento (§6)
@@ -44,6 +44,7 @@ Recorrer a mano, en la app instalada, todo lo que la 23 no pudo comprobar con te
 - [ ] Transcribir sin modelo descargado → no deja empezar y lo explica
 
 ### Paso 6 — Cierre
+- [ ] Configuración centrada en ventanas anchas (pedido del usuario durante la prueba)
 - [ ] Anotar en la Bitácora lo que falle; si es un bug, arreglarlo aquí (o subdividir si son muchos)
 - [ ] Marcar la 23 y la 24 como ✅ en `00_README.md` (todo ✅)
 - [ ] Commit: `chore: v1.0.0`
@@ -51,8 +52,10 @@ Recorrer a mano, en la app instalada, todo lo que la 23 no pudo comprobar con te
 
 ## Criterios de aceptación
 - [ ] Todos los puntos de §9 marcados en la app instalada
-- [x] Tag `v1.0.0` (creado antes de la prueba manual, ver Bitácora) creado sobre un árbol limpio con tests en verde
+- [x] Tag `v1.0.0` creado sobre un árbol limpio con tests en verde
 
 ## Bitácora
 - 2026-09-28 — Creada a partir de la 23: la parte manual (y el tag) se separó para cerrar la 23 con lo que se verifica automáticamente o revisando el código.
-- 2026-09-28 — El usuario pidió crear y publicar el tag `v1.0.0` ya, sobre `db447a4`, antes de la prueba manual. Si la prueba destapa bugs, sus arreglos irán en un `v1.0.1` (no se mueve un tag ya publicado).
+- 2026-09-28 — A pedido del usuario, el tag `v1.0.0` se creó y publicó sobre `db447a4` antes de la prueba manual. Si la prueba encuentra bugs, sus arreglos saldrán como `v1.0.1`; un tag ya publicado no se mueve. Todavía no hay Release en GitHub con el instalador: está pendiente de confirmar.
+- 2026-09-28 — Paso 0: se regeneró el instalador desde `db447a4`. En `win-unpacked` solo va `resources/bin/cpu`, sin CUDA. "Transcriba" ya no estaba en `Program Files`. Se instaló encima de un RebeccaWrites anterior en `%LOCALAPPDATA%\Programs\rebeccawrites` con `/S`. No se abrió la app, para no consumir el aviso de CUDA, que sale una sola vez (`cudaOffered: false`, `backends` vacío).
+- 2026-09-28 — Prueba manual: el usuario pidió centrar la vista de Configuración. Estaba pegada a la izquierda con `max-width: 1000px`. Ahora la cabecera y el contenido comparten una columna centrada de 1000 px con padding simétrico (`styles/app.css`).
