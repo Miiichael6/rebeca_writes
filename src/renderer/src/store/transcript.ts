@@ -19,6 +19,8 @@ export interface LiveJob {
   etaSec: number | null
   /** Segmentos recibidos hasta ahora. */
   segments: Segment[]
+  /** Grabación de Rebecca Listen que se transcribe mientras se graba (tarea 27): sin porcentaje. */
+  live?: boolean
 }
 
 interface TranscriptState {
@@ -100,15 +102,23 @@ function showsJob(state: TranscriptState, job: LiveJob): boolean {
   return state.entry?.id === job.entryId
 }
 
-/** Empieza un trabajo nuevo para `entryId`. */
-export function beginJob(jobId: string, entryId: string): void {
+/**
+ * Empieza un trabajo nuevo para `entryId`. Una sesión en vivo (`live`) puede llegar ya
+ * empezada, con los `segments` que salieron antes de abrir la ventana.
+ */
+export function beginJob(
+  jobId: string,
+  entryId: string,
+  { live = false, segments = [] }: { live?: boolean; segments?: Segment[] } = {}
+): void {
   const job: LiveJob = {
     jobId,
     entryId,
-    phase: 'preparing',
+    phase: live ? 'transcribing' : 'preparing',
     progress: 0,
     etaSec: null,
-    segments: []
+    segments,
+    ...(live ? { live } : {})
   }
   results.delete(entryId)
   useTranscriptStore.setState((s) =>

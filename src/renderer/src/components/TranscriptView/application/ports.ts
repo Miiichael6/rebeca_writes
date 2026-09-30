@@ -15,6 +15,8 @@ export interface LiveProgress {
   progress: number
   /** Segundos restantes estimados, o `null` mientras no hay ritmo suficiente para medir. */
   etaSec: number | null
+  /** Grabación de Rebecca Listen en curso: no hay porcentaje (tarea 27). */
+  live?: boolean
 }
 
 /** Puerto de salida: la transcripción abierta y lo que se puede hacer con ella. */

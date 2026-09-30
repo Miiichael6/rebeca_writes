@@ -8,6 +8,15 @@ export function ProgressBar(): React.JSX.Element | null {
   const { t } = useTranslation()
   const job = usePorts().transcript.useLiveProgress()
   if (!job) return null
+  // En vivo no hay porcentaje: el final depende de cuándo pare la grabación.
+  if (job.live) {
+    return (
+      <div className="transcript-progress" role="status">
+        <span className="live-dot" aria-hidden />
+        <span className="transcript-progress-phase">{t('transcript.live')}</span>
+      </div>
+    )
+  }
   const progress = Math.round(job.progress)
   return (
     <div className="transcript-progress">

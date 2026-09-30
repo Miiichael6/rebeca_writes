@@ -62,6 +62,18 @@ describe('HistoryStore', () => {
     expect(loaded?.entry.progress).toBeUndefined()
   })
 
+  it('una sesión en vivo cortada al cerrar la app queda terminada con lo transcrito', async () => {
+    const store = new HistoryStore({ dir, debounceMs: 5 })
+    const { id } = await store.create({ ...input('reunión'), status: 'transcribing', live: true })
+    await store.appendSegments(id, [seg(0, 'Hola')])
+    await store.flush()
+
+    const loaded = await new HistoryStore({ dir }).get(id)
+    expect(loaded?.entry.status).toBe('done')
+    expect(loaded?.entry.live).toBeUndefined()
+    expect(loaded?.segments.map((s) => s.text)).toEqual(['Hola'])
+  })
+
   it('setSegments reemplaza y update cambia campos sin tocar el id', async () => {
     const store = new HistoryStore({ dir, debounceMs: 5 })
     const { id } = await store.create(input('x.mp4'))

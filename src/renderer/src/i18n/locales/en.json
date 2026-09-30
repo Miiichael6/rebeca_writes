@@ -51,7 +51,8 @@
     "removeConfirm": "Remove",
     "removeBody": "The transcription of “{{name}}” will be removed. The original file isn't touched.",
     "retranscribeQueued": "“{{name}}” was added to the queue.",
-    "retranscribeFailed": "“{{name}}” is already in the queue."
+    "retranscribeFailed": "“{{name}}” is already in the queue.",
+    "live": "Recording in Rebecca Listen"
   },
   "historyGroups": {
     "today": "Today",
@@ -95,7 +96,8 @@
     "unavailable": "The file isn't available. It may have been moved or deleted.",
     "locateFile": "Find file...",
     "preparingPreview": "Preparing preview... {{percent}}%",
-    "previewFailed": "Couldn’t prepare a preview for this format."
+    "previewFailed": "Couldn’t prepare a preview for this format.",
+    "recording": "Rebecca Listen is recording: the audio will be playable when it stops."
   },
   "transcript": {
     "title": "Transcription",
@@ -121,7 +123,8 @@
     "restoreOriginal": "Restore original",
     "editSaveFailed": "Couldn't save the edit",
     "editLocked": "Can't edit while transcribing",
-    "segmentMenu": "Segment options"
+    "segmentMenu": "Segment options",
+    "live": "Live: transcribing while recording"
   },
   "bottomBar": {
     "copy": "Copy transcription",
@@ -362,5 +365,8 @@
     },
     "autoCheck": "Check for updates on startup",
     "notes": "What's new in this version"
+  },
+  "live": {
+    "interrupted": "The recording was interrupted. What was transcribed so far has been saved."
   }
 }

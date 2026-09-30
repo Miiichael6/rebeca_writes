@@ -18,6 +18,7 @@ import { usePreviewSync } from './store/preview'
 import { usePlayerShortcuts } from './store/player'
 import { useHistoryStore, useHistorySync } from './store/history'
 import { useQueueSync } from './store/queue'
+import { useLiveSync } from './store/live'
 import { useSettingsSync } from './store/settings'
 import { toast } from './store/toast'
 import { useTranscriptStore } from './store/transcript'
@@ -98,6 +99,7 @@ function App(): React.JSX.Element {
   useTranscriptionSync()
   useQueueSync()
   useHistorySync()
+  useLiveSync()
   useUpdatesSync()
   useOpenFileShortcut()
   // La vista que se va termina su salida antes de que entre la otra (no conviven).

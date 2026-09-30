@@ -76,8 +76,11 @@ export async function getHistoryEntry(id: unknown): Promise<HistoryOpened | null
   if (!isValidHistoryId(id)) return null
   const saved = await history().get(id)
   if (!saved) return null
+  // En vivo, `filePath` es el `.pcm` que crece (tarea 27): no se reproduce hasta `--live-media`.
   const media =
-    isSafeMediaPath(saved.entry.filePath) && (await exists(saved.entry.filePath))
+    !saved.entry.live &&
+    isSafeMediaPath(saved.entry.filePath) &&
+    (await exists(saved.entry.filePath))
       ? await openMedia(saved.entry.filePath)
       : null
   return { ...saved, media }

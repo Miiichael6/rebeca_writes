@@ -16,6 +16,8 @@ import { handleMediaProtocol, registerMediaScheme } from './services/mediaProtoc
 import { disposePreviews } from './services/previews'
 import { addPathsToQueue, initQueue, queue } from './services/queue'
 import { pathsFromArgv } from './services/fileInput'
+import { isLiveArgv, parseLiveCommand } from './live/liveArgs'
+import { handleLiveCommand, stopLiveSessions } from './live/liveControl'
 import { IpcChannel } from '@shared/ipc'
 import { cancelAllTranscriptions } from './engine/transcribeManager'
 import { scheduleAutoCheck } from './services/updater'
@@ -78,8 +80,23 @@ function trackBounds(window: BrowserWindow): void {
 /** La ventana principal, para enfocarla y avisarle desde fuera de `createWindow`. */
 let appWindow: BrowserWindow | null = null
 
-/** "Abrir con" o arrastrar al ícono: lo que venga en el argv va a la cola. */
+/**
+ * "Abrir con" o arrastrar al ícono: lo que venga en el argv va a la cola. Las órdenes en vivo
+ * de Rebecca Listen (`--live-*`, tarea 27) van a su sesión y nunca a la cola.
+ */
 async function queueFromArgv(argv: readonly string[], cwd: string): Promise<QueueAddResult | null> {
+  const live = parseLiveCommand(argv)
+  if (live) {
+    log.info(`Orden en vivo recibida: ${live.kind} ${live.pcm}`)
+    await handleLiveCommand(live).catch((err) =>
+      log.error('No se pudo atender la orden en vivo', err)
+    )
+    return null
+  }
+  if (isLiveArgv(argv)) {
+    log.warn(`Orden en vivo sin entender: ${JSON.stringify(argv)}`)
+    return null
+  }
   // Sin empaquetar, `electron .` pasa la carpeta del proyecto como argumento: no es un "Abrir con".
   if (!app.isPackaged) return null
   const paths = pathsFromArgv(argv, cwd, app.getAppPath())
@@ -215,6 +232,7 @@ app.whenReady().then(async () => {
 app.on('will-quit', () => {
   disposePreviews()
   cancelAllTranscriptions()
+  stopLiveSessions()
 })
 
 // Settings, historial y cola se guardan con debounce: al salir se escribe lo pendiente.

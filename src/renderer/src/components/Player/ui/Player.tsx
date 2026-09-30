@@ -19,7 +19,7 @@ export function Player(): React.JSX.Element {
 
   return (
     <div className="player" ref={playerRef}>
-      {entry && media === null && <Unavailable entryId={entry.id} />}
+      {entry && media === null && <Unavailable entryId={entry.id} recording={entry.live} />}
       {entry && media && <Stage entry={entry} playback={playback} stage={stage} />}
       <Controls stage={stage} />
     </div>

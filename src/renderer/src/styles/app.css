@@ -327,6 +327,15 @@
   color: var(--critical);
 }
 
+/* Grabación de Rebecca Listen que se transcribe en vivo (tarea 27). */
+.live-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--critical);
+}
+
 .progress-ring {
   transform: rotate(-90deg);
 }

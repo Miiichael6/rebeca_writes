@@ -35,6 +35,23 @@ export interface HistoryEntry {
   status: HistoryStatus
   /** 0–100, solo mientras `status === 'transcribing'`. */
   progress?: number
+  /** Grabación de Rebecca Listen que se transcribe mientras se graba (tarea 27). */
+  live?: boolean
+}
+
+/** Sesión en vivo en curso (tarea 27): su trabajo, su entrada y lo transcrito hasta ahora. */
+export interface LiveSessionInfo {
+  jobId: string
+  entry: HistoryEntry
+  segments: Segment[]
+}
+
+/** La sesión en vivo terminó: la entrada ya apunta a la grabación final (si la hay). */
+export interface LiveEndedEvent {
+  jobId: string
+  entry: HistoryEntry
+  /** Rebecca Listen dejó de escribir sin avisar (se cerró de golpe). */
+  interrupted: boolean
 }
 
 /** Lo que el renderer manda para crear una entrada; el main pone id, fecha y estado. */

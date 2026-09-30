@@ -70,7 +70,12 @@ export function HistoryItem({
       )}
       <Icon size={16} strokeWidth={1.5} aria-hidden />
       <span className="history-item-name">{shownName(entry)}</span>
-      {entry.status === 'transcribing' && (
+      {entry.live && entry.status === 'transcribing' && (
+        <span className="history-item-status" title={t('sidebar.live')}>
+          <span className="live-dot" />
+        </span>
+      )}
+      {!entry.live && entry.status === 'transcribing' && (
         <span
           className="history-item-status"
           title={t('sidebar.transcribing', { value: entry.progress ?? 0 })}

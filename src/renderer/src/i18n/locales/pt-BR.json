@@ -54,7 +54,8 @@
     "removeConfirm": "Remover",
     "removeBody": "A transcrição de “{{name}}” será removida. O arquivo original não é alterado.",
     "retranscribeQueued": "“{{name}}” foi adicionado à fila.",
-    "retranscribeFailed": "“{{name}}” já está na fila."
+    "retranscribeFailed": "“{{name}}” já está na fila.",
+    "live": "Gravando no Rebecca Listen"
   },
   "historyGroups": {
     "today": "Hoje",
@@ -98,7 +99,8 @@
     "unavailable": "O arquivo não está disponível. Ele pode ter sido movido ou excluído.",
     "locateFile": "Procurar arquivo...",
     "preparingPreview": "Preparando pré-visualização... {{percent}}%",
-    "previewFailed": "Não foi possível preparar a pré-visualização deste formato."
+    "previewFailed": "Não foi possível preparar a pré-visualização deste formato.",
+    "recording": "O Rebecca Listen está gravando: o áudio poderá ser reproduzido ao terminar."
   },
   "transcript": {
     "title": "Transcrição",
@@ -124,7 +126,8 @@
     "restoreOriginal": "Restaurar original",
     "editSaveFailed": "Não foi possível salvar a edição",
     "editLocked": "Não é possível editar durante a transcrição",
-    "segmentMenu": "Opções do segmento"
+    "segmentMenu": "Opções do segmento",
+    "live": "Ao vivo: transcrevendo enquanto grava"
   },
   "bottomBar": {
     "copy": "Copiar transcrição",
@@ -371,5 +374,8 @@
     },
     "autoCheck": "Verificar atualizações ao iniciar",
     "notes": "Novidades desta versão"
+  },
+  "live": {
+    "interrupted": "A gravação foi interrompida. O que foi transcrito até então foi salvo."
   }
 }

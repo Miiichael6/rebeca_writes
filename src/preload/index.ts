@@ -110,6 +110,11 @@ const api: AppApi = {
     onChanged: (listener) => on(IpcChannel.QueueChanged, listener),
     onDrained: (listener) => on(IpcChannel.QueueDrained, listener)
   },
+  live: {
+    current: () => invoke(IpcChannel.LiveCurrent),
+    onStarted: (listener) => on(IpcChannel.LiveStarted, listener),
+    onEnded: (listener) => on(IpcChannel.LiveEnded, listener)
+  },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),
     cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),

@@ -13,6 +13,7 @@ import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
 import { getBackendInfo } from './engine/backend'
 import { cancelTranscription, startTranscription } from './engine/transcribeManager'
+import { cancelLiveSession, currentLiveSession } from './live/liveControl'
 import {
   clearHistoryEntries,
   createHistoryEntry,
@@ -180,7 +181,10 @@ export function registerIpcHandlers(): void {
   handle(IpcChannel.QueueOpenJob, (_event, id) => openQueueJob(id))
 
   handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
-  handle(IpcChannel.TranscribeCancel, (_event, jobId) => cancelTranscription(String(jobId)))
+  handle(IpcChannel.TranscribeCancel, (_event, jobId) => {
+    if (!cancelLiveSession(String(jobId))) cancelTranscription(String(jobId))
+  })
+  handle(IpcChannel.LiveCurrent, () => currentLiveSession())
 
   handle(IpcChannel.UpdatesGetStatus, () => getUpdateStatus())
   handle(IpcChannel.UpdatesCheck, () => checkForUpdates())

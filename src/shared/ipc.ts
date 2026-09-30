@@ -12,6 +12,8 @@ import type {
   ExportSaved,
   HistoryEntry,
   HistoryOpened,
+  LiveEndedEvent,
+  LiveSessionInfo,
   MediaPreviewEvent,
   HistoryEntryInput,
   OpenedMedia,
@@ -94,6 +96,9 @@ export const IpcChannel = {
   QueueOpenJob: 'queue:openJob',
   QueueChanged: 'queue:changed',
   QueueDrained: 'queue:drained',
+  LiveCurrent: 'live:current',
+  LiveStarted: 'live:started',
+  LiveEnded: 'live:ended',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -190,6 +195,7 @@ export interface IpcInvokeMap {
     args: [id: string]
     result: { entry: HistoryEntry; media: OpenedMedia } | null
   }
+  [IpcChannel.LiveCurrent]: { args: []; result: LiveSessionInfo | null }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
   [IpcChannel.UpdatesGetStatus]: { args: []; result: UpdateStatus }
@@ -212,6 +218,8 @@ export interface IpcEventMap {
   [IpcChannel.QueueChanged]: QueueState
   [IpcChannel.QueueDrained]: QueueDrainedEvent
   [IpcChannel.QueueFilesReceived]: QueueAddResult
+  [IpcChannel.LiveStarted]: LiveSessionInfo
+  [IpcChannel.LiveEnded]: LiveEndedEvent
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -400,6 +408,16 @@ export interface AppApi {
     onChanged: (listener: (state: QueueState) => void) => () => void
     /** La cola se vació tras procesar al menos un trabajo. */
     onDrained: (listener: (event: QueueDrainedEvent) => void) => () => void
+  }
+  /**
+   * Transcripción en vivo de una grabación de Rebecca Listen (tarea 27). Los segmentos, el
+   * final y la cancelación van por `transcribe` con el `jobId` de la sesión.
+   */
+  live: {
+    /** La sesión en curso, o `null`: por si empezó antes de que cargara la ventana. */
+    current: () => Promise<LiveSessionInfo | null>
+    onStarted: (listener: (info: LiveSessionInfo) => void) => () => void
+    onEnded: (listener: (event: LiveEndedEvent) => void) => () => void
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

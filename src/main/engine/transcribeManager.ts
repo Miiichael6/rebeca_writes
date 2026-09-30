@@ -37,6 +37,10 @@ function settle(result: TranscriptionResult): void {
   const { jobId } = result.event
   waiters.get(jobId)?.(result)
   waiters.delete(jobId)
+  stopRunning(jobId)
+}
+
+function stopRunning(jobId: string): void {
   running.delete(jobId)
   if (running.size === 0) {
     const resolveAll = idleWaiters
@@ -167,6 +171,15 @@ export function cancelAllTranscriptions(): void {
 /** Hay alguna transcripción en marcha (manual o de la cola). */
 export function isTranscribing(): boolean {
   return running.size > 0
+}
+
+/**
+ * Cuenta como transcripción en marcha algo que usa su propio motor (la sesión en vivo, tarea
+ * 27): la cola la espera y el actualizador no reinicia. Devuelve con qué soltarla.
+ */
+export function holdTranscription(id: string): () => void {
+  running.add(id)
+  return () => stopRunning(id)
 }
 
 /** Resuelve cuando no queda ninguna transcripción en marcha (la cola no pisa a una manual). */

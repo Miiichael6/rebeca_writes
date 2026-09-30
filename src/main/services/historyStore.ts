@@ -72,6 +72,11 @@ function isSegment(value: unknown): value is Segment {
 function restoreEntry(entry: HistoryEntry): HistoryEntry {
   const restored = { ...entry }
   delete restored.progress
+  // Una sesión en vivo cortada por cerrar la app no se puede retomar: queda lo transcrito.
+  if (restored.live) {
+    delete restored.live
+    restored.status = 'done'
+  }
   if (restored.status === 'transcribing') restored.status = 'pending'
   return restored
 }
