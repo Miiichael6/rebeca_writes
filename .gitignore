@@ -8,3 +8,4 @@ resources/bin/**
 !resources/bin/.gitkeep
 
 dev-app-update.yml
+.env
