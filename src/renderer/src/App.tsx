@@ -29,6 +29,8 @@ function MainView(): React.JSX.Element {
   const entryId = useTranscriptStore((s) => s.entry?.id)
   const collapsed = useUiStore((s) => s.sidebarCollapsed)
   const sidebarWidth = useUiStore((s) => s.sidebarWidth)
+  const covered = useUiStore((s) => s.transcriptCovered)
+  const floating = useUiStore((s) => s.transcriptCovered && s.transcriptWindowOpen)
   const [resizing, setResizing] = useState(false)
   usePlayerShortcuts()
   return (
@@ -41,8 +43,9 @@ function MainView(): React.JSX.Element {
         <Toolbar />
         {/* `key` reinicia el estado del reproductor al cambiar de archivo. */}
         <Player key={entryId} />
-        <TranscriptView />
-        <BottomBar />
+        {/* Con el video tapando la transcripción la barra vive solo en la ventana flotante. */}
+        <TranscriptView footer={floating ? <BottomBar /> : null} />
+        {!covered && <BottomBar />}
       </main>
     </div>
   )

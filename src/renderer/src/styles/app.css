@@ -452,6 +452,12 @@
   transition: height var(--duration-slow) var(--ease);
 }
 
+/* Transcripción tapada: no hay barra inferior, el panel ocupa también ese espacio. */
+.main:has(.transcript.covered) .player,
+.main:has(.transcript.covered) .player-stage {
+  flex-grow: 1;
+}
+
 /* Mientras se arrastra el asa el alto debe seguir al puntero sin retraso. */
 .player-stage.dragging {
   transition: none;
@@ -1026,6 +1032,12 @@
   width: 1px;
   height: 18px;
   background: var(--border-strong);
+}
+
+.transcript.floating .bottombar {
+  gap: 10px;
+  padding: 7px 10px;
+  border-left: 0;
 }
 
 .bottombar .spacer {
