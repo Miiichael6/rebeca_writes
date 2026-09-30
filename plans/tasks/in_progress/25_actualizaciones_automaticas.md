@@ -80,6 +80,7 @@ Publicar cada versión en GitHub Releases con un solo comando. La app instalada 
   3. `$env:GH_TOKEN = '…'; npm run release`
   4. En GitHub → Releases → revisar el borrador (exe, blockmap, `latest.yml`), escribir las notas y **Publish**
 - [x] Anotar que un tag ya publicado no se mueve: si hay un fallo, se publica `X.Y.Z+1`
+- [x] `scripts/clean-dist.mjs` (`npm run clean:dist`): `build:win` y `release` vacían `dist/` antes de compilar, salvo los `.wsb` de Sandbox
 
 ### Paso 7 — Verificación
 - [x] Tests (`updatePolicy`), typecheck y lint pasan
@@ -104,3 +105,4 @@ Publicar cada versión en GitHub Releases con un solo comando. La app instalada 
 ## Bitácora
 - 2026-09-28 — Creada a pedido del usuario, que quiere publicar versiones y que la app se actualice con un clic. Se elige `electron-updater` + GitHub Releases porque ya se usan electron-builder y NSIS y no requiere servidor propio. Bloqueada por **D5**: si el repo es privado, la app no puede leer los Releases sin un token, y meter un token en la app no es seguro. La `v1.0.0` (tag ya publicado) no trae el actualizador; la primera versión pública con él será la `v1.1.0`.
 - 2026-09-28 — D5 resuelta: el repo `Miiichael6/rebeca_writes` ya es público, los Releases se leen sin token. Pasos 1–6 hechos. `npm run release` ejecuta también `check:bin` (los `prebuild:*` no se disparan con ese nombre). `build:win` genera `latest.yml` y el `.blockmap`. `installUpdate` devuelve además `notReady` si no hay nada descargado. Pendiente del paso 7: prueba local `generic`, con transcripción en curso, sin red y la prueba real con v1.1.0 → v1.1.1. Ojo: para probar hay que subir la versión (`package.json` sigue en 1.0.0).
+- 2026-09-30 — `dist/` acumulaba un instalador por versión (1,1 GB con cinco); las publicadas ya están en Releases, así que `build:win` y `release` lo vacían primero. Se conserva `prueba-limpia.wsb`, que apunta a esa carpeta.

@@ -58,7 +58,7 @@ $ npm run test        # vitest run
 $ npm run build:win
 ```
 
-Deja `dist/RebeccaWrites-Setup-<versión>.exe` (NSIS, x64, con selección de carpeta, accesos directos y asociaciones de archivo). Antes de empaquetar, `prebuild:win` comprueba que exista `resources/bin/cpu/whisper-cli.exe` y falla con un mensaje claro si falta (`npm run fetch:bin`). `npm run build` solo compila (typecheck + electron-vite) a `out/`. `npm run build:unpack` genera la carpeta `dist/win-unpacked` sin instalador.
+Vacía `dist/` (salvo los `.wsb`; `npm run clean:dist`) y deja `dist/RebeccaWrites-Setup-<versión>.exe` (NSIS, x64, con selección de carpeta, accesos directos y asociaciones de archivo). Antes de empaquetar, `prebuild:win` comprueba que exista `resources/bin/cpu/whisper-cli.exe` y falla con un mensaje claro si falta (`npm run fetch:bin`). `npm run build` solo compila (typecheck + electron-vite) a `out/`. `npm run build:unpack` genera la carpeta `dist/win-unpacked` sin instalador.
 
 - El backend **CUDA no va en el instalador** (pesa ~1,1 GB): `resources/bin/cuda` se excluye del paquete y la app lo descargará aparte. Con solo CPU el instalador pesa ~130 MB.
 - Los binarios (`whisper-cli`, ffmpeg, ffprobe) se ejecutan desde `app.asar.unpacked`.
