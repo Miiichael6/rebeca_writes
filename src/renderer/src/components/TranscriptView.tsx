@@ -1,5 +1,13 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronDown, ChevronUp, CircleAlert, FolderOpen, LocateFixed, Search } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  CircleAlert,
+  FolderOpen,
+  LocateFixed,
+  Search,
+  X
+} from 'lucide-react'
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { paragraphOf, toParagraphs } from '@shared/joinLines'
@@ -24,6 +32,7 @@ import { usePlayerStore } from '@renderer/store/player'
 import { useSettingsStore } from '@renderer/store/settings'
 import { toast } from '@renderer/store/toast'
 import { canEdit, useTranscriptStore } from '@renderer/store/transcript'
+import { useUiStore } from '@renderer/store/ui'
 import { Button, ContextMenu, type MenuItem } from './ui'
 
 /** Altura estimada de un segmento de una línea; la real se mide al pintarlo. */
@@ -833,8 +842,16 @@ function TranscriptView(): React.JSX.Element {
 
   const hasResults = matches.length > 0
 
+  // Con el video tapándola, la transcripción solo se ve como ventanita flotante.
+  const covered = useUiStore((s) => s.transcriptCovered)
+  const floating = useUiStore((s) => s.transcriptCovered && s.transcriptWindowOpen)
+
   return (
-    <section className="transcript" aria-label={t('transcript.title')} onKeyDown={onKeyDown}>
+    <section
+      className={`transcript${covered ? ' covered' : ''}${floating ? ' floating' : ''}`}
+      aria-label={t('transcript.title')}
+      onKeyDown={onKeyDown}
+    >
       <div className="transcript-header">
         <h2 title={entry?.fileName}>
           {entry ? (entry.displayName ?? entry.fileName) : t('transcript.title')}
@@ -882,6 +899,16 @@ function TranscriptView(): React.JSX.Element {
           />
           <Search size={14} strokeWidth={1.5} aria-hidden />
         </div>
+        {floating && (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={t('transcript.closeWindow')}
+            title={t('transcript.closeWindow')}
+            icon={<X size={18} strokeWidth={1.5} />}
+            onClick={() => useUiStore.getState().setTranscriptWindowOpen(false)}
+          />
+        )}
       </div>
 
       <ProgressBar />

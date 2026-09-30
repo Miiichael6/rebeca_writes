@@ -15,6 +15,9 @@ export interface SelectListProps<T extends string> {
   onPick: (index: number) => void
   onHover: (index: number) => void
   state: MountState
+  /** Se abre hacia arriba porque debajo del botón no hay espacio. */
+  up?: boolean
+  maxHeight?: number
 }
 
 /** Lista flotante del `Select`. Solo pinta: el estado y el teclado los lleva `Select`. */
@@ -28,6 +31,8 @@ export function SelectList<T extends string>({
   onPick,
   onHover,
   state,
+  up,
+  maxHeight,
   ...rest
 }: SelectListProps<T>): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null)
@@ -42,7 +47,8 @@ export function SelectList<T extends string>({
     <div
       ref={ref}
       id={id}
-      className={`select-list ${state}`}
+      className={`select-list ${state}${up ? ' up' : ''}`}
+      style={maxHeight ? { maxHeight } : undefined}
       role="listbox"
       aria-label={rest['aria-label']}
       aria-labelledby={labelledBy}

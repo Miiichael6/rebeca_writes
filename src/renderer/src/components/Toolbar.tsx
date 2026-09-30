@@ -1,4 +1,4 @@
-import { Settings, SquarePlay } from 'lucide-react'
+import { ScrollText, Settings, SquarePlay } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
@@ -29,7 +29,9 @@ function Toolbar(): React.JSX.Element {
     }))
   )
   const videoVisible = useUiStore((s) => s.videoVisible)
-  const { toggleVideo, setView } = useUiStore.getState()
+  const covered = useUiStore((s) => s.transcriptCovered)
+  const windowOpen = useUiStore((s) => s.transcriptWindowOpen)
+  const { toggleVideo, toggleTranscriptWindow, setView } = useUiStore.getState()
   const status = useTranscriptStore((s) => s.status)
   const entryId = useTranscriptStore((s) => s.entry?.id)
   const runningEntryId = useTranscriptStore((s) => s.job?.entryId)
@@ -104,6 +106,16 @@ function Toolbar(): React.JSX.Element {
 
       <span className="spacer" />
 
+      {covered && (
+        <Button
+          variant={windowOpen ? 'secondary' : 'ghost'}
+          aria-label={windowOpen ? t('toolbar.hideTranscript') : t('toolbar.showTranscript')}
+          title={windowOpen ? t('toolbar.hideTranscript') : t('toolbar.showTranscript')}
+          aria-pressed={windowOpen}
+          icon={<ScrollText size={16} strokeWidth={1.5} />}
+          onClick={toggleTranscriptWindow}
+        />
+      )}
       <Button
         variant={videoVisible ? 'secondary' : 'ghost'}
         aria-label={videoVisible ? t('toolbar.hideVideo') : t('toolbar.showVideo')}
@@ -121,7 +133,7 @@ function Toolbar(): React.JSX.Element {
           {t('common.cancel')}
         </Button>
       ) : (
-        (status === 'ready' || status === 'error') && (
+        (status === 'ready' || status === 'error' || status === 'done') && (
           <Button
             variant="primary"
             className="toolbar-action"
@@ -135,7 +147,7 @@ function Toolbar(): React.JSX.Element {
             }
             onClick={onTranscribe}
           >
-            {t('toolbar.transcribe')}
+            {status === 'done' ? t('toolbar.retranscribe') : t('toolbar.transcribe')}
           </Button>
         )
       )}

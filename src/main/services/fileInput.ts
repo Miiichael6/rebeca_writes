@@ -39,7 +39,8 @@ export async function expandPaths(paths: readonly string[]): Promise<ExpandedPat
     // Primero los archivos de la carpeta y después sus subcarpetas, como en el Explorador.
     for (const entry of entries) {
       if (!entry.isFile()) continue
-      if (hasMediaExtension(entry.name)) push(join(dir, entry.name))
+      // `.ts` es también TypeScript: en una carpeta de código no se toma por video.
+      if (hasMediaExtension(entry.name) && !/\.ts$/i.test(entry.name)) push(join(dir, entry.name))
       else ignored++
     }
     // Los enlaces simbólicos no son `isDirectory()`: así no hay ciclos.

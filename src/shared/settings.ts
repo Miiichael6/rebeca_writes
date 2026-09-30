@@ -7,8 +7,11 @@ import { AUTO_LANGUAGE } from './whisper'
 export const SETTINGS_VERSION = 1
 
 /** Límites de la altura del panel de video (spec §4.1). */
-export const VIDEO_HEIGHT_MIN = 300
-export const VIDEO_HEIGHT_MAX = 600
+export const VIDEO_HEIGHT_MIN = 180
+/** Tope del valor guardado: arrastrar el borde puede tapar toda la transcripción. */
+export const VIDEO_HEIGHT_MAX = 4000
+/** Tope del control deslizante de Configuración. */
+export const VIDEO_HEIGHT_SLIDER_MAX = 600
 
 /** Tamaño y posición de la ventana principal. `x`/`y` faltan hasta la primera vez que se mueve. */
 export interface WindowBounds {

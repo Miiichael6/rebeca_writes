@@ -42,7 +42,7 @@ describe('mergeSettings', () => {
       { videoHeight: 9999, threads: 64, maxLen: -3, previewCacheMaxGB: 0 },
       CPUS
     )
-    expect(next.videoHeight).toBe(600)
+    expect(next.videoHeight).toBe(4000)
     expect(next.threads).toBe(CPUS)
     expect(next.maxLen).toBe(0)
     expect(next.previewCacheMaxGB).toBe(defaults.previewCacheMaxGB)

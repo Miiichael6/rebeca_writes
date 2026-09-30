@@ -1,7 +1,7 @@
 import { Captions, Languages, Palette, RectangleHorizontal } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SUPPORTED_UI_LANGUAGES, type UiLanguageSetting } from '@shared/i18n'
-import { VIDEO_HEIGHT_MAX, VIDEO_HEIGHT_MIN } from '@shared/settings'
+import { VIDEO_HEIGHT_MIN, VIDEO_HEIGHT_SLIDER_MAX } from '@shared/settings'
 import type { ThemeMode } from '@shared/theme'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { Select, SettingRow, Slider, Toggle } from '../ui'
@@ -47,7 +47,7 @@ function InterfaceSettings(): React.JSX.Element {
             aria-label={t('settings.videoHeight')}
             value={videoHeight}
             min={VIDEO_HEIGHT_MIN}
-            max={VIDEO_HEIGHT_MAX}
+            max={VIDEO_HEIGHT_SLIDER_MAX}
             step={10}
             onChange={(value) => updateSettings({ videoHeight: value })}
           />

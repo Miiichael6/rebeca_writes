@@ -39,7 +39,7 @@
 /* ---------- Layout ---------- */
 .app {
   display: grid;
-  grid-template-columns: 264px 1fr;
+  grid-template-columns: var(--sidebar-width, 264px) 1fr;
   flex: 1;
   min-height: 0;
 }
@@ -77,6 +77,99 @@
   gap: 12px;
   padding: var(--space-2) 14px 4px;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Menú lateral compacto: una franja de iconos. */
+.app {
+  transition: grid-template-columns var(--duration) var(--ease);
+}
+
+.app.resizing {
+  transition: none;
+  cursor: col-resize;
+  user-select: none;
+}
+
+/* Borde arrastrable del menú lateral. */
+.sidebar {
+  position: relative;
+}
+
+.sidebar-resize {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 6px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.sidebar-resize::after {
+  content: '';
+  position: absolute;
+  inset: 0 2px 0 auto;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease);
+}
+
+.sidebar-resize:hover::after,
+.sidebar-resize:focus-visible::after,
+.app.resizing .sidebar-resize::after {
+  opacity: 1;
+}
+
+.app.sidebar-collapsed {
+  grid-template-columns: 56px 1fr;
+}
+
+.sidebar.collapsed {
+  align-items: center;
+  padding-inline: 8px;
+}
+
+.sidebar.collapsed .sidebar-actions {
+  flex-direction: column;
+}
+
+.sidebar.collapsed .sidebar-actions .btn:first-child {
+  flex: none;
+}
+
+.sidebar.collapsed .history {
+  align-self: stretch;
+  margin-top: 4px;
+}
+
+.sidebar.collapsed .history-group h3,
+.sidebar.collapsed .history-item-name,
+.sidebar.collapsed .history-item-status,
+.sidebar.collapsed .history-empty {
+  display: none;
+}
+
+.sidebar.collapsed .history-group + .history-group {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-strong);
+}
+
+.sidebar.collapsed .history-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar.collapsed .queue-btn {
+  position: relative;
+  width: auto;
+}
+
+.sidebar.collapsed .queue-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
 }
 
 .sidebar-actions {
@@ -165,6 +258,55 @@
   background: var(--accent);
 }
 
+/* Casilla de la selección múltiple (aparece al mantener presionado un ítem). */
+.history-check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  color: transparent;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.history-item.checked {
+  background: var(--bg-selected);
+}
+
+.history-item.checked .history-check {
+  border-color: var(--accent-fill);
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.selection-bar {
+  align-items: center;
+}
+
+.selection-count {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .selection-bar {
+  flex-direction: column;
+}
+
+.sidebar.collapsed .history-check {
+  margin-left: 0;
+}
+
+.sidebar.collapsed .history-item.checked > svg:not(.history-check svg) {
+  display: none;
+}
+
 .history-item-name {
   flex: 1;
   min-width: 0;
@@ -227,6 +369,7 @@
 
 /* ---------- Área principal ---------- */
 .main {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -288,14 +431,30 @@
 }
 
 /* ---------- Reproductor ---------- */
+.player {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
 .player-stage {
   position: relative;
   /* Altura configurable (300–600), pero sin comerse la transcripción en ventanas bajas. */
-  height: min(var(--video-height), 38vh);
+  /* Altura configurable; si no cabe, encoge (flex) hasta tapar del todo la transcripción. */
+  flex: 0 1 auto;
+  min-height: 0;
+  height: var(--video-height);
   margin: 12px 12px 0;
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
+  transition: height var(--duration-slow) var(--ease);
+}
+
+/* Mientras se arrastra el asa el alto debe seguir al puntero sin retraso. */
+.player-stage.dragging {
+  transition: none;
 }
 
 /* El panel se oculta sin desmontar el <video>, que sigue sonando. */
@@ -321,6 +480,38 @@
 
 .player-stage.video {
   background: #000;
+}
+
+/* Asa para redimensionar el video arrastrando el borde inferior. */
+.player-resize {
+  position: absolute;
+  inset: auto 0 0;
+  height: 10px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.player-resize::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: #fff;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity var(--duration) var(--ease);
+}
+
+.player-stage:hover .player-resize::after,
+.player-resize:focus-visible::after {
+  opacity: 0.6;
+}
+
+.player-resize:hover::after {
+  opacity: 1;
 }
 
 .player-stage.audio {
@@ -376,6 +567,49 @@
   justify-content: center;
   padding: 0 24px;
   pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+}
+
+.player-captions.on {
+  opacity: 1;
+  transform: none;
+}
+
+/* Botón de subtítulos: los dos iconos se funden uno en otro. */
+.captions-toggle {
+  position: relative;
+}
+
+.captions-toggle svg {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+}
+
+.captions-toggle.active {
+  color: var(--accent-text);
+}
+
+.captions-toggle .icon-on,
+.captions-toggle.active .icon-off {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.captions-toggle.active .icon-on,
+.captions-toggle .icon-off {
+  opacity: 1;
+  transform: none;
+}
+
+.captions-toggle.active .icon-off {
+  opacity: 0;
+  transform: scale(0.7);
 }
 
 .player-captions span {
@@ -412,6 +646,7 @@
 
 .player-controls {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 10px;
   padding: 10px 12px 10px 14px;
@@ -488,6 +723,24 @@
   background: var(--bg-card);
   border-top: 1px solid var(--border);
   border-left: 1px solid var(--border);
+}
+
+/* Con el video tapándola: oculta, o como ventanita flotante si se abre desde la barra. */
+.transcript.covered:not(.floating) {
+  display: none;
+}
+
+.transcript.floating {
+  position: absolute;
+  z-index: 20;
+  top: 56px;
+  right: 12px;
+  width: min(460px, calc(100% - 24px));
+  height: min(520px, calc(100% - 120px));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-flyout);
+  overflow: hidden;
 }
 
 .transcript-header {

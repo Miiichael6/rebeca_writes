@@ -18,6 +18,32 @@ export interface SelectProps<T extends string> {
   id?: string
   disabled?: boolean
   style?: CSSProperties
+  /** `up` obliga a abrir hacia arriba; por defecto abre donde haya sitio. */
+  direction?: 'auto' | 'up'
+}
+
+/** Alto aproximado de una opción, para saber si la lista cabe debajo del botón. */
+const OPTION_HEIGHT = 32
+const LIST_MAX_HEIGHT = 280
+const LIST_GAP = 4
+const VIEWPORT_MARGIN = 8
+
+interface Placement {
+  up: boolean
+  maxHeight: number
+}
+
+/** Abre hacia abajo si cabe; si no, hacia el lado con más espacio, acortando la lista si hace falta. */
+function placeList(anchor: HTMLElement, count: number, forceUp: boolean): Placement {
+  const rect = anchor.getBoundingClientRect()
+  const below = window.innerHeight - rect.bottom - LIST_GAP - VIEWPORT_MARGIN
+  const above = rect.top - LIST_GAP - VIEWPORT_MARGIN
+  const wanted = Math.min(LIST_MAX_HEIGHT, count * OPTION_HEIGHT + 8)
+  const up = forceUp || (below < wanted && above > below)
+  return {
+    up,
+    maxHeight: Math.max(OPTION_HEIGHT * 2, Math.min(LIST_MAX_HEIGHT, up ? above : below))
+  }
 }
 
 /** Teclas que abren la lista desde el botón. */
@@ -39,10 +65,12 @@ export function Select<T extends string>({
   id,
   disabled,
   style,
+  direction = 'auto',
   ...rest
 }: SelectProps<T>): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
+  const [placement, setPlacement] = useState<Placement>({ up: false, maxHeight: LIST_MAX_HEIGHT })
   const anchorRef = useRef<HTMLDivElement>(null)
   const query = useRef(EMPTY_QUERY)
   const { mounted, state } = useMountTransition(open, MOTION_FAST)
@@ -57,6 +85,7 @@ export function Select<T extends string>({
   useOutsidePointer(open, () => anchorRef.current, close)
 
   const openList = (from: number = selected < 0 ? 0 : selected): void => {
+    if (anchorRef.current) setPlacement(placeList(anchorRef.current, options.length, direction === 'up'))
     setActive(from)
     setOpen(true)
   }
@@ -135,6 +164,8 @@ export function Select<T extends string>({
           onPick={pick}
           onHover={setActive}
           state={state}
+          up={placement.up}
+          maxHeight={placement.maxHeight}
         />
       )}
     </div>

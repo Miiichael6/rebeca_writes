@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, nativeTheme, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { APP_ID, APP_NAME } from '@shared/app'
+import { APP_ID, APP_NAME, appTitle } from '@shared/app'
 import log from 'electron-log/main'
 import { registerIpcHandlers } from './ipc'
 import { getBackendInfo } from './engine/backend'
@@ -80,6 +80,8 @@ let appWindow: BrowserWindow | null = null
 
 /** "Abrir con" o arrastrar al ícono: lo que venga en el argv va a la cola. */
 async function queueFromArgv(argv: readonly string[], cwd: string): Promise<QueueAddResult | null> {
+  // Sin empaquetar, `electron .` pasa la carpeta del proyecto como argumento: no es un "Abrir con".
+  if (!app.isPackaged) return null
   const paths = pathsFromArgv(argv, cwd, app.getAppPath())
   if (paths.length === 0) return null
   log.info(`Archivos recibidos por línea de comandos: ${paths.join(', ')}`)
@@ -112,7 +114,8 @@ function createWindow(): void {
   // Ventana sin marco: la barra de título la dibuja el renderer (TitleBar) y Windows pone
   // los botones nativos min/max/cerrar encima (titleBarOverlay).
   const mainWindow = new BrowserWindow({
-    title: APP_NAME,
+    // Solo el servidor de desarrollo define esta variable (ni el instalador ni `npm start`).
+    title: appTitle(Boolean(process.env['ELECTRON_RENDERER_URL'])),
     ...initialBounds(saved),
     minWidth: MIN_WIDTH,
     minHeight: MIN_HEIGHT,

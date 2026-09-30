@@ -1,7 +1,28 @@
-import { FileWarning, Loader2, Music, Pause, Play, Volume2, VolumeX } from 'lucide-react'
-import { useCallback, useEffect, useMemo, type CSSProperties } from 'react'
+import {
+  Captions as CaptionsIcon,
+  CaptionsOff,
+  FileWarning,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Music,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX
+} from 'lucide-react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
+import { VIDEO_HEIGHT_MAX, VIDEO_HEIGHT_MIN } from '@shared/settings'
 import { MOTION } from '@renderer/lib/motion'
 import { formatClock } from '@renderer/lib/time'
 import { findActiveSegment } from '@renderer/lib/segments'
@@ -17,25 +38,28 @@ import {
 import { playbackFor, previewOf } from '@renderer/lib/preview'
 import { usePreviewStore } from '@renderer/store/preview'
 import { useTranscriptStore } from '@renderer/store/transcript'
-import { useSettingsStore } from '@renderer/store/settings'
+import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useUiStore } from '@renderer/store/ui'
 import { Button, Select, Slider } from './ui'
 
 const rateOptions = PLAYBACK_RATES.map((r) => ({ value: String(r), label: `${r}x` }))
 
 /** Texto del segmento que suena, sobre el video. No usa `<track>` para seguir los cambios en vivo. */
-function Captions(): React.JSX.Element | null {
+function Captions({ visible }: { visible: boolean }): React.JSX.Element {
   const segments = useTranscriptStore((s) => s.segments)
   const text = usePlayerStore((s) => {
     const i = findActiveSegment(segments, s.currentTime)
     // En los silencios no se muestra nada: el subtítulo solo dura lo que dura su segmento.
     return i !== null && s.currentTime < segments[i].end ? segments[i].text : null
   })
-  return text ? (
-    <div className="player-captions" aria-hidden>
-      <span>{text}</span>
+  // Se recuerda el último texto para que el fundido de salida no vea la capa vacía.
+  const [last, setLast] = useState(text ?? '')
+  if (text !== null && text !== last) setLast(text)
+  return (
+    <div className={`player-captions${visible && text !== null ? ' on' : ''}`} aria-hidden>
+      <span>{text ?? last}</span>
     </div>
-  ) : null
+  )
 }
 
 /**
@@ -74,6 +98,82 @@ function SeekBar({ disabled }: { disabled: boolean }): React.JSX.Element {
   )
 }
 
+/** Margen superior del panel de video (debe coincidir con `.player-stage` en app.css). */
+const STAGE_MARGIN_TOP = 12
+
+/** Si quedan menos px que estos para la transcripción, se considera tapada. */
+const COVER_THRESHOLD = 140
+
+/**
+ * Alto máximo del panel: todo el espacio de `.main` que no ocupan la barra de herramientas, los
+ * controles del reproductor y demás. Con ese alto el video tapa por completo la transcripción.
+ */
+function stageLimit(player: HTMLElement, main: HTMLElement): number {
+  let others = 0
+  for (const child of main.children) {
+    if (child !== player && !child.classList.contains('transcript') && child instanceof HTMLElement)
+      others += child.offsetHeight
+  }
+  const controls = player.querySelector<HTMLElement>('.player-controls')?.offsetHeight ?? 0
+  return Math.min(VIDEO_HEIGHT_MAX, main.clientHeight - others - controls - STAGE_MARGIN_TOP)
+}
+
+/** Asa inferior del panel de video: arrastrar cambia el alto y se guarda al soltar. */
+function ResizeHandle({
+  height,
+  limit,
+  onDrag
+}: {
+  height: number
+  limit: number
+  onDrag: (height: number | null) => void
+}): React.JSX.Element {
+  const { t } = useTranslation()
+  const clamp = (h: number): number =>
+    Math.round(Math.max(VIDEO_HEIGHT_MIN, Math.min(Math.max(limit, VIDEO_HEIGHT_MIN), h)))
+  return (
+    <div
+      className="player-resize"
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label={t('player.resize')}
+      aria-valuemin={VIDEO_HEIGHT_MIN}
+      aria-valuemax={Math.max(limit, VIDEO_HEIGHT_MIN)}
+      aria-valuenow={height}
+      tabIndex={0}
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const el = e.currentTarget
+        el.setPointerCapture(e.pointerId)
+        const startY = e.clientY
+        const startHeight = height
+        let last = startHeight
+        const move = (ev: PointerEvent): void => {
+          last = clamp(startHeight + ev.clientY - startY)
+          onDrag(last)
+        }
+        const end = (): void => {
+          el.removeEventListener('pointermove', move)
+          el.removeEventListener('pointerup', end)
+          el.removeEventListener('pointercancel', end)
+          updateSettings({ videoHeight: last })
+          onDrag(null)
+        }
+        el.addEventListener('pointermove', move)
+        el.addEventListener('pointerup', end)
+        el.addEventListener('pointercancel', end)
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
+        e.preventDefault()
+        updateSettings({ videoHeight: clamp(height + (e.key === 'ArrowDown' ? 20 : -20)) })
+      }}
+    />
+  )
+}
+
 /** Aviso cuando la entrada no tiene un archivo reproducible asociado (spec §5). */
 function Unavailable({ entryId }: { entryId: string }): React.JSX.Element {
   const { t } = useTranslation()
@@ -101,12 +201,32 @@ function Player(): React.JSX.Element {
   const videoVisible = useUiStore((s) => s.videoVisible)
   // El panel se pliega y despliega animado; `mounted` dice cuándo ya se puede ocultar del todo.
   const stage = useMountTransition(videoVisible, MOTION)
-  const { videoHeight, showCaptions } = useSettingsStore(
+  const { videoHeight: savedHeight, showCaptions } = useSettingsStore(
     useShallow((s) => ({
       videoHeight: s.settings.videoHeight,
       showCaptions: s.settings.showCaptions
     }))
   )
+  // Alto provisional mientras se arrastra; al soltar pasa a los ajustes.
+  const [dragHeight, setDragHeight] = useState<number | null>(null)
+  const videoHeight = dragHeight ?? savedHeight
+
+  // Espacio disponible para el panel: se recalcula al cambiar el tamaño de la ventana.
+  const playerRef = useRef<HTMLDivElement>(null)
+  const [limit, setLimit] = useState(VIDEO_HEIGHT_MAX)
+  useLayoutEffect(() => {
+    const player = playerRef.current
+    const main = player?.closest<HTMLElement>('.main')
+    if (!player || !main) return
+    const measure = (): void => setLimit(stageLimit(player, main))
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(main)
+    for (const child of main.children) {
+      if (child !== player && !child.classList.contains('transcript')) observer.observe(child)
+    }
+    return () => observer.disconnect()
+  }, [])
   const { src, hasVideo, playing, volume, muted, rate } = usePlayerStore(
     useShallow((s) => ({
       src: s.src,
@@ -155,13 +275,35 @@ function Player(): React.JSX.Element {
 
   const disabled = !src
 
+  // «Pantalla completa» = llevar el asa de redimensionar hasta abajo; otro clic vuelve al alto previo.
+  const maximizedHeight = Math.max(limit, VIDEO_HEIGHT_MIN)
+  const maximized = videoHeight >= maximizedHeight - 1
+  const restoreHeight = useRef(savedHeight)
+  const toggleMaximize = (): void => {
+    if (maximized) {
+      updateSettings({ videoHeight: Math.min(restoreHeight.current, maximizedHeight - 1) })
+    } else {
+      restoreHeight.current = videoHeight
+      updateSettings({ videoHeight: Math.round(maximizedHeight) })
+    }
+  }
+
+  // Con el video ocupando casi todo el espacio, la transcripción pasa a ser una ventanita.
+  const covered =
+    Boolean(entry && media) && hasVideo && videoVisible && videoHeight >= limit - COVER_THRESHOLD
+  useEffect(() => {
+    const { setTranscriptCovered } = useUiStore.getState()
+    setTranscriptCovered(covered)
+    return () => setTranscriptCovered(false)
+  }, [covered])
+
   return (
-    <div className="player">
+    <div className="player" ref={playerRef}>
       {entry && media === null && <Unavailable entryId={entry.id} />}
 
       {entry && media && (
         <div
-          className={`player-stage ${hasVideo ? 'video' : 'audio'} ${stage.state}`}
+          className={`player-stage ${hasVideo ? 'video' : 'audio'} ${stage.state}${dragHeight !== null ? ' dragging' : ''}`}
           style={{ '--video-height': `${videoHeight}px` } as CSSProperties}
           // Oculto con CSS y no desmontado: el `<video>` sigue sonando (spec §4.1).
           hidden={!stage.mounted}
@@ -185,7 +327,8 @@ function Player(): React.JSX.Element {
               )}
             </div>
           )}
-          {showCaptions && <Captions />}
+          <Captions visible={showCaptions} />
+          {hasVideo && <ResizeHandle height={videoHeight} limit={limit} onDrag={setDragHeight} />}
         </div>
       )}
 
@@ -224,7 +367,34 @@ function Player(): React.JSX.Element {
             onChange={(v) => setVolume(v / 100)}
           />
         </div>
+        <button
+          className={`player-btn captions-toggle${showCaptions ? ' active' : ''}`}
+          aria-label={showCaptions ? t('player.hideCaptions') : t('player.showCaptions')}
+          title={showCaptions ? t('player.hideCaptions') : t('player.showCaptions')}
+          aria-pressed={showCaptions}
+          disabled={disabled}
+          onClick={() => updateSettings({ showCaptions: !showCaptions })}
+        >
+          <CaptionsIcon size={18} strokeWidth={1.5} className="icon-on" />
+          <CaptionsOff size={18} strokeWidth={1.5} className="icon-off" />
+        </button>
+        {hasVideo && videoVisible && (
+          <button
+            className="player-btn"
+            aria-label={maximized ? t('player.restoreSize') : t('player.maximize')}
+            title={maximized ? t('player.restoreSize') : t('player.maximize')}
+            disabled={disabled}
+            onClick={toggleMaximize}
+          >
+            {maximized ? (
+              <Minimize2 size={16} strokeWidth={1.5} />
+            ) : (
+              <Maximize2 size={16} strokeWidth={1.5} />
+            )}
+          </button>
+        )}
         <Select
+          direction="up"
           aria-label={t('player.speed')}
           value={String(rate)}
           options={rateOptions}

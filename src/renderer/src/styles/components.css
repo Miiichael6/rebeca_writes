@@ -356,7 +356,7 @@
   z-index: 100;
   left: 0;
   top: calc(100% + 4px);
-  min-width: 100%;
+  width: 100%;
   max-height: 280px;
   padding: var(--space-1);
   overflow-y: auto;
@@ -364,6 +364,11 @@
   border-radius: var(--radius);
   background: var(--bg-card);
   box-shadow: var(--shadow-flyout);
+}
+
+.select-list.up {
+  top: auto;
+  bottom: calc(100% + 4px);
 }
 
 .select-list.entering {
@@ -385,6 +390,11 @@
   border-radius: var(--radius-sm);
   white-space: nowrap;
   cursor: pointer;
+}
+
+.select-list {
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .select-option.active {
@@ -551,6 +561,18 @@
 
 .card + .card {
   margin-top: var(--space-1);
+}
+
+/* La lista flotante de un Select se sale de la tarjeta: hay que dejar de recortar y ponerla por encima de las siguientes. */
+.card:has(.select-button[aria-expanded='true']) {
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+}
+
+.card:has(.select-button[aria-expanded='true']) > :last-child {
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
 }
 
 .setting-row {

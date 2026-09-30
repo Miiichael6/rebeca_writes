@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import BottomBar from './components/BottomBar'
 import DropOverlay from './components/DropOverlay'
@@ -27,10 +27,16 @@ import { useUpdatesSync } from './store/updates'
 
 function MainView(): React.JSX.Element {
   const entryId = useTranscriptStore((s) => s.entry?.id)
+  const collapsed = useUiStore((s) => s.sidebarCollapsed)
+  const sidebarWidth = useUiStore((s) => s.sidebarWidth)
+  const [resizing, setResizing] = useState(false)
   usePlayerShortcuts()
   return (
-    <div className="app">
-      <Sidebar />
+    <div
+      className={`app${collapsed ? ' sidebar-collapsed' : ''}${resizing ? ' resizing' : ''}`}
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}
+    >
+      <Sidebar onResizing={setResizing} />
       <main className="main">
         <Toolbar />
         {/* `key` reinicia el estado del reproductor al cambiar de archivo. */}

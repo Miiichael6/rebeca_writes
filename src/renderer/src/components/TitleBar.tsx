@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { APP_NAME } from '@shared/app'
+import { appTitle } from '@shared/app'
 import logo from '../assets/logo.svg'
 
 /**
@@ -11,7 +11,7 @@ function TitleBar({ children }: { children?: ReactNode }): React.JSX.Element {
   return (
     <header className="titlebar">
       <img className="titlebar-logo" src={logo} alt="" width={16} height={16} />
-      <span className="titlebar-title">{APP_NAME}</span>
+      <span className="titlebar-title">{appTitle(import.meta.env.DEV)}</span>
       <span className="titlebar-spacer" />
       {children && <div className="titlebar-actions">{children}</div>}
     </header>
