@@ -5,39 +5,68 @@
 
 ## Objetivo
 
-Que el dock se anime al mostrarse (sale del borde con un deslizamiento más largo y la píldora crece desde la barra) y que, al pasar el ratón por la barra, la píldora salga centrada sobre ella en vez de irse hacia la derecha.
+Que el dock tenga vida al mostrarse y al esconderse: sale del borde con un deslizamiento suave y la píldora crece desde la barra; al esconderse se comporta como una **gota** (se contrae, se derrama hacia el borde y se asienta como barra). Además, al pasar el ratón por la barra escondida, la píldora tiene que salir **centrada sobre la barra**, no desplazada hacia la derecha.
+
+## Contexto
+
+- **El desplazamiento a la derecha.** Con el dock arriba o abajo y alineado a una esquina (`topLeft`, `bottomRight`...), `dockBounds` colocaba la barra escondida (48 px) y la píldora fuera (el ancho de `dockWidth`) con el **mismo borde izquierdo** (`alignedStart` con el largo de cada una). La barra quedaba en el extremo izquierdo de la píldora y esta se extendía hacia la derecha desde ahí. En los bordes laterales no pasaba: la ventana es tan alta como la barra en los dos estados.
+- **La animación de antes.** Al salir, la ventana se deslizaba en 8 fotogramas de 16 ms (~128 ms, demasiado brusco) y la píldora solo hacía un `fade-in` corto. Al esconderse, la píldora se cambiaba al instante por la franja negra y la ventana se deslizaba al borde: no había transición entre píldora y barra.
+- **Quién anima qué.** La ventana del dock la mueve el main (`setBounds` fotograma a fotograma en `dockWindow.ts`); lo que se dibuja dentro (píldora, barra) lo anima el CSS del renderer. Una animación en varios tiempos necesita que los dos lados se pongan de acuerdo en la duración: de ahí una constante compartida en `@shared`.
+
+## Enfoque
+
+Línea de tiempo de cada transición:
+
+| Transición | Tiempo | Main (ventana) | Renderer (contenido) |
+|---|---|---|---|
+| Salir | 0 → ~220 ms | Desliza de `tuckedBounds` a `dockBounds` en `SLIDE_FRAMES` (14) | `dock-pill-in`: la píldora crece (escala 0.6 → 1, opacidad 0 → 1) desde el lado del borde, con `--ease-spring` |
+| Esconderse · 1 contraerse | 0 → `DOCK_CONTRACT_MS` (180 ms) | Espera quieta | `dock-pill-contract`: la píldora se encoge hacia el borde hasta 28 px (una gota) y su contenido se desvanece |
+| Esconderse · 2 derramarse | 180 → ~400 ms | Desliza al borde (`tuckedBounds`) | Se ve la franja de la barra viajando con la ventana |
+| Esconderse · 3 asentarse | al llegar | Coloca la ventana de la barra (`dockBounds` con `pill = null`) | `dock-bar-land`: la barra se aplasta (escala 2.6 → 0.8 → 1) y rebota hasta quedarse quieta |
+
+Si el ratón vuelve durante la contracción, el main cancela la espera y el deslizamiento (`stopSlide`) y la píldora vuelve a salir desde donde está. Con `prefers-reduced-motion` las duraciones CSS quedan en 0 ms; solo queda la espera de `DOCK_CONTRACT_MS` del main.
 
 ## Pasos
 
-### Paso 1 — Centrado
+### Paso 1 — Centrado sobre la barra
 
-- [x] `src/main/domain/dock/edge.ts`: arriba y abajo la píldora se centra sobre la barra escondida (en esquina y al centro)
-- [x] `src/renderer/src/styles/components.css`: la barra del paso intermedio va siempre al centro de la ventana (quitadas las reglas por alineación)
-- [x] `tests/main/dockEdge.test.ts`: la píldora sale centrada sobre la barra
+- [x] `src/main/domain/dock/edge.ts` (`topOrBottomBounds`): calcular primero dónde va la barra (`alignedStart` con `BAR_PX`) y centrar la píldora sobre ella (`barStart + (BAR_PX - width) / 2`). Escondido, el resultado es el mismo que antes; fuera, la píldora se reparte a los dos lados de la barra.
+- [x] `src/renderer/src/styles/components.css`: la franja de la barra durante el deslizamiento va siempre al centro de la ventana (`left: calc(50% - 24px)`) arriba y abajo. Se quitan las tres reglas por `data-align` (`start` / `center` / `end`), que ya no hacen falta.
+- [x] `tests/main/dockEdge.test.ts`: la esquina se mide con la barra escondida (`CORNER_GAP_PX` desde el extremo). Nuevo caso: en `topLeft`, `topCenter` y `bottomRight` la píldora fuera comparte centro con la barra (±1 px por redondeo).
 
-### Paso 2 — Animación
+### Paso 2 — Animación al salir
 
-- [x] `src/main/domain/dock/slide.ts`: `SLIDE_FRAMES` de 8 a 14 (≈ 220 ms) para un deslizamiento más suave
-- [x] `motion.css` + `components.css`: `dock-pill-in` (opacidad y escala desde el lado del borde) al aparecer la píldora
+- [x] `src/main/domain/dock/slide.ts`: `SLIDE_FRAMES` de 8 a 14 (14 × 16 ms ≈ 220 ms). La curva sigue siendo `ease-out` cúbica: arranca rápido y frena al llegar.
+- [x] `src/renderer/src/styles/motion.css`: `@keyframes dock-pill-in` (opacidad 0 y `scale(0.6)` al inicio).
+- [x] `components.css`: `.edge-pill` usa `dock-pill-in` con `--duration-slow` y `--ease-spring` en vez del `fade-in` corto. El `transform-origin` va según el borde (`right center`, `left center`, `center top`, `center bottom`), así la píldora crece desde la barra y no desde su centro.
 
 ### Paso 3 — Retracción como una gota
 
-- [x] `DOCK_CONTRACT_MS` en `src/shared/dock.ts`: el main espera ese rato antes de deslizar al esconderse
-- [x] `EdgePill`: al esconderse, la píldora se contrae hasta ser una gota (`dock-pill-contract`) y luego aterriza como barra (`dock-bar-land`)
+- [x] `src/shared/dock.ts`: `DOCK_CONTRACT_MS = 180`, la duración de la contracción, compartida por main y renderer.
+- [x] `src/main/infrastructure/electron/dockWindow.ts` (`slide`): al esconderse (`view.out === false`) espera `DOCK_CONTRACT_MS` con un `setTimeout` antes de llamar a `slideWindow`. `stopSlide` cancela la espera y el deslizamiento, por si el ratón vuelve a entrar.
+- [x] `src/renderer/src/components/EdgePill/EdgePill.tsx`: hook `useContractingAsDrop(collapsed)` que, cuando `collapsed` pasa de `false` a `true`, mantiene la píldora dibujada `DOCK_CONTRACT_MS` más con la clase `edge-pill-contract`. Si vuelve a salir antes, se corta.
+- [x] `motion.css`: `@keyframes dock-pill-contract` (ancho a 28 px y sin padding) y `@keyframes dock-bar-land` (escala 2.6 → 0.8 → 1, opacidad 0.6 → 1).
+- [x] `components.css`: `.edge-pill-contract` anima con `ease-in` y se queda en el último fotograma (`forwards`), y sus hijos se desvanecen con `fade-out`. `.edge-pill-area` se alinea hacia el borde (`flex-end` a la derecha, `flex-start` a la izquierda, centro arriba y abajo) para que la gota se encoja hacia la barra. `.edge-pill-bar` anima con `dock-bar-land` y su `transform-origin` va en el lado del borde.
 
 ### Paso 4 — Verificación
 
-- [ ] Prueba real: en cada posición la píldora sale centrada sobre la barra y la animación se ve fluida
-- [x] Tests, `npm run typecheck` y `npm run lint` pasan
+- [ ] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).
+- [ ] Prueba real de salida: en un lateral (`rightCenter`) y arriba (`topCenter`) la píldora crece desde la barra, sin saltos ni parpadeo.
+- [ ] Prueba real de la gota: al sacar el ratón, la píldora se contrae hacia el borde, se desliza y la barra rebota al asentarse. Si se vuelve a entrar con el ratón a mitad de la contracción, la píldora vuelve a salir sin quedarse a medias.
+- [ ] Prueba real con grabación y con la pregunta de la reunión: las animaciones no rompen la onda ni el texto, y el borde azul de grabando se mantiene en la gota y en la barra.
+- [x] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan
 - [x] Commit: `feat(dock): animación al mostrarse y píldora centrada sobre la barra (tarea 34)`
+- [x] Commit: `feat(dock): la píldora se retrae como una gota (tarea 34)`
 
 ## Criterios de aceptación
 
-- [ ] Al pasar el ratón por la barra, la píldora queda centrada sobre ella (arriba y abajo)
-- [ ] Al esconderse, la píldora se contrae como una gota, se derrama hacia el borde y se asienta como barra
-- [ ] La aparición se anima (deslizamiento + crecimiento) y no parpadea
+- [ ] Al pasar el ratón por la barra, la píldora queda centrada sobre ella (arriba y abajo, en las esquinas y al centro)
+- [ ] La aparición se anima (deslizamiento + crecimiento desde la barra) y no parpadea
+- [ ] Al esconderse, la píldora se contrae como una gota, se derrama hacia el borde y se asienta como barra con un pequeño rebote
+- [ ] Volver a entrar con el ratón durante cualquier fase de la retracción saca la píldora de nuevo sin estados a medias
 
 ## Bitácora
 
 - 2026-10-01 — Con la barra en una esquina, la ventana nacía en la barra y la píldora se extendía a la derecha; ahora ambas comparten centro. Prueba visual pendiente del usuario.
 - 2026-10-01 — Al esconderse el usuario quiere una gota: contraerse, derramarse al borde y asentarse. La contracción la dibuja el renderer y el main retrasa `DOCK_CONTRACT_MS` el deslizamiento (cancelable si el ratón vuelve).
+- 2026-10-01 — Un test de `jsonRepositories` falló una vez en la suite completa y pasó al repetirlo: intermitente, ajeno a esta tarea.
