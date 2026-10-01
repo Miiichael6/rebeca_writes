@@ -77,7 +77,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 29 | [Grabar con el micrófono](done/29_grabar_con_microfono.md) | 9 Pulido | 27, 28 | ✅ Terminada |
 | 30 | [Dock en el borde de la pantalla](done/30_dock_en_el_borde.md) | 9 Pulido | 29 | ✅ Terminada |
 | 31 | [Atajo de teclado para grabar](done/31_atajo_grabar.md) | 9 Pulido | 30 | ✅ Terminada |
-| 32 | [Sugerir grabar una reunión](in_progress/32_sugerir_grabar_reunion.md) | 9 Pulido | 30 | 🔄 En progreso |
+| 32 | [Sugerir grabar una reunión](done/32_sugerir_grabar_reunion.md) | 9 Pulido | 30 | ✅ Terminada |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
