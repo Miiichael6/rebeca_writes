@@ -41,12 +41,8 @@ describe('menuBounds', () => {
 
 describe('menuOpensLeft', () => {
   it('hacia dentro de la pantalla', () => {
-    expect(menuOpensLeft('rightTop')).toBe(true)
-    expect(menuOpensLeft('rightBottom')).toBe(true)
     expect(menuOpensLeft('topRight')).toBe(true)
     expect(menuOpensLeft('bottomCenter')).toBe(true)
-    expect(menuOpensLeft('leftTop')).toBe(false)
-    expect(menuOpensLeft('leftBottom')).toBe(false)
     expect(menuOpensLeft('topLeft')).toBe(false)
     expect(menuOpensLeft('bottomLeft')).toBe(false)
   })

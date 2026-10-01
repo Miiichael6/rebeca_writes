@@ -43,7 +43,7 @@ Posiciones: `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `b
 
 ## Criterios de aceptación
 
-- [ ] En Configuración se elige entre las 12 posiciones (cada borde: extremo, centro, extremo); por defecto sigue en el borde derecho, ahora al centro
+- [ ] En Configuración se elige entre las 6 posiciones (arriba o abajo: izquierda, centro, derecha); por defecto, abajo al centro
 - [ ] En cada posición el dock escondido asoma en su borde, sale hacia dentro con el ratón y no parpadea
 - [ ] El menú contextual nunca se sale de la pantalla y su submenú se abre hacia dentro
 
@@ -54,3 +54,4 @@ Posiciones: `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `b
 - 2026-10-01 — Las esquinas quedan a `CORNER_GAP_PX` (160 px) para no tapar minimizar/maximizar/cerrar de una ventana maximizada. El deslizamiento sale de `tuckedBounds` (la píldora tras el borde salvo lo que asoma) y vive en `slide.ts`; al cambiar la posición el dock salta, no cruza la pantalla.
 - 2026-10-01 — El usuario marcó 12 posiciones en una captura: se añadieron `leftTop/Bottom` y `rightTop/Bottom` y el centro lateral pasó del 70 % de altura al centro real; los extremos laterales quedan a `SIDE_GAP_PX` (100 px).
 - 2026-10-01 — El menú se abre hacia abajo también con el dock abajo (se arrima dentro del área); abrirlo hacia arriba pedía anclarlo por abajo y no compensaba. Pruebas con el dock en pantalla: pendientes del usuario.
+- 2026-10-01 — El usuario descartó los laterales: quedan 6 posiciones (arriba y abajo) y el defecto pasa a `bottomCenter`. Se borró la geometría y el CSS de los laterales; un ajuste lateral guardado vuelve al defecto por el validador.

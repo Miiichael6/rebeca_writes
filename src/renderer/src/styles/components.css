@@ -1062,16 +1062,8 @@
   padding: 2px;
 }
 
-/* La ventana llega al borde de la pantalla (tarea 33: el que elija el usuario); los 12 px de
-   margen hacia él quedan vacíos (MARGIN_PX). */
-.dock[data-edge='right'] {
-  padding-right: 14px;
-}
-
-.dock[data-edge='left'] {
-  padding-left: 14px;
-}
-
+/* La ventana llega al borde de la pantalla (tarea 33: arriba o abajo); el margen hacia él
+   queda vacío. */
 .dock[data-edge='top'] {
   padding-top: 14px;
 }
@@ -1083,6 +1075,7 @@
 .edge-pill-area {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
 }
@@ -1105,15 +1098,7 @@
     background var(--duration) var(--ease);
 }
 
-/* La píldora crece desde la barra: el origen es el lado del borde, o el centro arriba y abajo. */
-.dock[data-edge='right'] .edge-pill {
-  transform-origin: right center;
-}
-
-.dock[data-edge='left'] .edge-pill {
-  transform-origin: left center;
-}
-
+/* La píldora crece desde la barra: el origen es el centro del lado del borde. */
 .dock[data-edge='top'] .edge-pill {
   transform-origin: center top;
 }
@@ -1122,7 +1107,6 @@
   transform-origin: center bottom;
 }
 
-/* Contrayéndose: se encoge hacia la barra hasta ser una gota y el contenido se desvanece. */
 /* Contrayéndose (tarea 34): el botón del extremo derecho (el micrófono) se come la onda. La
    píldora se cierra hacia él, la onda (o la pregunta) se encoge hacia su lado, el otro botón se
    desvanece y el micrófono da un bocado. Queda una gota con el micro que se mete en el borde. */
@@ -1152,69 +1136,32 @@
   animation: dock-gulp var(--dock-contract-ms) var(--ease);
 }
 
-.dock[data-edge='right'] .edge-pill-area {
-  justify-content: flex-end;
-}
-
-.dock[data-edge='left'] .edge-pill-area {
-  justify-content: flex-start;
-}
-
-.dock:is([data-edge='top'], [data-edge='bottom']) .edge-pill-area {
-  justify-content: center;
-}
-
-/* Escondida, toda la ventana (del tamaño de la barra) es una barra negra; mientras entra
-   deslizándose al tamaño de la píldora, una franja del lado que asoma (el contrario al borde),
-   tan gruesa como lo que asoma (PEEK_PX) y tan larga como la barra (BAR_PX). */
+/* Escondida, toda la ventana (del tamaño de la barra) es una barra negra: una franja horizontal
+   tan gruesa como lo que asoma (PEEK_PX) y tan larga como la barra (BAR_PX), al centro. Al llegar,
+   se derrama a lo ancho (`dock-bar-land`). */
 .edge-pill-bar {
   position: fixed;
+  left: calc(50% - 24px);
+  width: 48px;
+  height: 6px;
+  --bar-spill-from: scale(0.2, 1);
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: #000;
   animation: dock-bar-land var(--duration-slow) var(--ease-spring);
 }
 
-.dock[data-edge='right'] .edge-pill-bar {
-  transform-origin: right center;
-  --bar-spill-from: scale(1, 0.2);
-  inset: 0 auto 0 0;
-  width: 6px;
-  border-right: none;
-  border-radius: 3px 0 0 3px;
-}
-
-.dock[data-edge='left'] .edge-pill-bar {
-  transform-origin: left center;
-  --bar-spill-from: scale(1, 0.2);
-  inset: 0 0 0 auto;
-  width: 6px;
-  border-left: none;
-  border-radius: 0 3px 3px 0;
-}
-
 .dock[data-edge='top'] .edge-pill-bar {
   transform-origin: center top;
-  --bar-spill-from: scale(0.2, 1);
   bottom: 0;
-  width: 48px;
-  height: 6px;
   border-top: none;
   border-radius: 0 0 3px 3px;
 }
 
 .dock[data-edge='bottom'] .edge-pill-bar {
   transform-origin: center bottom;
-  --bar-spill-from: scale(0.2, 1);
   top: 0;
-  width: 48px;
-  height: 6px;
   border-bottom: none;
   border-radius: 3px 3px 0 0;
-}
-
-/* Arriba y abajo la píldora sale centrada sobre la barra, así que la barra va al centro. */
-.dock:is([data-edge='top'], [data-edge='bottom']) .edge-pill-bar {
-  left: calc(50% - 24px);
 }
 
 .edge-pill.edge-pill-active,

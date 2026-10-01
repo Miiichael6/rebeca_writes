@@ -279,20 +279,14 @@
     "suggestMeetings": "Suggest recording meetings",
     "suggestMeetingsDescription": "When a call starts in Teams, Zoom, Webex, Slack, Discord or Skype, the dock asks whether to record it. It never records without your confirmation.",
     "dockPosition": "Dock position",
-    "dockPositionDescription": "Where the dock hides: on any screen edge, at an end or in the middle.",
+    "dockPositionDescription": "Where the dock hides: at the top or bottom of the screen, at a corner or in the middle.",
     "dockPositions": {
       "topLeft": "Top, left",
       "topCenter": "Top, center",
       "topRight": "Top, right",
       "bottomLeft": "Bottom, left",
       "bottomCenter": "Bottom, center",
-      "bottomRight": "Bottom, right",
-      "leftTop": "Left, top",
-      "leftCenter": "Left, center",
-      "leftBottom": "Left, bottom",
-      "rightTop": "Right, top",
-      "rightCenter": "Right, center",
-      "rightBottom": "Right, bottom"
+      "bottomRight": "Bottom, right"
     }
   },
   "models": {

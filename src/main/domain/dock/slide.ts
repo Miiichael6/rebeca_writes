@@ -12,7 +12,7 @@ export function slidePath(from: number, to: number, frames: number): number[] {
   })
 }
 
-/** Las posiciones del deslizamiento de `from` a `to`: en un borde lateral cambia x; arriba o abajo, y. */
+/** Las posiciones del deslizamiento de `from` a `to` (arriba o abajo solo cambia y). */
 export function slidePoints(from: Point, to: Point, frames = SLIDE_FRAMES): Point[] {
   const xs = slidePath(from.x, to.x, frames)
   const ys = slidePath(from.y, to.y, frames)

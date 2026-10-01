@@ -41,8 +41,8 @@ export function dockShowsIndicator(view: DockView): boolean {
 }
 
 /**
- * Dónde vive el dock (tarea 33): en cada borde de la pantalla, en un extremo o al centro. Arriba
- * y abajo el extremo es izquierda o derecha; en los laterales, arriba o abajo.
+ * Dónde vive el dock (tarea 33): arriba o abajo de la pantalla, en un extremo o al centro. Nunca
+ * en un lateral: ahí la píldora tumbada no cabe a lo largo del borde (petición del usuario).
  */
 export const DOCK_POSITIONS = [
   'topLeft',
@@ -50,20 +50,14 @@ export const DOCK_POSITIONS = [
   'topRight',
   'bottomLeft',
   'bottomCenter',
-  'bottomRight',
-  'leftTop',
-  'leftCenter',
-  'leftBottom',
-  'rightTop',
-  'rightCenter',
-  'rightBottom'
+  'bottomRight'
 ] as const
 export type DockPosition = (typeof DOCK_POSITIONS)[number]
-export const DEFAULT_DOCK_POSITION: DockPosition = 'rightCenter'
+export const DEFAULT_DOCK_POSITION: DockPosition = 'bottomCenter'
 
 /** El borde de la pantalla en el que asoma el dock escondido. */
-export type DockEdge = 'left' | 'right' | 'top' | 'bottom'
-/** Dónde va a lo largo de su borde: al principio (izquierda o arriba), al centro o al final. */
+export type DockEdge = 'top' | 'bottom'
+/** Dónde va a lo largo de su borde: a la izquierda, al centro o a la derecha. */
 export type DockAlign = 'start' | 'center' | 'end'
 
 const PLACEMENTS: Record<DockPosition, { edge: DockEdge; align: DockAlign }> = {
@@ -72,13 +66,7 @@ const PLACEMENTS: Record<DockPosition, { edge: DockEdge; align: DockAlign }> = {
   topRight: { edge: 'top', align: 'end' },
   bottomLeft: { edge: 'bottom', align: 'start' },
   bottomCenter: { edge: 'bottom', align: 'center' },
-  bottomRight: { edge: 'bottom', align: 'end' },
-  leftTop: { edge: 'left', align: 'start' },
-  leftCenter: { edge: 'left', align: 'center' },
-  leftBottom: { edge: 'left', align: 'end' },
-  rightTop: { edge: 'right', align: 'start' },
-  rightCenter: { edge: 'right', align: 'center' },
-  rightBottom: { edge: 'right', align: 'end' }
+  bottomRight: { edge: 'bottom', align: 'end' }
 }
 
 export function dockEdge(position: DockPosition): DockEdge {
@@ -90,20 +78,11 @@ export function dockAlign(position: DockPosition): DockAlign {
 }
 
 /**
- * Si el menú del dock se abre a la izquierda del cursor (hacia dentro de la pantalla): sí con el
- * dock en el borde derecho, no en el izquierdo, y arriba o abajo según esté en la mitad
- * izquierda (no) o en el centro o la derecha (sí).
+ * Si el menú del dock se abre a la izquierda del cursor (hacia dentro de la pantalla): no con el
+ * dock a la izquierda; sí al centro o a la derecha.
  */
 export function menuOpensLeft(position: DockPosition): boolean {
-  switch (dockEdge(position)) {
-    case 'right':
-      return true
-    case 'left':
-      return false
-    case 'top':
-    case 'bottom':
-      return dockAlign(position) !== 'start'
-  }
+  return dockAlign(position) !== 'start'
 }
 
 /**
