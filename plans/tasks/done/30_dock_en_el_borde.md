@@ -1,6 +1,6 @@
 # 30 · Dock en el borde de la pantalla
 
-**Estado:** 🔄 En progreso
+**Estado:** ✅ Terminada
 **Fase:** 9 — Pulido · **Depende de:** 29 · **Doc:** petición del usuario (2026-10-01)
 **Código de origen:** el dock de la tarea 49 de Rebecca Listen (`../rebecca_listen/`): `src/main/dock/{edge,dockWindow,index}.ts`, `src/main/ipc/dock.ts`, `src/shared/dock.ts`, `src/renderer/src/components/EdgePill/` y `src/renderer/src/windows/Dock/`
 
@@ -72,10 +72,10 @@ El menú contextual no es el nativo: es el `Menu` de la app (Fluent, con submen�
 ### Paso 7 — Verificación
 
 - [x] Prueba real: la barra asoma en el borde derecho; con el ratón la píldora sale deslizándose y al irse vuelve al borde
-- [ ] Prueba real: sin grabar se ve onda quieta + 🎤; 🎤 graba (borde azul, ■ · onda moviéndose · 🎤, texto en vivo en la entrada); ■ pregunta "¿Terminar?": ✕ vuelve a ■ · onda · 🎤 sin cortar la grabación, ✓ para y guarda el MP3
-- [ ] Prueba real: clic derecho abre el menú con estilo de la app; "Grabar ▸" Sistema / Micrófono / Ambos graba con esa fuente; "Abrir RebeccaWrites" abre la ventana
-- [ ] Prueba real: cerrar la ventana deja la app viva con el dock escondido; grabar desde el dock con la ventana cerrada y reabrirla muestra la grabación en curso
-- [ ] Prueba real: abrir RebeccaWrites otra vez (acceso directo) con la ventana cerrada la reabre y no crea un segundo dock; "Salir" pregunta y, al confirmar, no queda ningún proceso en el Administrador de tareas
+- [x] Prueba real: sin grabar se ve onda quieta + 🎤; 🎤 graba (borde azul, ■ · onda moviéndose · 🎤, texto en vivo en la entrada); ■ pregunta "¿Terminar?": ✕ vuelve a ■ · onda · 🎤 sin cortar la grabación, ✓ para y guarda el MP3
+- [x] Prueba real: clic derecho abre el menú con estilo de la app; "Grabar ▸" Sistema / Micrófono / Ambos graba con esa fuente; "Abrir RebeccaWrites" abre la ventana
+- [x] Prueba real: cerrar la ventana deja la app viva con el dock escondido; grabar desde el dock con la ventana cerrada y reabrirla muestra la grabación en curso
+- [x] Prueba real: abrir RebeccaWrites otra vez (acceso directo) con la ventana cerrada la reabre y no crea un segundo dock; "Salir" pregunta y, al confirmar, no queda ningún proceso en el Administrador de tareas
 - [x] Código organizado: una responsabilidad por archivo, lógica pura separada de la integración, sin duplicación ni código muerto
 - [x] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan; `npm run dev` arranca
 - [x] Commit: `feat(dock): dock en el borde con la app en segundo plano (tarea 30)`
@@ -83,8 +83,8 @@ El menú contextual no es el nativo: es el `Menu` de la app (Fluent, con submen�
 ## Criterios de aceptación
 
 - [x] El dock tiene el mismo aspecto y movimiento que el de Rebecca Listen: escondido en el borde derecho, sale deslizándose con el ratón y se esconde al irse
-- [ ] Se graba desde el dock con 🎤 o con el menú (Sistema / Micrófono / Ambos); mientras graba el borde es azul; ■ pide confirmación ("¿Terminar?") antes de parar y guardar
-- [ ] Cerrar la ventana no cierra la app: queda el dock escondido y lo que se estaba haciendo (cola, grabación) sigue; el menú del dock la vuelve a abrir
+- [x] Se graba desde el dock con 🎤 o con el menú (Sistema / Micrófono / Ambos); mientras graba el borde es azul; ■ pide confirmación ("¿Terminar?") antes de parar y guardar
+- [x] Cerrar la ventana no cierra la app: queda el dock escondido y lo que se estaba haciendo (cola, grabación) sigue; el menú del dock la vuelve a abrir
 - [x] "Salir" del menú pide confirmación y cierra la app del todo, sin procesos ni ventanas que queden vivos
 
 ## Bitácora
@@ -96,3 +96,4 @@ El menú contextual no es el nativo: es el `Menu` de la app (Fluent, con submen�
 - 2026-10-01 — Grabando pasa a ■ · onda · 🎤; "¿Terminar?" ✓ para y guarda, ✕ vuelve a la vista de grabando. Ya no hay terminar sin guardar, así que no hace falta descartar grabaciones.
 - 2026-10-01 — Probado de verdad: dock, menú y submenú, 🎤 graba (borde azul, MP3 guardado), "Salir" ✕/✓ sin procesos. Falta probar a mano ■ "¿Terminar?", grabar desde el submenú y cerrar/reabrir la ventana: el ratón automático chocaba con la sesión del usuario. Preguntas cortas ("¿Salir?") con el texto completo en el tooltip; el azul va en los temas, no en `tokens.css`; `npm run dev` necesita `ELECTRON_RUN_AS_NODE` sin definir.
 - 2026-10-01 — La onda grabando ya no rebota con `bounce`: dibuja los últimos niveles de `mic:level`, como el botón de grabar (petición del usuario).
+- 2026-10-01 — Las pruebas que faltaban (■ "¿Terminar?", submenú de fuentes, cerrar/reabrir la ventana, onda y menú) las hizo el usuario: todo ok.
