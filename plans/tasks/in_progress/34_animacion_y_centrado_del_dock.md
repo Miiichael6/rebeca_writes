@@ -61,6 +61,9 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 
 - [x] `DOCK_DROP_HOLD_MS = 500`: ya contraída, la gota (solo el 🎤) se queda quieta medio segundo antes de que el main la deslice al borde.
 
+- [x] Al esconderse, la ventana se desliza entera tras el borde (`tuckedBounds(..., 0)`), no hasta dejar `PEEK_PX` asomando: se veía un trozo de la gota.
+- [x] La gota se desvanece (`fade-out` tras `--dock-contract-ms` + `--dock-hold-ms`) mientras se hunde, para que el cambio de la ventana a la barra no enseñe la gota un instante.
+
 ### Paso 6 — Verificación
 
 - [ ] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).
@@ -87,3 +90,4 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - 2026-10-01 — Un test de `jsonRepositories` falló una vez en la suite completa y pasó al repetirlo: intermitente, ajeno a esta tarea.
 - 2026-10-01 — Bug: la barra aparecía (y rebotaba) con la ventana aún fuera y luego bajaba. Ahora la gota dura hasta el `resize` de la ventana al llegar a la barra, y solo entonces la barra se derrama a lo largo del borde (`--bar-spill-from`).
 - 2026-10-01 — El usuario precisó la gota: el micrófono debe comerse la onda. El micro está siempre a la derecha (`record` o el indicador al grabar), así que la contracción se ancla al último botón.
+- 2026-10-01 — Parpadeo al llegar: Windows pinta un fotograma del último dibujo al redimensionar la ventana transparente; se evita dejando la gota invisible antes de que la ventana cambie a la barra.

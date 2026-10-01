@@ -1,11 +1,6 @@
 import { BrowserWindow, screen } from 'electron'
 import { IpcChannel } from '@shared/ipc'
-import {
-  DOCK_CONTRACT_MS,
-  DOCK_DROP_HOLD_MS,
-  type DockPosition,
-  type DockView
-} from '@shared/dock'
+import { DOCK_CONTRACT_MS, DOCK_DROP_HOLD_MS, type DockPosition, type DockView } from '@shared/dock'
 import type { DockSurface } from '../../application/ports/dockSurface'
 import { dockWidth } from '../../domain/dock/dockWidth'
 import { contains, dockBounds, tuckedBounds, type Area, type Point } from '../../domain/dock/edge'
@@ -126,9 +121,8 @@ export class ElectronDockSurface implements DockSurface {
   private slide(window: BrowserWindow, view: DockView, position: DockPosition): void {
     const area = workArea()
     const width = dockWidth(view)
-    const tucked = tuckedBounds(area, width, position)
-    const from = this.atEdge ? tucked : window.getBounds()
-    const to = view.out ? dockBounds(area, width, position) : tucked
+    const from = this.atEdge ? tuckedBounds(area, width, position) : window.getBounds()
+    const to = view.out ? dockBounds(area, width, position) : tuckedBounds(area, width, position, 0)
     const final = view.out ? to : dockBounds(area, null, position)
     this.atEdge = false
     const done = (): void => {

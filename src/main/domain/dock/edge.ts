@@ -54,14 +54,20 @@ export function dockBounds(area: Area, pill: number | null, position: DockPositi
 }
 
 /**
- * El dock fuera (`pill` de ancho) metido tras su borde salvo `PEEK_PX`: donde empieza y acaba
- * el deslizamiento, que así entra o sale desde la barra.
+ * El dock fuera (`pill` de ancho) metido tras su borde salvo `peek`: donde empieza el
+ * deslizamiento al salir (desde la barra, `PEEK_PX`) y donde acaba al esconderse (entero tras el
+ * borde, `0`, para que no se vea un trozo de la gota antes de volverse barra).
  */
-export function tuckedBounds(area: Area, pill: number, position: DockPosition): Area {
+export function tuckedBounds(
+  area: Area,
+  pill: number,
+  position: DockPosition,
+  peek = PEEK_PX
+): Area {
   const out = dockBounds(area, pill, position)
   return dockEdge(position) === 'top'
-    ? { ...out, y: area.y + PEEK_PX - out.height }
-    : { ...out, y: area.y + area.height - PEEK_PX }
+    ? { ...out, y: area.y + peek - out.height }
+    : { ...out, y: area.y + area.height - peek }
 }
 
 export function contains(area: Area, point: Point): boolean {

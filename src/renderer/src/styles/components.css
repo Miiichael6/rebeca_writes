@@ -1114,7 +1114,12 @@
   /* Pegado al micro: lo que sobra se sale (y se recorta) por la izquierda, no el micro por la
      derecha. La onda no baja de su ancho mínimo, así que sin esto empujaba al micro fuera. */
   justify-content: flex-end;
-  animation: dock-pill-contract var(--dock-contract-ms) ease-in forwards;
+  /* Tras contraerse y esperar, la gota se desvanece mientras se hunde en el borde: al llegar, la
+     ventana cambia a la barra y Windows enseña un instante el último dibujo, que así está vacío
+     (sin esto, la gota parpadeaba en el borde). Dura menos que el deslizamiento (~220 ms). */
+  animation:
+    dock-pill-contract var(--dock-contract-ms) ease-in forwards,
+    fade-out 180ms ease-in calc(var(--dock-contract-ms) + var(--dock-hold-ms)) forwards;
   overflow: hidden;
 }
 

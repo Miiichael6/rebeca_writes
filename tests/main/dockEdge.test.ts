@@ -76,6 +76,12 @@ describe('tuckedBounds', () => {
     expect(visible(tucked).height).toBe(PEEK_PX)
   })
 
+  it.each(DOCK_POSITIONS)('%s: con peek 0 queda entero tras el borde', (position) => {
+    const hidden = tuckedBounds(AREA, PILL, position, 0)
+    const outside = hidden.y + hidden.height <= AREA.y || hidden.y >= AREA.y + AREA.height
+    expect(outside).toBe(true)
+  })
+
   it('abajo empieza donde la barra', () => {
     expect(tuckedBounds(AREA, PILL, 'bottomCenter').y).toBe(
       dockBounds(AREA, null, 'bottomCenter').y
