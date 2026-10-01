@@ -1,6 +1,11 @@
 import { BrowserWindow, screen } from 'electron'
 import { IpcChannel } from '@shared/ipc'
-import { DOCK_CONTRACT_MS, type DockPosition, type DockView } from '@shared/dock'
+import {
+  DOCK_CONTRACT_MS,
+  DOCK_DROP_HOLD_MS,
+  type DockPosition,
+  type DockView
+} from '@shared/dock'
 import type { DockSurface } from '../../application/ports/dockSurface'
 import { dockWidth } from '../../domain/dock/dockWidth'
 import { contains, dockBounds, tuckedBounds, type Area, type Point } from '../../domain/dock/edge'
@@ -134,11 +139,12 @@ export class ElectronDockSurface implements DockSurface {
       this.stopSlide = slideWindow(window, from, to, final, done)
       return
     }
-    // Al esconderse, primero la píldora se contrae como una gota (la anima el renderer).
+    // Al esconderse, primero la píldora se contrae como una gota (la anima el renderer) y la gota
+    // se queda un momento quieta antes de meterse en el borde.
     let stopMoving: (() => void) | null = null
     const wait = setTimeout(() => {
       stopMoving = slideWindow(window, from, to, final, done)
-    }, DOCK_CONTRACT_MS)
+    }, DOCK_CONTRACT_MS + DOCK_DROP_HOLD_MS)
     this.stopSlide = () => {
       clearTimeout(wait)
       stopMoving?.()

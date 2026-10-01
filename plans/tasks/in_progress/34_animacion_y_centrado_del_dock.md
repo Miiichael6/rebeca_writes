@@ -59,6 +59,8 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - [x] `DOCK_CONTRACT_MS` pasa a 320 ms y llega al CSS como `--dock-contract-ms` (estilo en línea de `DockApp`), para que main y renderer no se desfasen.
 - [x] `components.css` + `motion.css`: al contraerse, la píldora se cierra hacia el botón de la derecha (el micrófono); la onda o la pregunta se encogen hacia él (`dock-eaten`), el otro botón se desvanece y el micro da un bocado (`dock-gulp`). Queda una gota con el micro.
 
+- [x] `DOCK_DROP_HOLD_MS = 500`: ya contraída, la gota (solo el 🎤) se queda quieta medio segundo antes de que el main la deslice al borde.
+
 ### Paso 6 — Verificación
 
 - [ ] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).

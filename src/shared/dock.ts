@@ -113,6 +113,9 @@ export function menuOpensLeft(position: DockPosition): boolean {
  */
 export const DOCK_CONTRACT_MS = 320
 
+/** Lo que la gota (solo el 🎤) se queda quieta, ya contraída, antes de meterse en el borde. */
+export const DOCK_DROP_HOLD_MS = 500
+
 /** Lo elegido en el menú contextual del dock. */
 export type DockMenuAction =
   | { kind: 'open' }

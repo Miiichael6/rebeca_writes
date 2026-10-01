@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { DOCK_CONTRACT_MS, DOCK_DROP_HOLD_MS } from '@shared/dock'
 
 /** Alturas de la onda quieta, en % del centro de la píldora (las de Rebecca Listen). */
 const BARS = [30, 55, 80, 100, 70, 90, 60, 40, 25]
@@ -9,8 +10,11 @@ export const EDGE_PILL_BARS = BARS.length
 const MIN_LEVEL_PCT = 12
 const ICON_SIZE = 12
 const ICON_STROKE = 2.2
-/** Por si la ventana nunca llega a la barra (p. ej. la cerraron): la gota no se queda puesta. */
-const DROP_FALLBACK_MS = 1000
+/**
+ * Por si la ventana nunca llega a la barra (p. ej. la cerraron): la gota no se queda puesta. Un
+ * segundo de holgura tras la contracción y la espera, que cubre el deslizamiento.
+ */
+const DROP_FALLBACK_MS = DOCK_CONTRACT_MS + DOCK_DROP_HOLD_MS + 1000
 
 /** Un extremo de la píldora: botón con `onClick`, o solo indicador si no lo tiene. */
 export interface EdgePillButton {
