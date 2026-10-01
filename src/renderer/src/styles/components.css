@@ -1127,6 +1127,9 @@
    píldora se cierra hacia él, la onda (o la pregunta) se encoge hacia su lado, el otro botón se
    desvanece y el micrófono da un bocado. Queda una gota con el micro que se mete en el borde. */
 .edge-pill.edge-pill-contract {
+  /* Pegado al micro: lo que sobra se sale (y se recorta) por la izquierda, no el micro por la
+     derecha. La onda no baja de su ancho mínimo, así que sin esto empujaba al micro fuera. */
+  justify-content: flex-end;
   animation: dock-pill-contract var(--dock-contract-ms) ease-in forwards;
   overflow: hidden;
 }

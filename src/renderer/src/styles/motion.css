@@ -115,6 +115,7 @@
 @keyframes dock-pill-contract {
   to {
     width: 29px;
+    gap: 0;
   }
 }
 
