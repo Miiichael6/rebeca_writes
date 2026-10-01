@@ -37,7 +37,9 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 - [x] **D7** ¿Se graba siempre del micrófono predeterminado de Windows o se añade un selector de entrada en Configuración? → afecta 29 — **Tres fuentes: Computadora, Mi voz y Ambos**, con los dispositivos predeterminados de Windows (2026-09-30)
 - [x] **D8** ¿Qué hacen los botones del dock? → afecta 30 — **Sin grabar: onda quieta + 🎤 (graba). Grabando (borde azul): ■ · onda · 🎤; ■ pregunta "¿Terminar?": ✓ para y guarda, ✕ sigue grabando.** Menú contextual propio con "Grabar ▸" Sistema / Micrófono / Ambos (2026-10-01)
 - [x] **D9** ¿Cómo se sale del todo de la app? → afecta 30 — **"Salir" en el menú del dock, con confirmación; no queda ningún proceso** (2026-10-01)
-- [x] **D10** ¿Cómo funciona el atajo para grabar? → afecta 31 — **Ctrl+Win, configurable en Configuración. Mantener = graba mientras se pulsa y al soltar guarda; doble pulsación (Ctrl+Win, Win) = manos libres; grabando, el atajo no hace nada** (2026-10-01)
+- [x] **D10** ¿Cómo funciona el atajo para grabar? → afecta 31 — **Ctrl+Win, configurable en Configuración. Mantener = graba mientras se pulsa y al soltar guarda; doble pulsación (Ctrl+Win, Win) = manos libres; en manos libres, volver a pulsar el atajo la para** (2026-10-01)
+- [x] **D11** ¿Cuándo se considera que hay una reunión? → afecta 32 — **Cuando una app de llamadas conocida (Teams, Zoom, Webex, Slack, Discord, Skype) está usando el micrófono; sin navegadores** (2026-10-01)
+- [x] **D12** Al pulsar ✓, ¿qué se graba y cuántas veces se pregunta? → afecta 32 — **Ambos (sistema + micrófono); con ✕ o sin respuesta no se repite hasta la siguiente llamada; interruptor en Configuración** (2026-10-01)
 
 ## Tablero
 
@@ -74,7 +76,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 28 | [Hexagonal: lo que falta de main](done/28_hexagonal_main_restante.md) | 9 Pulido | — | ✅ Terminada |
 | 29 | [Grabar con el micrófono](done/29_grabar_con_microfono.md) | 9 Pulido | 27, 28 | ✅ Terminada |
 | 30 | [Dock en el borde de la pantalla](done/30_dock_en_el_borde.md) | 9 Pulido | 29 | ✅ Terminada |
-| 31 | [Atajo de teclado para grabar](in_progress/31_atajo_grabar.md) | 9 Pulido | 30 | 🔄 En progreso |
+| 31 | [Atajo de teclado para grabar](done/31_atajo_grabar.md) | 9 Pulido | 30 | ✅ Terminada |
+| 32 | [Sugerir grabar una reunión](pending/32_sugerir_grabar_reunion.md) | 9 Pulido | 30 | ⬜ Pendiente |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -95,4 +98,5 @@ todas → 22 → 23 → 24
         22 → 26 (animaciones y Select propio)
 17 + 18 + 19 → 27 (vivo desde Listen) ┐
                                28 ─┴→ 29 (grabar con micrófono) → 30 (dock en el borde) → 31 (atajo para grabar)
+                                                                        30 → 32 (sugerir grabar reuniones)
 ```
