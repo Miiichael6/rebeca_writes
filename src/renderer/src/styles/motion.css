@@ -117,15 +117,16 @@
   }
 }
 
-/* La gota cae sobre el borde: se aplasta, rebota un poco y se asienta como barra. */
+/* La gota llega al borde y se derrama a lo largo de él (`--bar-spill-from` dice en qué eje),
+   con el rebote de `--ease-spring` antes de asentarse como barra. */
 @keyframes dock-bar-land {
   from {
-    opacity: 0.6;
-    transform: scale(2.6);
+    opacity: 0.4;
+    transform: var(--bar-spill-from);
   }
-  60% {
+  65% {
     opacity: 1;
-    transform: scale(0.8);
+    transform: none;
   }
 }
 

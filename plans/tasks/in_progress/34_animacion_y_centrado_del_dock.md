@@ -78,3 +78,4 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - 2026-10-01 — Con la barra en una esquina, la ventana nacía en la barra y la píldora se extendía a la derecha; ahora ambas comparten centro. Prueba visual pendiente del usuario.
 - 2026-10-01 — Al esconderse el usuario quiere una gota: contraerse, derramarse al borde y asentarse. La contracción la dibuja el renderer y el main retrasa `DOCK_CONTRACT_MS` el deslizamiento (cancelable si el ratón vuelve).
 - 2026-10-01 — Un test de `jsonRepositories` falló una vez en la suite completa y pasó al repetirlo: intermitente, ajeno a esta tarea.
+- 2026-10-01 — Bug: la barra aparecía (y rebotaba) con la ventana aún fuera y luego bajaba. Ahora la gota dura hasta el `resize` de la ventana al llegar a la barra, y solo entonces la barra se derrama a lo largo del borde (`--bar-spill-from`).

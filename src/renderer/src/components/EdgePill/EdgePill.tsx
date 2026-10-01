@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { DOCK_CONTRACT_MS } from '@shared/dock'
 
 /** Alturas de la onda quieta, en % del centro de la píldora (las de Rebecca Listen). */
 const BARS = [30, 55, 80, 100, 70, 90, 60, 40, 25]
@@ -10,6 +9,8 @@ export const EDGE_PILL_BARS = BARS.length
 const MIN_LEVEL_PCT = 12
 const ICON_SIZE = 12
 const ICON_STROKE = 2.2
+/** Por si la ventana nunca llega a la barra (p. ej. la cerraron): la gota no se queda puesta. */
+const DROP_FALLBACK_MS = 1000
 
 /** Un extremo de la píldora: botón con `onClick`, o solo indicador si no lo tiene. */
 export interface EdgePillButton {
@@ -65,8 +66,10 @@ function PillButton({ button }: { button: EdgePillButton }): React.JSX.Element {
 }
 
 /**
- * Al pasar de fuera a escondida, la píldora sigue dibujada `DOCK_CONTRACT_MS` más para
- * contraerse como una gota antes de volverse la barra (tarea 34).
+ * Al pasar de fuera a escondida, la píldora sigue dibujada como una gota (tarea 34): se contrae
+ * mientras el main espera `DOCK_CONTRACT_MS` y se mete en el borde con la ventana. Deja de serlo
+ * cuando la ventana cambia de tamaño, que es al llegar a la barra (el deslizamiento solo la
+ * mueve): así la barra aparece y se asienta en el borde, no con la ventana aún fuera.
  */
 function useContractingAsDrop(collapsed: boolean): boolean {
   const [contracting, setContracting] = useState(false)
@@ -79,8 +82,13 @@ function useContractingAsDrop(collapsed: boolean): boolean {
       return
     }
     setContracting(true)
-    const timer = setTimeout(() => setContracting(false), DOCK_CONTRACT_MS)
-    return () => clearTimeout(timer)
+    const landed = (): void => setContracting(false)
+    const timer = setTimeout(landed, DROP_FALLBACK_MS)
+    window.addEventListener('resize', landed, { once: true })
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', landed)
+    }
   }, [collapsed])
   return contracting
 }
