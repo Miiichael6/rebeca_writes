@@ -1145,11 +1145,11 @@
 }
 
 /* Arriba y abajo, la barra va en la esquina o al centro, como la barra escondida. */
-.dock[data-align='start'] .edge-pill-bar {
+.dock:is([data-edge='top'], [data-edge='bottom'])[data-align='start'] .edge-pill-bar {
   left: 0;
 }
 
-.dock[data-align='end'] .edge-pill-bar {
+.dock:is([data-edge='top'], [data-edge='bottom'])[data-align='end'] .edge-pill-bar {
   right: 0;
 }
 

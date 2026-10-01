@@ -7,7 +7,7 @@ import { dockAlign, dockEdge, type DockAlign, type DockPosition } from '@shared/
  * se dibuja en la ventana y el margen hacia el borde queda vacío.
  *
  * - En un borde lateral la píldora sale hacia dentro: la ventana mide el ancho de `dockWidth`
- *   más `MARGIN_PX` y es tan alta como la barra, a `HEIGHT_RATIO` del área de trabajo. Copiado
+ *   más `MARGIN_PX` y es tan alta como la barra, a `SIDE_GAP_PX` del extremo o al centro. Copiado
  *   de Rebecca Listen (tarea 49).
  * - Arriba o abajo la píldora va tumbada a lo largo del borde: la ventana mide el ancho de
  *   `dockWidth` y `BAR_PX` de alto, y la barra escondida es horizontal, en una esquina (a
@@ -29,8 +29,8 @@ export const MARGIN_PX = 12
  */
 export const CORNER_GAP_PX = 160
 
-/** Altura del dock en un borde lateral, como fracción del área de trabajo desde arriba. */
-const HEIGHT_RATIO = 0.7
+/** Distancia a la esquina en los bordes laterales: ahí no hay botones de ventana que evitar. */
+export const SIDE_GAP_PX = 100
 
 export interface Area {
   x: number
@@ -44,21 +44,34 @@ export interface Point {
   y: number
 }
 
-/** Dónde empieza algo de largo `length` en un tramo `[start, start + span)` según `align`. */
-function alignedStart(start: number, span: number, length: number, align: DockAlign): number {
-  if (align === 'start') return start + CORNER_GAP_PX
-  if (align === 'end') return start + span - CORNER_GAP_PX - length
+/**
+ * Dónde empieza algo de largo `length` en un tramo `[start, start + span)` según `align`, a
+ * `gap` del extremo si va en uno.
+ */
+function alignedStart(
+  start: number,
+  span: number,
+  length: number,
+  align: DockAlign,
+  gap: number
+): number {
+  if (align === 'start') return start + gap
+  if (align === 'end') return start + span - gap - length
   return Math.round(start + (span - length) / 2)
 }
 
 /** Borde izquierdo o derecho: barra vertical; fuera, la píldora asoma hacia dentro. */
-function sideBounds(area: Area, pill: number | null, edge: 'left' | 'right'): Area {
+function sideBounds(
+  area: Area,
+  pill: number | null,
+  edge: 'left' | 'right',
+  align: DockAlign
+): Area {
   const width = pill === null ? PEEK_PX : pill + MARGIN_PX
   const height = BAR_PX
-  const middle = area.y + area.height * HEIGHT_RATIO
   return {
     x: edge === 'left' ? area.x : area.x + area.width - width,
-    y: Math.round(middle - height / 2),
+    y: alignedStart(area.y, area.height, height, align, SIDE_GAP_PX),
     width,
     height
   }
@@ -74,7 +87,7 @@ function topOrBottomBounds(
   const width = pill === null ? BAR_PX : pill
   const height = pill === null ? PEEK_PX : BAR_PX
   return {
-    x: alignedStart(area.x, area.width, width, align),
+    x: alignedStart(area.x, area.width, width, align, CORNER_GAP_PX),
     y: edge === 'top' ? area.y : area.y + area.height - height,
     width,
     height
@@ -87,7 +100,7 @@ export function dockBounds(area: Area, pill: number | null, position: DockPositi
   switch (edge) {
     case 'left':
     case 'right':
-      return sideBounds(area, pill, edge)
+      return sideBounds(area, pill, edge, dockAlign(position))
     case 'top':
     case 'bottom':
       return topOrBottomBounds(area, pill, edge, dockAlign(position))

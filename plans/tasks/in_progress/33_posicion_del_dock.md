@@ -5,11 +5,11 @@
 
 ## Objetivo
 
-Elegir en Configuración dónde vive el dock: en un borde lateral (derecho, como hasta ahora, o izquierdo) o en una esquina o el centro del borde de arriba o de abajo. El dock escondido asoma como barra en ese borde y sale deslizándose hacia dentro de la pantalla.
+Elegir en Configuración dónde vive el dock: en cualquiera de los cuatro bordes, en un extremo o al centro (12 posiciones, según los cuadrados rojos que marcó el usuario en una captura). El dock escondido asoma como barra en ese borde y sale deslizándose hacia dentro de la pantalla.
 
 ## Enfoque
 
-Posiciones: `right` (por defecto, la de la tarea 30), `left`, `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `bottomRight`. Cada una se descompone en **borde** (`left` / `right` / `top` / `bottom`) y **alineación** a lo largo del borde (`start` / `center` / `end`). En los laterales la barra escondida es vertical (a la altura de siempre); arriba y abajo es horizontal y queda dentro de la ventana fuera, para que el ratón que la sacó siga dentro. El menú contextual se abre hacia dentro de la pantalla (a la derecha del cursor si el dock está en la mitad izquierda).
+Posiciones: `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `bottomRight`, `leftTop`, `leftCenter`, `leftBottom`, `rightTop`, `rightCenter` (por defecto, la de la tarea 30) y `rightBottom`. Cada una se descompone en **borde** (`left` / `right` / `top` / `bottom`) y **alineación** a lo largo del borde (`start` / `center` / `end`). En los laterales la barra escondida es vertical (a la altura de siempre); arriba y abajo es horizontal y queda dentro de la ventana fuera, para que el ratón que la sacó siga dentro. El menú contextual se abre hacia dentro de la pantalla (a la derecha del cursor si el dock está en la mitad izquierda).
 
 ## Pasos
 
@@ -43,7 +43,7 @@ Posiciones: `right` (por defecto, la de la tarea 30), `left`, `topLeft`, `topCen
 
 ## Criterios de aceptación
 
-- [ ] En Configuración se elige entre borde derecho, borde izquierdo y arriba/abajo a la izquierda, centro o derecha; por defecto sigue en el borde derecho
+- [ ] En Configuración se elige entre las 12 posiciones (cada borde: extremo, centro, extremo); por defecto sigue en el borde derecho, ahora al centro
 - [ ] En cada posición el dock escondido asoma en su borde, sale hacia dentro con el ratón y no parpadea
 - [ ] El menú contextual nunca se sale de la pantalla y su submenú se abre hacia dentro
 
@@ -52,4 +52,5 @@ Posiciones: `right` (por defecto, la de la tarea 30), `left`, `topLeft`, `topCen
 <!-- Resumida: 1–3 entradas de una línea. Solo decisiones no obvias, problemas y desviaciones. -->
 
 - 2026-10-01 — Las esquinas quedan a `CORNER_GAP_PX` (160 px) para no tapar minimizar/maximizar/cerrar de una ventana maximizada. El deslizamiento sale de `tuckedBounds` (la píldora tras el borde salvo lo que asoma) y vive en `slide.ts`; al cambiar la posición el dock salta, no cruza la pantalla.
+- 2026-10-01 — El usuario marcó 12 posiciones en una captura: se añadieron `leftTop/Bottom` y `rightTop/Bottom` y el centro lateral pasó del 70 % de altura al centro real; los extremos laterales quedan a `SIDE_GAP_PX` (100 px).
 - 2026-10-01 — El menú se abre hacia abajo también con el dock abajo (se arrima dentro del área); abrirlo hacia arriba pedía anclarlo por abajo y no compensaba. Pruebas con el dock en pantalla: pendientes del usuario.

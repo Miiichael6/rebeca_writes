@@ -288,16 +288,20 @@
     "suggestMeetings": "Sugerir grabar las reuniones",
     "suggestMeetingsDescription": "Al empezar una llamada en Teams, Zoom, Webex, Slack, Discord o Skype, el dock pregunta si grabarla. Nunca graba sin que lo confirmes.",
     "dockPosition": "Posición del dock",
-    "dockPositionDescription": "Dónde se esconde el dock: en un borde lateral, o arriba o abajo en una esquina o al centro.",
+    "dockPositionDescription": "Dónde se esconde el dock: en cualquier borde de la pantalla, en un extremo o al centro.",
     "dockPositions": {
-      "right": "Borde derecho",
-      "left": "Borde izquierdo",
-      "topLeft": "Arriba a la izquierda",
-      "topCenter": "Arriba al centro",
-      "topRight": "Arriba a la derecha",
-      "bottomLeft": "Abajo a la izquierda",
-      "bottomCenter": "Abajo al centro",
-      "bottomRight": "Abajo a la derecha"
+      "topLeft": "Arriba, a la izquierda",
+      "topCenter": "Arriba, al centro",
+      "topRight": "Arriba, a la derecha",
+      "bottomLeft": "Abajo, a la izquierda",
+      "bottomCenter": "Abajo, al centro",
+      "bottomRight": "Abajo, a la derecha",
+      "leftTop": "Izquierda, arriba",
+      "leftCenter": "Izquierda, centro",
+      "leftBottom": "Izquierda, abajo",
+      "rightTop": "Derecha, arriba",
+      "rightCenter": "Derecha, centro",
+      "rightBottom": "Derecha, abajo"
     }
   },
   "models": {

@@ -7,6 +7,7 @@ import {
   dockBounds,
   MARGIN_PX,
   PEEK_PX,
+  SIDE_GAP_PX,
   tuckedBounds,
   type Area
 } from '../../src/main/domain/dock/edge'
@@ -21,9 +22,9 @@ const inside = (inner: Area, outer: Area): boolean =>
   inner.x + inner.width <= outer.x + outer.width &&
   inner.y + inner.height <= outer.y + outer.height
 
-describe('dockBounds en el borde derecho', () => {
+describe('dockBounds en el borde derecho, al centro', () => {
   it('es una barra fina pegada al borde mientras está escondido', () => {
-    expect(dockBounds(AREA, null, 'right')).toMatchObject({
+    expect(dockBounds(AREA, null, 'rightCenter')).toMatchObject({
       x: 1920 - PEEK_PX,
       width: PEEK_PX,
       height: BAR_PX
@@ -31,19 +32,19 @@ describe('dockBounds en el borde derecho', () => {
   })
 
   it('saca la píldora entera a la pantalla', () => {
-    const out = dockBounds(AREA, PILL, 'right')
+    const out = dockBounds(AREA, PILL, 'rightCenter')
     expect(out).toMatchObject({ width: PILL + MARGIN_PX, height: BAR_PX })
     expect(out.x + out.width).toBe(1920)
   })
 
   it('la ventana es tan alta como la barra: el ratón nunca queda fuera', () => {
-    expect(dockBounds(AREA, PILL, 'right').y).toBe(dockBounds(AREA, null, 'right').y)
+    expect(dockBounds(AREA, PILL, 'rightCenter').y).toBe(dockBounds(AREA, null, 'rightCenter').y)
   })
 
   it('centra barra y píldora a la misma altura, dentro del área de trabajo', () => {
     const area = { x: -1280, y: 200, width: 1280, height: 984 }
-    const hidden = dockBounds(area, null, 'right')
-    const out = dockBounds(area, PILL, 'right')
+    const hidden = dockBounds(area, null, 'rightCenter')
+    const out = dockBounds(area, PILL, 'rightCenter')
     expect(Math.abs(middle(hidden) - middle(out))).toBeLessThanOrEqual(1)
     expect(hidden.y).toBeGreaterThanOrEqual(200)
     expect(hidden.y + hidden.height).toBeLessThanOrEqual(200 + 984)
@@ -53,8 +54,18 @@ describe('dockBounds en el borde derecho', () => {
 
 describe('dockBounds en otras posiciones', () => {
   it('en el borde izquierdo, pegado a la izquierda', () => {
-    expect(dockBounds(AREA, null, 'left')).toMatchObject({ x: 0, width: PEEK_PX })
-    expect(dockBounds(AREA, PILL, 'left')).toMatchObject({ x: 0, width: PILL + MARGIN_PX })
+    expect(dockBounds(AREA, null, 'leftCenter')).toMatchObject({ x: 0, width: PEEK_PX })
+    expect(dockBounds(AREA, PILL, 'leftCenter')).toMatchObject({ x: 0, width: PILL + MARGIN_PX })
+  })
+
+  it('en los laterales, arriba, al centro o abajo del borde', () => {
+    const top = dockBounds(AREA, PILL, 'rightTop')
+    const center = dockBounds(AREA, PILL, 'rightCenter')
+    const bottom = dockBounds(AREA, PILL, 'rightBottom')
+    expect(top.y).toBe(SIDE_GAP_PX)
+    expect(center.y + center.height / 2).toBe(520)
+    expect(bottom.y + bottom.height).toBe(1040 - SIDE_GAP_PX)
+    expect(dockBounds(AREA, null, 'leftBottom').y).toBe(bottom.y)
   })
 
   it('arriba, una barra horizontal pegada arriba; fuera, la píldora tumbada', () => {
@@ -108,12 +119,12 @@ describe('tuckedBounds', () => {
   })
 
   it('en el borde derecho empieza donde la barra', () => {
-    expect(tuckedBounds(AREA, PILL, 'right').x).toBe(dockBounds(AREA, null, 'right').x)
+    expect(tuckedBounds(AREA, PILL, 'rightCenter').x).toBe(dockBounds(AREA, null, 'rightCenter').x)
   })
 })
 
 describe('contains', () => {
-  const out = dockBounds(AREA, PILL, 'right')
+  const out = dockBounds(AREA, PILL, 'rightCenter')
 
   it('incluye los puntos del dock fuera, bordes de la pantalla incluidos', () => {
     expect(contains(out, { x: out.x, y: out.y })).toBe(true)
