@@ -15,7 +15,14 @@ import {
   previewPlan,
   videoPreviewArgs
 } from '../../src/main/domain/previewPlan'
-import { PreviewCache } from '../../src/main/infrastructure/ffmpeg/previewCache'
+import { PreviewQueue } from '../../src/main/application/previewQueue'
+import { ffmpegPreviewEncoder } from '../../src/main/infrastructure/ffmpeg/ffmpegPreviewEncoder'
+import { fsPreviewStore } from '../../src/main/infrastructure/fs/fsPreviewStore'
+
+/** La caché con los adaptadores reales (carpeta y ffmpeg), como en `index.ts`. */
+function createCache(dir: string, maxBytes: () => number): PreviewQueue {
+  return new PreviewQueue({ store: fsPreviewStore(dir), encoder: ffmpegPreviewEncoder, maxBytes })
+}
 
 function info(
   container: string,
@@ -121,7 +128,7 @@ describe('pickEvictions', () => {
 
 /** Espera al primer evento `ready` o `failed` de `input` y junta lo que pasó antes. */
 function waitFor(
-  cache: PreviewCache,
+  cache: PreviewQueue,
   input: string
 ): Promise<{ result: string | Error; audio: string[]; progress: number[] }> {
   const audio: string[] = []
@@ -141,7 +148,7 @@ function waitFor(
   })
 }
 
-describe('PreviewCache con ffmpeg real', () => {
+describe('PreviewQueue con ffmpeg real', () => {
   let dir: string
   let cacheDir: string
   const ff = (...args: string[]): void => {
@@ -175,7 +182,7 @@ describe('PreviewCache con ffmpeg real', () => {
   it.each(cases)(
     '%s (%s): audio provisional y luego MP4 H.264 que Chromium reproduce',
     async (name, codec) => {
-      const cache = new PreviewCache({ dir: cacheDir, maxBytes: () => 1e9 })
+      const cache = createCache(cacheDir, () => 1e9)
       const input = join(dir, name)
       const probed = await probe(input)
       expect(probed.videoCodec).toBe(codec)
@@ -207,7 +214,7 @@ describe('PreviewCache con ffmpeg real', () => {
   )
 
   it('audio que Chromium no lee: un m4a AAC es la vista previa', async () => {
-    const cache = new PreviewCache({ dir: cacheDir, maxBytes: () => 1e9 })
+    const cache = createCache(cacheDir, () => 1e9)
     const input = join(dir, 'song.wma')
     const probed = await probe(input)
     const plan = previewPlan(probed)!
@@ -223,7 +230,7 @@ describe('PreviewCache con ffmpeg real', () => {
   }, 60_000)
 
   it('una sola generación a la vez, y la última pedida va primero', async () => {
-    const cache = new PreviewCache({ dir: join(dir, 'order'), maxBytes: () => 1e9 })
+    const cache = createCache(join(dir, 'order'), () => 1e9)
     // El largo ocupa la generación mientras se piden los otros tres.
     const inputs = ['long.avi', 'clip.avi', 'clip.wmv', 'clip.flv'].map((n) => join(dir, n))
     const active = new Set<string>()
@@ -254,7 +261,7 @@ describe('PreviewCache con ffmpeg real', () => {
   it('respeta el límite borrando lo menos usado', async () => {
     const own = join(dir, 'lru')
     let limit = 1e9
-    const cache = new PreviewCache({ dir: own, maxBytes: () => limit })
+    const cache = createCache(own, () => limit)
     const make = async (name: string): Promise<string> => {
       const input = join(dir, name)
       const probed = await probe(input)
@@ -290,12 +297,12 @@ describe('PreviewCache con ffmpeg real', () => {
 
   it('al arrancar borra lo que quedó a medias', async () => {
     const own = join(dir, 'leftovers')
-    const first = new PreviewCache({ dir: own, maxBytes: () => 1e9 })
+    const first = createCache(own, () => 1e9)
     await first.size()
     await writeFile(join(own, 'abc.mp4.part'), 'x')
     await writeFile(join(own, 'abc.tmp-audio.m4a'), 'x')
     await writeFile(join(own, 'abc.mp4'), 'x')
-    const second = new PreviewCache({ dir: own, maxBytes: () => 1e9 })
+    const second = createCache(own, () => 1e9)
     await second.size()
     expect(await readdir(own)).toEqual(['abc.mp4'])
   })
@@ -303,7 +310,7 @@ describe('PreviewCache con ffmpeg real', () => {
   it('clear() cancela la generación en curso y vacía la carpeta', async () => {
     const own = join(dir, 'clear')
     const long = join(dir, 'long.avi')
-    const cache = new PreviewCache({ dir: own, maxBytes: () => 1e9 })
+    const cache = createCache(own, () => 1e9)
     const probed = await probe(long)
     let finished = false
     cache.on('ready', () => (finished = true)).on('failed', () => (finished = true))

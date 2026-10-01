@@ -97,6 +97,44 @@ export function audioPreviewArgs(input: string, out: string, encoder: AudioEncod
   ] // prettier-ignore
 }
 
+/*
+ * Archivos de la carpeta de caché:
+ * - `<clave>.mp4`: vista previa H.264 + AAC de un video.
+ * - `<clave>.m4a`: audio AAC de un archivo de solo audio que Chromium no lee (wma, amr...).
+ * - `<clave>.tmp-audio.m4a`: audio provisional mientras se genera el `.mp4`. Se borra en la
+ *   siguiente generación, al vaciar la caché o al arrancar.
+ * - `*.part`: salida a medias de ffmpeg; se renombra al terminar (escritura atómica).
+ */
+
+const TMP_AUDIO_SUFFIX = '.tmp-audio.m4a'
+const PART_SUFFIX = '.part'
+
+export function previewFileName(key: string, plan: PreviewPlan): string {
+  return `${key}${plan.audioOnly ? '.m4a' : '.mp4'}`
+}
+
+export function tmpAudioName(key: string): string {
+  return `${key}${TMP_AUDIO_SUFFIX}`
+}
+
+export function partName(name: string): string {
+  return `${name}${PART_SUFFIX}`
+}
+
+export function isPartial(name: string): boolean {
+  return name.endsWith(PART_SUFFIX)
+}
+
+/** Clave del audio provisional `name`, o `null` si no es un audio provisional. */
+export function keyOfTmpAudio(name: string): string | null {
+  return name.endsWith(TMP_AUDIO_SUFFIX) ? name.slice(0, -TMP_AUDIO_SUFFIX.length) : null
+}
+
+/** Lo que deja a medias un cierre de la app: se borra al arrancar. */
+export function isLeftover(name: string): boolean {
+  return isPartial(name) || keyOfTmpAudio(name) !== null
+}
+
 export interface CacheFile {
   name: string
   size: number
