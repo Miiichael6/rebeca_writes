@@ -15,7 +15,7 @@ export const DOUBLE_PRESS_MS = 400
  */
 export type HotkeyInput = 'down' | 'up' | 'other' | 'timer'
 
-export type Gesture = 'startHold' | 'stopHold' | 'startLatched'
+export type Gesture = 'startHold' | 'stopHold' | 'startLatched' | 'stopLatched'
 
 export type GestureState =
   | { kind: 'idle' }
@@ -24,6 +24,8 @@ export type GestureState =
   | { kind: 'holding' }
   /** Toque corto soltado en `at`: espera la segunda pulsación. */
   | { kind: 'tapped'; at: number }
+  /** Pulsada mientras graba en manos libres: al soltarla limpia, para. */
+  | { kind: 'stopPress' }
   /** Ya decidido (manos libres u otra tecla): nada hasta soltar. */
   | { kind: 'waitRelease' }
 
@@ -48,10 +50,22 @@ const pressedAt = (at: number): GestureStep => ({
   wakeAt: at + HOLD_START_MS
 })
 
-export function nextGesture(state: GestureState, input: HotkeyInput, now: number): GestureStep {
+/** `latched`: hay una grabación en manos libres, así que pulsar el atajo la para. */
+export function nextGesture(
+  state: GestureState,
+  input: HotkeyInput,
+  now: number,
+  latched = false
+): GestureStep {
   switch (state.kind) {
     case 'idle':
-      return input === 'down' ? pressedAt(now) : step(state)
+      if (input !== 'down') return step(state)
+      return latched ? step({ kind: 'stopPress' }) : pressedAt(now)
+
+    // Para al soltar y no al pulsar: Ctrl+Win+→ no debe cortar la grabación.
+    case 'stopPress':
+      if (input === 'other') return step({ kind: 'waitRelease' })
+      return input === 'up' ? step(IDLE, 'stopLatched') : step(state)
 
     case 'pressed':
       if (input === 'other') return step({ kind: 'waitRelease' })

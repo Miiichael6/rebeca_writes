@@ -20,18 +20,27 @@ function measure(): { width: number; height: number } | null {
 
 /**
  * Mientras `open`, le dice al main cuánto ocupa el menú para que ajuste la ventana (y la
- * muestre); vuelve a medir cuando se abre o se cierra el submenú.
+ * muestre); vuelve a medir cuando se abre el submenú. La ventana solo crece mientras el menú
+ * está abierto: encogerla al cerrar el submenú la movía de sitio y el menú parpadeaba.
  */
 export function useReportMenuSize(open: boolean): void {
   useEffect(() => {
     if (!open) return
     let timer: ReturnType<typeof setTimeout> | undefined
+    let max = { width: 0, height: 0 }
     // Tras el render de React, con los popovers ya en su sitio.
     const report = (): void => {
       clearTimeout(timer)
       timer = setTimeout(() => {
         const size = measure()
-        if (size) void window.api.dock.setMenuSize(size)
+        if (!size) return
+        const next = {
+          width: Math.max(max.width, size.width),
+          height: Math.max(max.height, size.height)
+        }
+        if (next.width === max.width && next.height === max.height) return
+        max = next
+        void window.api.dock.setMenuSize(next)
       })
     }
     report()

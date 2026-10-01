@@ -25,7 +25,7 @@ export interface RecordHotkeyDeps {
 
 /**
  * El atajo global para grabar (tarea 31, D10): mantenerlo graba hasta soltarlo; pulsarlo dos
- * veces graba en manos libres hasta el ■ del dock. Si ya se está grabando, no hace nada.
+ * veces graba en manos libres hasta el ■ del dock o hasta volver a pulsarlo.
  */
 export class RecordHotkey {
   private gesture = IDLE
@@ -75,7 +75,7 @@ export class RecordHotkey {
 
   private feed(input: HotkeyInput): void {
     if (this.paused) return
-    const step = nextGesture(this.gesture, input, Date.now())
+    const step = nextGesture(this.gesture, input, Date.now(), this.latchedRecording())
     this.gesture = step.state
     this.schedule(step.wakeAt)
     if (step.gesture) void this.act(step.gesture)
@@ -100,6 +100,10 @@ export class RecordHotkey {
       this.holdRecording = false
       return this.deps.mic.stop()
     }
+    if (gesture === 'stopLatched') {
+      if (!this.latchedRecording()) return
+      return this.deps.mic.stop()
+    }
     if (this.deps.mic.state().recording) return
     // Antes de esperar al arranque: soltar mientras arranca ya tiene que parar.
     this.holdRecording = gesture === 'startHold'
@@ -111,6 +115,11 @@ export class RecordHotkey {
       return this.deps.log.warn(`Atajo: no se pudo empezar a grabar (${result.error})`)
     }
     this.deps.dock.revealUntilStopped()
+  }
+
+  /** Se graba y no por un "mantener" (doble pulsación, dock o botón): el atajo la para. */
+  private latchedRecording(): boolean {
+    return this.deps.mic.state().recording && !this.holdRecording
   }
 
   private reset(): void {

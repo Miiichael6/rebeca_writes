@@ -1083,6 +1083,9 @@
   background: rgba(22, 25, 29, 0.88);
   color: #fff;
   animation: fade-in var(--duration-fast) var(--ease);
+  transition:
+    border-color var(--duration) var(--ease),
+    background var(--duration) var(--ease);
 }
 
 /* Escondida, toda la ventana (del tamaño de la barra) es una barra negra; mientras entra
@@ -1114,10 +1117,26 @@
   background: rgba(255, 255, 255, 0.85);
   color: #16191d;
   cursor: pointer;
+  animation: pill-pop var(--duration) var(--ease-spring);
+  transition:
+    background var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
 }
 
 .edge-pill-button:hover {
   background: #fff;
+  transform: scale(1.1);
+}
+
+.edge-pill-button:active {
+  transform: scale(0.92);
+}
+
+/* El icono se vuelve a montar al cambiar de acción (clave por título), y así anima. */
+.edge-pill-icon {
+  display: grid;
+  place-items: center;
+  animation: pill-icon-in var(--duration) var(--ease-spring);
 }
 
 .edge-pill-indicator {
@@ -1126,9 +1145,11 @@
 
 .edge-pill-indicator:hover {
   background: rgba(255, 255, 255, 0.85);
+  transform: none;
 }
 
 .edge-pill-wave {
+  animation: pill-content-in var(--duration) var(--ease);
   flex: 1;
   display: flex;
   align-items: center;
@@ -1149,6 +1170,7 @@
 }
 
 .edge-pill-question {
+  animation: pill-content-in var(--duration) var(--ease);
   flex: 1;
   overflow: hidden;
   font-size: 11px;

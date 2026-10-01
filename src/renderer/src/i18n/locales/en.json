@@ -264,7 +264,7 @@
     "changeFolder": "Change…",
     "recording": "Recording",
     "recordShortcut": "Recording shortcut",
-    "recordShortcutDescription": "Works even with the app in the background. Hold it to record until you let go; press it twice in a row (e.g. Ctrl+Win, Win) to record hands-free until you stop it from the dock.",
+    "recordShortcutDescription": "Works even with the app in the background. Hold it to record until you let go; press it twice in a row (e.g. Ctrl+Win, Win) to record hands-free until you press it again or stop it from the dock.",
     "recordShortcutCapturing": "Press the keys…",
     "recordShortcutReset": "Back to Ctrl + Win",
     "recordShortcutFailed": "Windows did not allow the shortcut. Try another combination or restart the app.",

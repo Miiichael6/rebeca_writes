@@ -273,7 +273,7 @@
     "changeFolder": "Cambiar…",
     "recording": "Grabación",
     "recordShortcut": "Atajo para grabar",
-    "recordShortcutDescription": "Funciona aunque la app esté en segundo plano. Mantenlo pulsado para grabar hasta que lo sueltes; púlsalo dos veces seguidas (p. ej. Ctrl+Win, Win) para grabar sin manos hasta pararlo en el dock.",
+    "recordShortcutDescription": "Funciona aunque la app esté en segundo plano. Mantenlo pulsado para grabar hasta que lo sueltes; púlsalo dos veces seguidas (p. ej. Ctrl+Win, Win) para grabar sin manos hasta volver a pulsarlo o pararlo en el dock.",
     "recordShortcutCapturing": "Pulsa la combinación…",
     "recordShortcutReset": "Volver a Ctrl + Win",
     "recordShortcutFailed": "Windows no dejó activar el atajo. Prueba con otra combinación o reinicia la app.",

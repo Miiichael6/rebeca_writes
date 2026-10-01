@@ -9,11 +9,11 @@ import {
 } from '../../src/main/domain/hotkey/gesture'
 
 /** Aplica `[entrada, hora]` en orden y devuelve los gestos que salen. */
-function gestures(inputs: [HotkeyInput, number][]): Gesture[] {
+function gestures(inputs: [HotkeyInput, number][], latched = false): Gesture[] {
   let state = IDLE
   const out: Gesture[] = []
   for (const [input, now] of inputs) {
-    const step = nextGesture(state, input, now)
+    const step = nextGesture(state, input, now, latched)
     state = step.state
     if (step.gesture) out.push(step.gesture)
   }
@@ -117,5 +117,30 @@ describe('nextGesture', () => {
         ['up', 2000]
       ])
     ).toEqual(['startHold', 'stopHold'])
+  })
+
+  it('grabando en manos libres, pulsar y soltar el atajo la para', () => {
+    expect(
+      gestures(
+        [
+          ['down', 0],
+          ['up', 100]
+        ],
+        true
+      )
+    ).toEqual(['stopLatched'])
+  })
+
+  it('grabando en manos libres, Ctrl+Win+→ no la para', () => {
+    expect(
+      gestures(
+        [
+          ['down', 0],
+          ['other', 50],
+          ['up', 100]
+        ],
+        true
+      )
+    ).toEqual([])
   })
 })

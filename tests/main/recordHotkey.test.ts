@@ -114,15 +114,41 @@ describe('RecordHotkey', () => {
     expect(mic.start).not.toHaveBeenCalled()
   })
 
-  it('si ya se está grabando, el atajo no hace nada', async () => {
+  it('en manos libres, volver a pulsar el atajo la para y no empieza otra', async () => {
+    const { source, mic } = setup()
+    source.key('down')
+    source.key('up')
+    source.key('down')
+    source.key('up')
+    await wait(0)
+    expect(mic.start).toHaveBeenCalledOnce()
+    source.key('down')
+    await wait(HOLD_START_MS)
+    expect(mic.stop).not.toHaveBeenCalled()
+    source.key('up')
+    await wait(DOUBLE_PRESS_MS + HOLD_START_MS)
+    expect(mic.stop).toHaveBeenCalledOnce()
+    expect(mic.start).toHaveBeenCalledOnce()
+  })
+
+  it('una grabación empezada desde el dock también se para con el atajo', async () => {
     const { source, mic } = setup()
     await mic.start()
     mic.start.mockClear()
     source.key('down')
-    await wait(HOLD_START_MS)
     source.key('up')
     await wait(0)
+    expect(mic.stop).toHaveBeenCalledOnce()
     expect(mic.start).not.toHaveBeenCalled()
+  })
+
+  it('en manos libres, Ctrl+Win+→ no la para', async () => {
+    const { source, mic } = setup()
+    await mic.start()
+    source.key('down')
+    source.key('other')
+    source.key('up')
+    await wait(0)
     expect(mic.stop).not.toHaveBeenCalled()
   })
 

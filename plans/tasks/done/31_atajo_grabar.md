@@ -1,6 +1,6 @@
 # 31 · Atajo de teclado para grabar
 
-**Estado:** 🔄 En progreso
+**Estado:** ✅ Terminada
 **Fase:** 9 — Pulido · **Depende de:** 30 · **Doc:** petición del usuario (2026-10-01)
 
 ## Objetivo
@@ -13,11 +13,12 @@ Grabar desde cualquier app con un atajo global, sin tocar el dock: mantener **Ct
 
 **Gestos (D10):**
 
-| Gesto                                                   | Sin grabar                                                     | Grabando                    |
-| ------------------------------------------------------- | -------------------------------------------------------------- | --------------------------- |
-| Mantener Ctrl+Win más de `HOLD_START_MS`                | Graba con la fuente elegida; al soltar **para y guarda** (MP3) | Nada                        |
-| Ctrl+Win y otra pulsación de Win en `DOUBLE_PRESS_MS`   | Graba en manos libres (se para con ■ del dock o el botón)      | Nada                        |
-| Ctrl+Win + otra tecla (p. ej. Ctrl+Win+→ de escritorios) | Nada: no es el atajo y no se le quita a Windows                | Nada                        |
+| Gesto                                                    | Sin grabar                                                     | Grabando                                                   |
+| -------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- |
+| Mantener Ctrl+Win más de `HOLD_START_MS`                 | Graba con la fuente elegida; al soltar **para y guarda** (MP3) | Nada                                                       |
+| Ctrl+Win y otra pulsación de Win en `DOUBLE_PRESS_MS`    | Graba en manos libres (se para con ■ del dock o el botón)      | Nada                                                       |
+| Pulsar y soltar Ctrl+Win (sin otra tecla)                | Nada                                                           | Para la grabación en manos libres (o la del dock) y guarda |
+| Ctrl+Win + otra tecla (p. ej. Ctrl+Win+→ de escritorios) | Nada: no es el atajo y no se le quita a Windows                | Nada                                                       |
 
 El dock sale mientras se graba por el atajo, con el borde azul y la onda en vivo de la tarea 30.
 
@@ -42,7 +43,7 @@ El dock sale mientras se graba por el atajo, con el borde azul y la onda en vivo
 - [x] `src/main/application/recordHotkey.ts`: une gestos con `MicRecording` (fuente de ajustes, nombre de la entrada como el del dock) y con el dock (sale mientras graba por el atajo)
 - [x] Ajustes: `recordShortcut` (por defecto `Ctrl+Super`, `null` = desactivado) en el esquema de settings (sin migración: la mezcla con los valores por defecto lo rellena); al cambiarlo se manda `watch` de nuevo
 - [x] El nombre de la grabación viene del renderer como en el dock: pedirlo por IPC al empezar o generarlo en main con la plantilla traducida (decidir al implementar y anotarlo)
-- [x] `tests/main/recordHotkey.test.ts`: mantener graba y soltar guarda; manos libres no se para al soltar; grabando, el atajo no hace nada
+- [x] `tests/main/recordHotkey.test.ts`: mantener graba y soltar guarda; manos libres no se para al soltar; en manos libres, volver a pulsar el atajo la para
 
 ### Paso 4 — Configuración
 
@@ -52,20 +53,21 @@ El dock sale mientras se graba por el atajo, con el borde azul y la onda en vivo
 
 ### Paso 5 — Verificación
 
-- [ ] Prueba real: con otra app enfocada, mantener Ctrl+Win graba y soltar guarda el MP3 y la entrada; un toque corto no graba
-- [ ] Prueba real: Ctrl+Win, Win graba en manos libres; soltar no la para; ■ del dock sí
-- [ ] Prueba real: Ctrl+Win+→ sigue cambiando de escritorio y no graba; soltar Win no abre el menú Inicio
-- [ ] Prueba real: cambiar el atajo en Configuración funciona al momento; desactivarlo lo deja sin efecto; al salir no queda `rl-hotkey.exe` vivo
+- [x] Prueba real: con otra app enfocada, mantener Ctrl+Win graba y soltar guarda el MP3 y la entrada; un toque corto no graba
+- [x] Prueba real: mantener Ctrl+Win graba y soltar para; Ctrl+Win, Win graba en manos libres y soltar no la para (confirmado por el usuario)
+- [x] Prueba real: en manos libres, pulsar y soltar Ctrl+Win la para y guarda; Ctrl+Win+→ no la para
+- [x] Prueba real: Ctrl+Win+→ sigue cambiando de escritorio y no graba; soltar Win no abre el menú Inicio
+- [x] Prueba real: cambiar el atajo en Configuración funciona al momento; desactivarlo lo deja sin efecto; al salir no queda `rl-hotkey.exe` vivo
 - [x] Código organizado: una responsabilidad por archivo, lógica pura separada de la integración, sin duplicación ni código muerto
-- [ ] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan; `npm run dev` arranca (tests, typecheck, lint y `electron-vite build` ✔; falta arrancar `npm run dev`)
+- [x] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan; `npm run dev` arranca
 - [x] Commit: `feat(hotkey): atajo global para grabar (tarea 31)`
 
 ## Criterios de aceptación
 
-- [ ] Mantener el atajo graba mientras está pulsado y al soltarlo se guarda como una grabación normal (MP3 + entrada con transcripción)
-- [ ] La doble pulsación deja grabando en manos libres hasta pararla desde el dock o la app; grabando, el atajo no hace nada
-- [ ] El atajo funciona con la app en segundo plano y no rompe los atajos de Windows ni abre el menú Inicio
-- [ ] Se cambia y se desactiva en Configuración, y el cambio se aplica sin reiniciar
+- [x] Mantener el atajo graba mientras está pulsado y al soltarlo se guarda como una grabación normal (MP3 + entrada con transcripción)
+- [x] La doble pulsación deja grabando en manos libres hasta pararla desde el dock, la app o volviendo a pulsar el atajo
+- [x] El atajo funciona con la app en segundo plano y no rompe los atajos de Windows ni abre el menú Inicio
+- [x] Se cambia y se desactiva en Configuración, y el cambio se aplica sin reiniciar
 
 ## Bitácora
 
@@ -73,4 +75,5 @@ El dock sale mientras se graba por el atajo, con el borde azul y la onda en vivo
 
 - 2026-10-01 — D10 resuelta por el usuario: Ctrl+Win, configurable en Configuración; mantener = grabar mientras se pulsa, doble pulsación (Ctrl+Win, Win) = manos libres; grabando, el atajo no hace nada.
 - 2026-10-01 — Nombre de la grabación: el dock manda al main las plantillas traducidas con `{date}` (al abrir y al cambiar de idioma) y el main pone la fecha; sin ida y vuelta al empezar a grabar.
-- 2026-10-01 — Sin verificar aún: las pruebas reales con teclado y arrancar `npm run dev` (había otra instancia abierta con el bloqueo de instancia única). El sidecar se probó a mano (`watch`/`off` y sale al cerrar stdin). Falta `copy-native` con la app cerrada (`rl-capture.exe` bloqueado).
+- 2026-10-01 — Pruebas reales con teclado y `npm run dev` confirmadas por el usuario; el sidecar también se probó a mano (`watch`/`off`, sale al cerrar stdin).
+- 2026-10-01 — Cambio pedido por el usuario tras probarlo: en manos libres, pulsar y soltar Ctrl+Win la para (al soltar, para que Ctrl+Win+→ no la corte). También para la grabación empezada desde el dock.

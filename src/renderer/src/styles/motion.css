@@ -101,6 +101,30 @@
 }
 
 /* ---------- Concretos ---------- */
+/* Dock: un botón que aparece o cuyo icono cambia entra "de rebote" desde pequeño. */
+@keyframes pill-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* Dock: el icono nuevo gira un poco al entrar. */
+@keyframes pill-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-70deg) scale(0.5);
+  }
+}
+
+/* Dock: la pregunta (o la onda) que sustituye a la otra sube desde abajo. */
+@keyframes pill-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

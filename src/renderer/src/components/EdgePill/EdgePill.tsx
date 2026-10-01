@@ -34,7 +34,12 @@ export interface EdgePillProps {
 
 function PillButton({ button }: { button: EdgePillButton }): React.JSX.Element {
   const Icon = button.icon
-  const icon = <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden="true" />
+  // La clave (el título) remonta el icono al cambiar de acción, y con ello su animación.
+  const icon = (
+    <span key={button.title} className="edge-pill-icon">
+      <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden="true" />
+    </span>
+  )
   if (!button.onClick) {
     return (
       <span className="edge-pill-button edge-pill-indicator" title={button.title} role="img">
