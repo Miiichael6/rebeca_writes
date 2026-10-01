@@ -19,7 +19,7 @@ import { useSettingsStore, useSettingsSync } from '@renderer/store/settings'
 import { useThemeSync } from '@renderer/store/ui'
 import { useDock } from './application/useDock'
 import { useRecordingNameTemplates } from './application/useRecordingNameTemplates'
-import { DOCK_ACTIONS, RECORDING_INDICATOR } from './dockButtons'
+import { DOCK_ACTION_ICON_CLASS, DOCK_ACTIONS, RECORDING_INDICATOR } from './dockButtons'
 
 /**
  * La ventana del dock en el borde (tarea 30): la `EdgePill` conectada al main. La ventana es
@@ -39,9 +39,10 @@ export function DockApp(): React.JSX.Element {
   const button = (side: DockButton, action: DockAction | null): EdgePillButton | null => {
     if (action) {
       const { icon, title } = DOCK_ACTIONS[action]
+      const iconClass = DOCK_ACTION_ICON_CLASS[action]
       const name = (): string =>
         action === 'recordMeeting' ? meetingRecordingName() : recordingName(source)
-      return { icon, title: t(title), onClick: () => press(side, name()) }
+      return { icon, iconClass, title: t(title), onClick: () => press(side, name()) }
     }
     if (side === 'right' && dockShowsIndicator(view))
       return { icon: RECORDING_INDICATOR.icon, title: t(RECORDING_INDICATOR.title) }

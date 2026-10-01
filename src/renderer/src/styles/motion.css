@@ -144,6 +144,36 @@
   }
 }
 
+/* Dock: el ■ de parar nace como un punto, crece con rebote y se vuelve un cuadrado redondeado. */
+@keyframes stop-morph {
+  0% {
+    opacity: 0;
+    rx: 9px;
+    transform: scale(0.3);
+  }
+  55% {
+    opacity: 1;
+    rx: 9px;
+    transform: scale(1.15);
+  }
+  100% {
+    rx: 3px;
+    transform: scale(1);
+  }
+}
+
+/* Dock: una onda sale del botón al empezar a grabar. */
+@keyframes stop-ripple {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
 /* Dock: la pregunta (o la onda) que sustituye a la otra sube desde abajo. */
 @keyframes pill-content-in {
   from {

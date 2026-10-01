@@ -48,11 +48,18 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - [x] `motion.css`: `@keyframes dock-pill-contract` (ancho a 28 px y sin padding) y `@keyframes dock-bar-land` (escala 2.6 → 0.8 → 1, opacidad 0.6 → 1).
 - [x] `components.css`: `.edge-pill-contract` anima con `ease-in` y se queda en el último fotograma (`forwards`), y sus hijos se desvanecen con `fade-out`. `.edge-pill-area` se alinea hacia el borde (`flex-end` a la derecha, `flex-start` a la izquierda, centro arriba y abajo) para que la gota se encoja hacia la barra. `.edge-pill-bar` anima con `dock-bar-land` y su `transform-origin` va en el lado del borde.
 
-### Paso 4 — Verificación
+### Paso 4 — El ■ de parar al empezar a grabar
+
+- [x] `src/renderer/src/dock/dockButtons.ts`: `DOCK_ACTION_ICON_CLASS` da a `askEnd` la clase `edge-pill-icon-stop`; `EdgePillButton` acepta `iconClass`.
+- [x] `motion.css`: `stop-morph` (el `rect` del icono nace como un punto, `rx` 9 px y escala 0.3, crece con rebote a 1.15 y se vuelve un cuadrado redondeado de `rx` 3 px) y `stop-ripple` (una onda del color de grabando sale del botón y se desvanece en 600 ms).
+- [x] `components.css`: el ■ va relleno (`fill: currentColor`) y sustituye el giro genérico `pill-icon-in` por su propia entrada.
+
+### Paso 5 — Verificación
 
 - [ ] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).
 - [ ] Prueba real de salida: en un lateral (`rightCenter`) y arriba (`topCenter`) la píldora crece desde la barra, sin saltos ni parpadeo.
 - [ ] Prueba real de la gota: al sacar el ratón, la píldora se contrae hacia el borde, se desliza y la barra rebota al asentarse. Si se vuelve a entrar con el ratón a mitad de la contracción, la píldora vuelve a salir sin quedarse a medias.
+- [ ] Prueba real del ■: al empezar a grabar, el icono de parar se transforma de punto a cuadrado y sale la onda una sola vez
 - [ ] Prueba real con grabación y con la pregunta de la reunión: las animaciones no rompen la onda ni el texto, y el borde azul de grabando se mantiene en la gota y en la barra.
 - [x] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan
 - [x] Commit: `feat(dock): animación al mostrarse y píldora centrada sobre la barra (tarea 34)`
@@ -63,6 +70,7 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - [ ] Al pasar el ratón por la barra, la píldora queda centrada sobre ella (arriba y abajo, en las esquinas y al centro)
 - [ ] La aparición se anima (deslizamiento + crecimiento desde la barra) y no parpadea
 - [ ] Al esconderse, la píldora se contrae como una gota, se derrama hacia el borde y se asienta como barra con un pequeño rebote
+- [ ] Al empezar a grabar, el ■ de parar aparece con una transformación moderna (punto → cuadrado + onda)
 - [ ] Volver a entrar con el ratón durante cualquier fase de la retracción saca la píldora de nuevo sin estados a medias
 
 ## Bitácora

@@ -13,5 +13,13 @@ export const DOCK_ACTIONS = {
   dismissMeeting: { icon: X, title: 'dock.dismissMeeting' }
 } as const satisfies Record<DockAction, { icon: LucideIcon; title: string }>
 
+/**
+ * Iconos con entrada propia (tarea 34): el ■ de parar nace como el punto de grabar y se vuelve
+ * cuadrado.
+ */
+export const DOCK_ACTION_ICON_CLASS: Partial<Record<DockAction, string>> = {
+  askEnd: 'edge-pill-icon-stop'
+}
+
 /** Mientras graba, el 🎤 de la derecha queda de indicador, sin acción. */
 export const RECORDING_INDICATOR = { icon: Mic, title: 'dock.recording' } as const

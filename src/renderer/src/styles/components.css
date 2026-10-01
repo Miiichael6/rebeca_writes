@@ -1232,6 +1232,35 @@
   animation: pill-icon-in var(--duration) var(--ease-spring);
 }
 
+/* El ■ de parar (tarea 34): relleno, nace como el punto de grabar y se vuelve cuadrado, y del
+   botón sale una onda del color de grabando. */
+.edge-pill-icon.edge-pill-icon-stop {
+  animation: none;
+}
+
+.edge-pill-icon-stop rect {
+  fill: currentColor;
+  rx: 3px;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: stop-morph var(--duration-slow) var(--ease-spring);
+}
+
+.edge-pill-button:has(.edge-pill-icon-stop) {
+  position: relative;
+}
+
+.edge-pill-button:has(.edge-pill-icon-stop)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--dock-recording);
+  opacity: 0;
+  pointer-events: none;
+  animation: stop-ripple 600ms var(--ease) 80ms;
+}
+
 .edge-pill-indicator {
   cursor: default;
 }

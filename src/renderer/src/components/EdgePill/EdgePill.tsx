@@ -14,6 +14,8 @@ const ICON_STROKE = 2.2
 /** Un extremo de la píldora: botón con `onClick`, o solo indicador si no lo tiene. */
 export interface EdgePillButton {
   icon: LucideIcon
+  /** Clase extra del icono, para una entrada propia. */
+  iconClass?: string
   title: string
   onClick?: () => void
 }
@@ -38,7 +40,7 @@ function PillButton({ button }: { button: EdgePillButton }): React.JSX.Element {
   const Icon = button.icon
   // La clave (el título) remonta el icono al cambiar de acción, y con ello su animación.
   const icon = (
-    <span key={button.title} className="edge-pill-icon">
+    <span key={button.title} className={`edge-pill-icon ${button.iconClass ?? ''}`.trim()}>
       <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden="true" />
     </span>
   )
