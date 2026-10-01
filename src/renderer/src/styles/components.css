@@ -850,6 +850,11 @@
   top: calc(100% + 4px);
 }
 
+.menu-bottom-end {
+  right: 0;
+  top: calc(100% + 4px);
+}
+
 .menu-item {
   display: block;
   width: 100%;
@@ -870,6 +875,11 @@
 
 .menu-item:active {
   background: var(--bg-subtle-pressed);
+}
+
+.menu-item-checked {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .menu-separator {

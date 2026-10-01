@@ -1,4 +1,5 @@
 import { SUPPORTED_UI_LANGUAGES } from '@shared/i18n'
+import { RECORDING_SOURCES } from '@shared/recording'
 import {
   SETTINGS_VERSION,
   VIDEO_HEIGHT_MAX,
@@ -68,7 +69,9 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     theme: oneOf(['light', 'dark', 'system'] as const),
     uiLanguage: oneOf(['system', ...SUPPORTED_UI_LANGUAGES.map((l) => l.code)] as const),
     autoCheckUpdates: bool,
-    previewCacheMaxGB: positive
+    previewCacheMaxGB: positive,
+    recordingSource: oneOf(RECORDING_SOURCES),
+    recordingsDir: text(1000)
   }
 }
 

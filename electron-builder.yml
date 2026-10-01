@@ -11,6 +11,8 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   # Solo desarrollo: plan, tests, scripts y configuración de agentes no van en el paquete.
   - '!{plans,tests,scripts,.claude}/**'
+  # Fuente del sidecar de captura (native/target pesa cientos de MB); va solo resources/bin/rl-capture.exe.
+  - '!native/**'
   - '!{CLAUDE.md,vitest.config.ts}'
   # ffprobe-static trae binarios de todas las plataformas; solo se empaqueta el de Windows x64.
   - '!node_modules/ffprobe-static/bin/{darwin,linux}/**'

@@ -116,6 +116,11 @@ export class LiveSession {
     promise.catch((err) => this.deps.log.error(`En vivo: no se pudo ${what}`, err))
   }
 
+  /** Aún no llegó el fin de la grabación (después solo se transcribe lo que falte). */
+  get recording(): boolean {
+    return !this.ended
+  }
+
   info(): LiveSessionInfo {
     return { jobId: this.jobId, entry: this.entry, segments: [...this.segments] }
   }

@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow'
 import { useHistoryStore } from '@renderer/store/history'
+import { startMic, stopMic, useMicStore } from '@renderer/store/mic'
 import { selectDownloaded, useModelsStore } from '@renderer/store/models'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useTranscriptStore } from '@renderer/store/transcript'
@@ -53,5 +54,14 @@ export const storePorts: ToolbarPorts = {
     toggleVideo: () => useUiStore.getState().toggleVideo(),
     toggleTranscriptWindow: () => useUiStore.getState().toggleTranscriptWindow(),
     openSettings: () => useUiStore.getState().setView('settings')
+  },
+  mic: {
+    useState: () => useMicStore((s) => s.state),
+    usePending: () => useMicStore((s) => s.pending),
+    useLiveSession: () => useTranscriptStore((s) => s.job?.live === true),
+    useSource: () => useSettingsStore((s) => s.settings.recordingSource),
+    setSource: (recordingSource) => updateSettings({ recordingSource }),
+    start: (source, name) => void startMic(source, name),
+    stop: () => void stopMic()
   }
 }

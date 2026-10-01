@@ -10,6 +10,7 @@ import { ExportService } from './application/exportService'
 import { HistoryService } from './application/historyService'
 import { LiveControl } from './application/liveControl'
 import { MediaOpener } from './application/mediaOpener'
+import { MicRecording } from './application/micRecording'
 import { ModelService } from './application/modelService'
 import { PipelineChunkTranscriber } from './application/pipelineChunkTranscriber'
 import { PreviewQueue } from './application/previewQueue'
@@ -17,17 +18,21 @@ import { PreviewService } from './application/previewService'
 import { QueueIntake } from './application/queueIntake'
 import { QueueJobRunner } from './application/queueJobRunner'
 import { QueueService } from './application/queueService'
+import { RecordingsFolder } from './application/recordingsFolder'
 import { TranscriptionManager } from './application/transcriptionManager'
 import { TranscriptionPipeline } from './application/transcriptionPipeline'
 import { UpdateService } from './application/updateService'
 import { MediaRegistry } from './domain/mediaRegistry'
 import { whisperBinaries } from './infrastructure/binaries/whisperBinaries'
+import { createFsRecordingFiles } from './infrastructure/capture/fsRecordingFiles'
+import { CAPTURE_BINARY, SidecarAudioCapture } from './infrastructure/capture/sidecarAudioCapture'
 import { zipCudaInstaller } from './infrastructure/downloads/zipCudaInstaller'
 import { electronDialogs } from './infrastructure/electron/electronDialogs'
 import { electronShell } from './infrastructure/electron/electronShell'
 import { createElectronUpdater } from './infrastructure/electron/electronUpdater'
 import { netDownloader } from './infrastructure/electron/netDownloader'
 import { windowPublisher as publisher } from './infrastructure/electron/windowPublisher'
+import { ffmpegRecordingEncoder } from './infrastructure/ffmpeg/ffmpegRecordingEncoder'
 import { ffmpegPreviewEncoder } from './infrastructure/ffmpeg/ffmpegPreviewEncoder'
 import { ffmpegMediaTools } from './infrastructure/ffmpeg/ffmpegTools'
 import { fsPathExpander } from './infrastructure/fs/expandPaths'
@@ -52,6 +57,8 @@ export interface AppPaths {
   tempDir: string
   appPath: string
   packaged: boolean
+  /** Carpeta de grabaciones si no se eligió otra: `Documentos\RebeccaWrites\Grabaciones`. */
+  defaultRecordingsDir: string
 }
 
 export interface Services extends IpcDeps {
@@ -189,6 +196,22 @@ export function createServices(paths: AppPaths): Services {
     intake
   )
 
+  // --- Grabar con el micrófono ---
+  const recordingsFolder = new RecordingsFolder(
+    settings,
+    electronDialogs,
+    paths.defaultRecordingsDir
+  )
+  const mic = new MicRecording({
+    capture: new SidecarAudioCapture(join(bundledBinDir, CAPTURE_BINARY), log),
+    files: createFsRecordingFiles(join(paths.tempDir, 'recordings')),
+    encoder: ffmpegRecordingEncoder,
+    live,
+    recordingsDir: () => recordingsFolder.dir(),
+    publisher,
+    log
+  })
+
   // --- Actualizaciones ---
   const updates = new UpdateService({
     updater: createElectronUpdater(),
@@ -213,6 +236,8 @@ export function createServices(paths: AppPaths): Services {
     intake,
     manager,
     live,
+    mic,
+    recordingsFolder,
     updates,
     registry,
     queueFromArgv: createArgvHandler({

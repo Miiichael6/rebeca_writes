@@ -115,6 +115,15 @@ const api: AppApi = {
     onStarted: (listener) => on(IpcChannel.LiveStarted, listener),
     onEnded: (listener) => on(IpcChannel.LiveEnded, listener)
   },
+  mic: {
+    start: (source, name) => invoke(IpcChannel.MicStart, source, name),
+    stop: () => invoke(IpcChannel.MicStop),
+    getState: () => invoke(IpcChannel.MicGetState),
+    onChanged: (listener) => on(IpcChannel.MicChanged, listener),
+    getRecordingsDir: () => invoke(IpcChannel.MicGetRecordingsDir),
+    pickRecordingsDir: () => invoke(IpcChannel.MicPickRecordingsDir),
+    openRecordingsDir: () => invoke(IpcChannel.MicOpenRecordingsDir)
+  },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),
     cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),

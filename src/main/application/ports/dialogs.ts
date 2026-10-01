@@ -22,4 +22,6 @@ export interface Dialogs {
   pickModelFile(owner: DialogOwner): Promise<string | null>
   /** Ruta elegida en "Guardar como"; `null` si se cancela. */
   pickSavePath(owner: DialogOwner, request: SavePathRequest): Promise<string | null>
+  /** Una carpeta, empezando en `defaultPath`; `null` si se cancela. */
+  pickFolder(owner: DialogOwner, defaultPath: string): Promise<string | null>
 }

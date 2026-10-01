@@ -55,7 +55,7 @@
     "removeBody": "A transcrição de “{{name}}” será removida. O arquivo original não é alterado.",
     "retranscribeQueued": "“{{name}}” foi adicionado à fila.",
     "retranscribeFailed": "“{{name}}” já está na fila.",
-    "live": "Gravando no Rebecca Listen"
+    "live": "Gravando"
   },
   "historyGroups": {
     "today": "Hoje",
@@ -100,7 +100,7 @@
     "locateFile": "Procurar arquivo...",
     "preparingPreview": "Preparando pré-visualização... {{percent}}%",
     "previewFailed": "Não foi possível preparar a pré-visualização deste formato.",
-    "recording": "O Rebecca Listen está gravando: o áudio poderá ser reproduzido ao terminar."
+    "recording": "Gravação em andamento: o áudio poderá ser reproduzido ao terminar."
   },
   "transcript": {
     "title": "Transcrição",
@@ -268,7 +268,9 @@
     "viewLogs": "Ver registros",
     "thirdParty": "Reconhecimentos de software de terceiros",
     "thirdPartyIntro": "O {{app}} usa os seguintes componentes de código aberto. Obrigado aos seus autores.",
-    "showLicense": "Ver licença"
+    "showLicense": "Ver licença",
+    "recordingsFolder": "Pasta de gravações",
+    "changeFolder": "Alterar…"
   },
   "models": {
     "title": "Modelos Whisper",
@@ -377,5 +379,21 @@
   },
   "live": {
     "interrupted": "A gravação foi interrompida. O que foi transcrito até então foi salvo."
+  },
+  "mic": {
+    "record": "Gravar",
+    "stop": "Parar a gravação",
+    "chooseSource": "O que gravar",
+    "busy": "O Rebecca Listen está gravando ou uma gravação ainda está sendo transcrita.",
+    "sources": {
+      "system": "Computador",
+      "voice": "Minha voz",
+      "both": "Ambos ao mesmo tempo"
+    },
+    "entryName": "Gravação {{date}} · {{source}}",
+    "interrupted": "O dispositivo de áudio foi perdido. A gravação foi salva até esse momento.",
+    "errorLiveBusy": "Já há uma gravação ao vivo em andamento (Rebecca Listen).",
+    "errorNoDevice": "Nenhum dispositivo de áudio encontrado. Verifique o microfone ou a saída de som no Windows.",
+    "errorFailed": "Não foi possível começar a gravar. Consulte os registros para mais detalhes."
   }
 }

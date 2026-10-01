@@ -1,17 +1,19 @@
-import { FolderOpen, HardDrive, Trash2 } from 'lucide-react'
+import { FolderOpen, HardDrive, Mic, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatBytes } from '@renderer/lib/format'
 import { usePorts } from '../application/ports'
 import { useModelsDir } from '../application/useModelsDir'
 import { usePreviewCache } from '../application/usePreviewCache'
+import { useRecordingsDir } from '../application/useRecordingsDir'
 import { Button, NumberInput, SettingRow } from '../../../ui'
 
-/** Almacenamiento: carpeta de modelos y caché de vistas previas (H.264 para códecs no nativos). */
+/** Almacenamiento: carpetas de modelos y de grabaciones, y caché de vistas previas (H.264 para códecs no nativos). */
 export function StorageSettings(): React.JSX.Element {
   const { t, i18n } = useTranslation()
   const { settings, notify } = usePorts()
   const limitGB = settings.useCacheLimitGB()
   const modelsDir = useModelsDir()
+  const recordingsDir = useRecordingsDir()
   const cache = usePreviewCache(() => notify.notify(t('settings.previewCacheCleared')))
 
   return (
@@ -22,6 +24,14 @@ export function StorageSettings(): React.JSX.Element {
         description={<span className="setting-path">{modelsDir.path}</span>}
       >
         <Button onClick={modelsDir.open}>{t('settings.openFolder')}</Button>
+      </SettingRow>
+      <SettingRow
+        icon={<Mic size={20} strokeWidth={1.5} />}
+        title={t('settings.recordingsFolder')}
+        description={<span className="setting-path">{recordingsDir.path}</span>}
+      >
+        <Button onClick={recordingsDir.pick}>{t('settings.changeFolder')}</Button>
+        <Button onClick={recordingsDir.open}>{t('settings.openFolder')}</Button>
       </SettingRow>
       <SettingRow
         icon={<HardDrive size={20} strokeWidth={1.5} />}

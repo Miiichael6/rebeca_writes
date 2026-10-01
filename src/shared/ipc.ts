@@ -31,6 +31,7 @@ import type {
   UpdateInstallResult,
   UpdateStatus
 } from './types'
+import type { MicStartResult, MicState, RecordingSource } from './recording'
 import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
 /** Canales IPC. El renderer nunca los usa directamente: pasa por `window.api`. */
@@ -99,6 +100,13 @@ export const IpcChannel = {
   LiveCurrent: 'live:current',
   LiveStarted: 'live:started',
   LiveEnded: 'live:ended',
+  MicStart: 'mic:start',
+  MicStop: 'mic:stop',
+  MicGetState: 'mic:state',
+  MicChanged: 'mic:changed',
+  MicGetRecordingsDir: 'mic:get-recordings-dir',
+  MicPickRecordingsDir: 'mic:pickRecordingsDir',
+  MicOpenRecordingsDir: 'mic:openRecordingsDir',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -196,6 +204,12 @@ export interface IpcInvokeMap {
     result: { entry: HistoryEntry; media: OpenedMedia } | null
   }
   [IpcChannel.LiveCurrent]: { args: []; result: LiveSessionInfo | null }
+  [IpcChannel.MicStart]: { args: [source: RecordingSource, name: string]; result: MicStartResult }
+  [IpcChannel.MicStop]: { args: []; result: void }
+  [IpcChannel.MicGetState]: { args: []; result: MicState }
+  [IpcChannel.MicGetRecordingsDir]: { args: []; result: string }
+  [IpcChannel.MicPickRecordingsDir]: { args: []; result: string | null }
+  [IpcChannel.MicOpenRecordingsDir]: { args: []; result: void }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
   [IpcChannel.UpdatesGetStatus]: { args: []; result: UpdateStatus }
@@ -220,6 +234,7 @@ export interface IpcEventMap {
   [IpcChannel.QueueFilesReceived]: QueueAddResult
   [IpcChannel.LiveStarted]: LiveSessionInfo
   [IpcChannel.LiveEnded]: LiveEndedEvent
+  [IpcChannel.MicChanged]: MicState
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -418,6 +433,24 @@ export interface AppApi {
     current: () => Promise<LiveSessionInfo | null>
     onStarted: (listener: (info: LiveSessionInfo) => void) => () => void
     onEnded: (listener: (event: LiveEndedEvent) => void) => () => void
+  }
+  /**
+   * Grabar desde la app (tarea 29): la grabación se transcribe como una sesión `live` y al
+   * parar queda como MP3 en la carpeta de grabaciones.
+   */
+  mic: {
+    /** `name` es el de la entrada, ya traducido. */
+    start: (source: RecordingSource, name: string) => Promise<MicStartResult>
+    /** Resuelve cuando el MP3 está guardado y la sesión recibió el fin. */
+    stop: () => Promise<void>
+    getState: () => Promise<MicState>
+    onChanged: (listener: (state: MicState) => void) => () => void
+    /** Carpeta donde se guardan los MP3 (la de ajustes o la de por defecto). */
+    getRecordingsDir: () => Promise<string>
+    /** Diálogo para elegir otra carpeta; la guarda en ajustes. `null` si se cancela. */
+    pickRecordingsDir: () => Promise<string | null>
+    /** Abre la carpeta de grabaciones en el Explorador (la crea si no existe). */
+    openRecordingsDir: () => Promise<void>
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

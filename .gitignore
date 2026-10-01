@@ -8,4 +8,5 @@ resources/bin/**
 !resources/bin/.gitkeep
 
 dev-app-update.yml
+native/target
 .env

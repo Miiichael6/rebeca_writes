@@ -13,6 +13,11 @@ const REQUIRED = [
     file: join(CPU_DIR, name),
     fix: 'npm run fetch:bin -- --only=cpu'
   })),
+  // Sidecar de captura del micrófono y el sonido del equipo (tarea 29).
+  {
+    file: join(ROOT, 'resources', 'bin', 'rl-capture.exe'),
+    fix: 'npm run build:native'
+  },
   // ffmpeg-static lo descarga en su postinstall; puede faltar si se instaló con --ignore-scripts.
   {
     file: join(ROOT, 'node_modules', 'ffmpeg-static', 'ffmpeg.exe'),
@@ -31,4 +36,4 @@ if (missing.length > 0) {
   console.error('')
   process.exit(1)
 }
-console.log('Binarios OK (whisper-cli cpu + runtime VC++, ffmpeg, ffprobe).')
+console.log('Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, ffmpeg, ffprobe).')

@@ -8,6 +8,8 @@ export interface MenuItem {
   onSelect: () => void
   /** Dibuja una línea separadora encima del ítem. */
   separator?: boolean
+  /** Opción elegida de un grupo (p. ej. la fuente de grabación). */
+  checked?: boolean
 }
 
 export interface MenuProps {
@@ -15,7 +17,7 @@ export interface MenuProps {
   onClose: () => void
   items: MenuItem[]
   /** Dónde se abre respecto al contenedor `.menu-anchor`. */
-  placement?: 'top-end' | 'bottom-start'
+  placement?: 'top-end' | 'bottom-start' | 'bottom-end'
   'aria-label': string
 }
 
@@ -72,8 +74,9 @@ export function Menu({
           {item.separator && <div className="menu-separator" role="separator" />}
           <button
             type="button"
-            role="menuitem"
-            className="menu-item"
+            role={item.checked === undefined ? 'menuitem' : 'menuitemradio'}
+            aria-checked={item.checked}
+            className={item.checked ? 'menu-item menu-item-checked' : 'menu-item'}
             onClick={() => {
               onClose()
               item.onSelect()

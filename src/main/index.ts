@@ -28,9 +28,10 @@ const services = createServices({
     : join(app.getAppPath(), 'resources', 'bin'),
   tempDir: join(app.getPath('temp'), APP_NAME.toLowerCase()),
   appPath: app.getAppPath(),
-  packaged: app.isPackaged
+  packaged: app.isPackaged,
+  defaultRecordingsDir: join(app.getPath('documents'), APP_NAME, 'Grabaciones')
 })
-const { settings, registry, queue, backends, previews, manager, live, updates } = services
+const { settings, registry, queue, backends, previews, manager, live, mic, updates } = services
 const mainWindow = new MainWindow(settings, log)
 
 app.on('second-instance', (_event, argv, workingDirectory) => {
@@ -85,6 +86,7 @@ app.whenReady().then(async () => {
 app.on('will-quit', () => {
   previews.dispose()
   manager.cancelAll()
+  mic.dispose()
   live.stop()
 })
 

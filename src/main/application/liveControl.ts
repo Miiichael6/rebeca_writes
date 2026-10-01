@@ -8,12 +8,25 @@ function samePath(a: string, b: string): boolean {
   return resolve(a).toLowerCase() === resolve(b).toLowerCase()
 }
 
+/** Quién graba: Rebecca Listen (tarea 27) o el micrófono de la propia app (tarea 29). */
+export type LiveOrigin = 'listen' | 'mic'
+
+/** Un inicio rechazado porque el otro origen está grabando. */
+export class LiveBusyError extends Error {
+  constructor(readonly busyWith: LiveOrigin) {
+    super(`Ya hay una grabación en vivo de ${busyWith}`)
+    this.name = 'LiveBusyError'
+  }
+}
+
 /**
- * Qué hacer con cada orden de Rebecca Listen (tarea 27). Hay una sesión en vivo a la vez: si
- * empieza otra grabación, la anterior se cierra con lo que tenga.
+ * Qué hacer con cada orden en vivo. Hay una sesión a la vez: si el mismo origen empieza otra
+ * grabación, la anterior se cierra con lo que tenga; si la empieza el otro origen mientras se
+ * graba, se rechaza (y el fin de Listen, sin sesión, manda su grabación a la cola).
  */
 export class LiveControl {
   private session: LiveSession | null = null
+  private origin: LiveOrigin = 'listen'
   /** Última orden en curso: cada orden espera a la anterior. */
   private last: Promise<void> = Promise.resolve()
 
@@ -26,19 +39,24 @@ export class LiveControl {
    * Atiende las órdenes de una en una. Así un fin que llega mientras se crea la sesión, o un
    * segundo inicio, ven la sesión ya creada y no la dejan huérfana.
    */
-  handle(command: LiveCommand): Promise<void> {
-    const run = this.last.then(() => this.apply(command))
+  handle(command: LiveCommand, origin: LiveOrigin = 'listen'): Promise<void> {
+    const run = this.last.then(() => this.apply(command, origin))
     this.last = run.catch(() => {})
     return run
   }
 
-  private async apply(command: LiveCommand): Promise<void> {
+  private async apply(command: LiveCommand, origin: LiveOrigin): Promise<void> {
     if (command.kind === 'start') {
       if (this.session && samePath(this.session.pcm, command.pcm)) return
+      if (this.session?.recording && origin !== this.origin) {
+        this.deps.log.warn(`En vivo: se rechaza el inicio de ${origin}; graba ${this.origin}`)
+        throw new LiveBusyError(this.origin)
+      }
       this.session?.end(null)
       this.session = await LiveSession.start(this.deps, command.pcm, command.name, (finished) =>
         this.forget(finished)
       )
+      this.origin = origin
       return
     }
     if (this.session && samePath(this.session.pcm, command.pcm)) {
@@ -54,6 +72,11 @@ export class LiveControl {
   /** `live:current`: la sesión en curso, para la ventana que carga después de que empezara. */
   current(): LiveSessionInfo | null {
     return this.session?.info() ?? null
+  }
+
+  /** Quién está grabando ahora mismo, o `null` si nadie (la sesión ya pudo recibir el fin). */
+  recordingOrigin(): LiveOrigin | null {
+    return this.session?.recording ? this.origin : null
   }
 
   /** "Cancelar" con la entrada en vivo abierta. `false` si `jobId` no es la sesión en vivo. */

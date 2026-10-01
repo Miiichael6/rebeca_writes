@@ -1,16 +1,19 @@
 import { app, BrowserWindow, clipboard, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
+import { RECORDING_SOURCES, type RecordingSource } from '@shared/recording'
 import type { BackendService } from './application/backendService'
 import type { CudaService } from './application/cudaService'
 import type { ExportService } from './application/exportService'
 import type { HistoryService } from './application/historyService'
 import type { LiveControl } from './application/liveControl'
 import type { MediaOpener } from './application/mediaOpener'
+import type { MicRecording } from './application/micRecording'
 import type { ModelService } from './application/modelService'
 import type { SettingsRepository } from './application/ports/settingsRepository'
 import type { PreviewService } from './application/previewService'
 import type { QueueIntake } from './application/queueIntake'
 import type { QueueService } from './application/queueService'
+import type { RecordingsFolder } from './application/recordingsFolder'
 import type { TranscriptionManager } from './application/transcriptionManager'
 import type { UpdateService } from './application/updateService'
 import { notify, openFolder } from './infrastructure/electron/systemActions'
@@ -36,6 +39,8 @@ export interface IpcDeps {
   intake: QueueIntake
   manager: TranscriptionManager
   live: LiveControl
+  mic: MicRecording
+  recordingsFolder: RecordingsFolder
   updates: UpdateService
 }
 
@@ -64,6 +69,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     intake,
     manager,
     live,
+    mic,
+    recordingsFolder,
     updates
   } = deps
 
@@ -154,6 +161,17 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     if (!live.cancel(String(jobId))) manager.cancel(String(jobId))
   })
   handle(IpcChannel.LiveCurrent, () => live.current())
+
+  handle(IpcChannel.MicStart, (_event, source, name) => {
+    if (!RECORDING_SOURCES.includes(source as RecordingSource))
+      return { ok: false, error: 'failed' }
+    return mic.start(source, String(name))
+  })
+  handle(IpcChannel.MicStop, () => mic.stop())
+  handle(IpcChannel.MicGetState, () => mic.state())
+  handle(IpcChannel.MicGetRecordingsDir, () => recordingsFolder.dir())
+  handle(IpcChannel.MicPickRecordingsDir, (event) => recordingsFolder.pick(ownerOf(event)))
+  handle(IpcChannel.MicOpenRecordingsDir, () => openFolder(recordingsFolder.dir()))
 
   handle(IpcChannel.UpdatesGetStatus, () => updates.getStatus())
   handle(IpcChannel.UpdatesCheck, () => updates.check())

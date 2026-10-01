@@ -52,7 +52,7 @@
     "removeBody": "The transcription of “{{name}}” will be removed. The original file isn't touched.",
     "retranscribeQueued": "“{{name}}” was added to the queue.",
     "retranscribeFailed": "“{{name}}” is already in the queue.",
-    "live": "Recording in Rebecca Listen"
+    "live": "Recording"
   },
   "historyGroups": {
     "today": "Today",
@@ -97,7 +97,7 @@
     "locateFile": "Find file...",
     "preparingPreview": "Preparing preview... {{percent}}%",
     "previewFailed": "Couldn’t prepare a preview for this format.",
-    "recording": "Rebecca Listen is recording: the audio will be playable when it stops."
+    "recording": "Recording in progress: the audio will be playable when it stops."
   },
   "transcript": {
     "title": "Transcription",
@@ -259,7 +259,9 @@
     "viewLogs": "View logs",
     "thirdParty": "Third-party software acknowledgements",
     "thirdPartyIntro": "{{app}} uses the following open-source components. Thanks to their authors.",
-    "showLicense": "View license"
+    "showLicense": "View license",
+    "recordingsFolder": "Recordings folder",
+    "changeFolder": "Change…"
   },
   "models": {
     "title": "Whisper models",
@@ -368,5 +370,21 @@
   },
   "live": {
     "interrupted": "The recording was interrupted. What was transcribed so far has been saved."
+  },
+  "mic": {
+    "record": "Record",
+    "stop": "Stop recording",
+    "chooseSource": "What to record",
+    "busy": "Rebecca Listen is recording or a recording is still being transcribed.",
+    "sources": {
+      "system": "Computer",
+      "voice": "My voice",
+      "both": "Both at once"
+    },
+    "entryName": "Recording {{date}} · {{source}}",
+    "interrupted": "The audio device was lost. The recording was saved up to that point.",
+    "errorLiveBusy": "A live recording is already in progress (Rebecca Listen).",
+    "errorNoDevice": "No audio device was found. Check the microphone or sound output in Windows.",
+    "errorFailed": "Could not start recording. See the logs for details."
   }
 }

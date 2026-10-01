@@ -40,5 +40,13 @@ export const electronDialogs: Dialogs = {
       ? await dialog.showSaveDialog(owner as BrowserWindow, options)
       : await dialog.showSaveDialog(options)
     return result.canceled || !result.filePath ? null : result.filePath
+  },
+
+  async pickFolder(owner, defaultPath) {
+    const result = await showOpen(owner, {
+      defaultPath,
+      properties: ['openDirectory', 'createDirectory']
+    })
+    return result.canceled ? null : (result.filePaths[0] ?? null)
   }
 }

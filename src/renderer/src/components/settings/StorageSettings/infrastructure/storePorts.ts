@@ -10,6 +10,9 @@ export const storePorts: StorageSettingsPorts = {
   storage: {
     getModelsDir: () => window.api.app.getModelsDir(),
     openModelsDir: () => window.api.app.openModelsDir(),
+    getRecordingsDir: () => window.api.mic.getRecordingsDir(),
+    pickRecordingsDir: () => window.api.mic.pickRecordingsDir(),
+    openRecordingsDir: () => window.api.mic.openRecordingsDir(),
     getPreviewCacheSize: () => window.api.media.getPreviewCacheSize(),
     clearPreviewCache: () => window.api.media.clearPreviewCache()
   },

@@ -55,7 +55,7 @@
     "removeBody": "Se eliminará la transcripción de «{{name}}». El archivo original no se toca.",
     "retranscribeQueued": "«{{name}}» se añadió a la cola.",
     "retranscribeFailed": "«{{name}}» ya está en la cola.",
-    "live": "Grabando en Rebecca Listen"
+    "live": "Grabando"
   },
   "historyGroups": {
     "today": "Hoy",
@@ -100,7 +100,7 @@
     "locateFile": "Buscar archivo...",
     "preparingPreview": "Preparando vista previa... {{percent}} %",
     "previewFailed": "No se pudo preparar la vista previa de este formato.",
-    "recording": "Rebecca Listen está grabando: el audio se podrá reproducir al terminar."
+    "recording": "Se está grabando: el audio se podrá reproducir al terminar."
   },
   "transcript": {
     "title": "Transcripción",
@@ -268,7 +268,9 @@
     "viewLogs": "Ver registros",
     "thirdParty": "Reconocimientos de software de terceros",
     "thirdPartyIntro": "{{app}} usa los siguientes componentes de código abierto. Gracias a sus autores.",
-    "showLicense": "Ver licencia"
+    "showLicense": "Ver licencia",
+    "recordingsFolder": "Carpeta de grabaciones",
+    "changeFolder": "Cambiar…"
   },
   "models": {
     "title": "Modelos Whisper",
@@ -377,5 +379,21 @@
   },
   "live": {
     "interrupted": "La grabación se interrumpió. Se guardó lo transcrito hasta ese momento."
+  },
+  "mic": {
+    "record": "Grabar",
+    "stop": "Detener la grabación",
+    "chooseSource": "Qué grabar",
+    "busy": "Rebecca Listen está grabando o se está terminando de transcribir una grabación.",
+    "sources": {
+      "system": "Computadora",
+      "voice": "Mi voz",
+      "both": "Ambos a la vez"
+    },
+    "entryName": "Grabación {{date}} · {{source}}",
+    "interrupted": "Se perdió el dispositivo de audio. La grabación se guardó hasta ese momento.",
+    "errorLiveBusy": "Ya hay una grabación en vivo en curso (Rebecca Listen).",
+    "errorNoDevice": "No se encontró el dispositivo de audio. Revisa el micrófono o la salida de sonido en Windows.",
+    "errorFailed": "No se pudo empezar a grabar. Consulta los registros para más detalles."
   }
 }

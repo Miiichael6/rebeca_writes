@@ -428,6 +428,27 @@
   min-width: 96px;
 }
 
+/* Grabar (tarea 29): micrófono + flecha del menú de fuentes, pegados como un botón dividido. */
+.mic-split {
+  display: flex;
+}
+
+.mic-split .mic-chevron {
+  width: 20px;
+  min-width: 0;
+  padding: 0;
+}
+
+.mic-recording {
+  color: var(--accent);
+}
+
+.mic-elapsed {
+  min-width: 4ch;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
 /* En ventanas angostas las etiquetas de los combos se ocultan (siguen para lectores de pantalla). */
 @container main (max-width: 880px) {
   .toolbar-field label {

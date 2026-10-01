@@ -1,4 +1,5 @@
 import type { UiLanguageSetting } from './i18n'
+import { DEFAULT_RECORDING_SOURCE, type RecordingSource } from './recording'
 import type { ThemeMode } from './theme'
 import type { Backend, TranscribeOptions } from './types'
 import { AUTO_LANGUAGE } from './whisper'
@@ -72,6 +73,13 @@ export interface Settings {
 
   /** Límite de la caché de vistas previas en GB. */
   previewCacheMaxGB: number
+
+  // Grabar con el micrófono (tarea 29).
+  /** Fuente elegida en el menú del botón de grabar. */
+  recordingSource: RecordingSource
+  /** Carpeta de los MP3 grabados; vacío = `Documentos\RebeccaWrites\Grabaciones`. */
+  recordingsDir: string
+
   queue: QueueSettings
   window: WindowBounds
 }
@@ -126,6 +134,8 @@ export function createDefaultSettings(cpuCount: number): Settings {
     uiLanguage: 'system',
     autoCheckUpdates: true,
     previewCacheMaxGB: 5,
+    recordingSource: DEFAULT_RECORDING_SOURCE,
+    recordingsDir: '',
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }
   }

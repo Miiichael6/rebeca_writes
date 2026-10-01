@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useBackendSync, useCudaOfferToast } from '@renderer/store/backend'
 import { useHistoryStore, useHistorySync } from '@renderer/store/history'
 import { useLiveSync } from '@renderer/store/live'
+import { useMicSync } from '@renderer/store/mic'
 import { useModelsSync } from '@renderer/store/models'
 import { usePlayerShortcuts } from '@renderer/store/player'
 import { usePreviewSync } from '@renderer/store/preview'
@@ -31,6 +32,7 @@ export const storePorts: AppPorts = {
       useQueueSync()
       useHistorySync()
       useLiveSync()
+      useMicSync()
       useUpdatesSync()
     }
   },

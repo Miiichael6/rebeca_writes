@@ -4,6 +4,11 @@ import { createContext, useContext } from 'react'
 export interface StoragePort {
   getModelsDir(): Promise<string>
   openModelsDir(): Promise<void>
+  /** Carpeta de los MP3 grabados con el micrófono (tarea 29). */
+  getRecordingsDir(): Promise<string>
+  /** Diálogo para elegir otra; `null` si se cancela. */
+  pickRecordingsDir(): Promise<string | null>
+  openRecordingsDir(): Promise<void>
   /** Tamaño de la caché de vistas previas, en bytes. */
   getPreviewCacheSize(): Promise<number>
   clearPreviewCache(): Promise<void>
