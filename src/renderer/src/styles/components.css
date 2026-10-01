@@ -1123,13 +1123,30 @@
 }
 
 /* Contrayéndose: se encoge hacia la barra hasta ser una gota y el contenido se desvanece. */
+/* Contrayéndose (tarea 34): el botón del extremo derecho (el micrófono) se come la onda. La
+   píldora se cierra hacia él, la onda (o la pregunta) se encoge hacia su lado, el otro botón se
+   desvanece y el micrófono da un bocado. Queda una gota con el micro que se mete en el borde. */
 .edge-pill.edge-pill-contract {
-  animation: dock-pill-contract var(--duration-slow) ease-in forwards;
+  animation: dock-pill-contract var(--dock-contract-ms) ease-in forwards;
   overflow: hidden;
 }
 
-.edge-pill-contract > * {
+.edge-pill-area:has(.edge-pill-contract) {
+  justify-content: flex-end;
+}
+
+.edge-pill-contract :is(.edge-pill-wave, .edge-pill-question) {
+  transform-origin: right center;
+  animation: dock-eaten var(--dock-contract-ms) ease-in forwards;
+}
+
+.edge-pill-contract > .edge-pill-button:not(:last-child) {
   animation: fade-out var(--duration-fast) forwards;
+}
+
+.edge-pill-contract > .edge-pill-button:last-child {
+  flex: none;
+  animation: dock-gulp var(--dock-contract-ms) var(--ease);
 }
 
 .dock[data-edge='right'] .edge-pill-area {

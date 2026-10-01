@@ -108,9 +108,10 @@ export function menuOpensLeft(position: DockPosition): boolean {
 
 /**
  * Lo que tarda la píldora en contraerse como una gota antes de deslizarse al borde (tarea 34):
- * el renderer anima la contracción y el main espera ese rato antes de mover la ventana.
+ * el micrófono se come la onda. El renderer anima la contracción (`--dock-contract-ms`) y el
+ * main espera ese rato antes de mover la ventana.
  */
-export const DOCK_CONTRACT_MS = 180
+export const DOCK_CONTRACT_MS = 320
 
 /** Lo elegido en el menú contextual del dock. */
 export type DockMenuAction =

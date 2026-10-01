@@ -54,7 +54,12 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - [x] `motion.css`: `stop-morph` (el `rect` del icono nace como un punto, `rx` 9 px y escala 0.3, crece con rebote a 1.15 y se vuelve un cuadrado redondeado de `rx` 3 px) y `stop-ripple` (una onda del color de grabando sale del botón y se desvanece en 600 ms).
 - [x] `components.css`: el ■ va relleno (`fill: currentColor`) y sustituye el giro genérico `pill-icon-in` por su propia entrada.
 
-### Paso 5 — Verificación
+### Paso 5 — El micrófono se come la onda
+
+- [x] `DOCK_CONTRACT_MS` pasa a 320 ms y llega al CSS como `--dock-contract-ms` (estilo en línea de `DockApp`), para que main y renderer no se desfasen.
+- [x] `components.css` + `motion.css`: al contraerse, la píldora se cierra hacia el botón de la derecha (el micrófono); la onda o la pregunta se encogen hacia él (`dock-eaten`), el otro botón se desvanece y el micro da un bocado (`dock-gulp`). Queda una gota con el micro.
+
+### Paso 6 — Verificación
 
 - [ ] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).
 - [ ] Prueba real de salida: en un lateral (`rightCenter`) y arriba (`topCenter`) la píldora crece desde la barra, sin saltos ni parpadeo.
@@ -69,7 +74,7 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 
 - [ ] Al pasar el ratón por la barra, la píldora queda centrada sobre ella (arriba y abajo, en las esquinas y al centro)
 - [ ] La aparición se anima (deslizamiento + crecimiento desde la barra) y no parpadea
-- [ ] Al esconderse, la píldora se contrae como una gota, se derrama hacia el borde y se asienta como barra con un pequeño rebote
+- [ ] Al esconderse, el micrófono se come la onda y la gota que queda se derrama hacia el borde y se asienta como barra con un pequeño rebote
 - [ ] Al empezar a grabar, el ■ de parar aparece con una transformación moderna (punto → cuadrado + onda)
 - [ ] Volver a entrar con el ratón durante cualquier fase de la retracción saca la píldora de nuevo sin estados a medias
 
@@ -79,3 +84,4 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 - 2026-10-01 — Al esconderse el usuario quiere una gota: contraerse, derramarse al borde y asentarse. La contracción la dibuja el renderer y el main retrasa `DOCK_CONTRACT_MS` el deslizamiento (cancelable si el ratón vuelve).
 - 2026-10-01 — Un test de `jsonRepositories` falló una vez en la suite completa y pasó al repetirlo: intermitente, ajeno a esta tarea.
 - 2026-10-01 — Bug: la barra aparecía (y rebotaba) con la ventana aún fuera y luego bajaba. Ahora la gota dura hasta el `resize` de la ventana al llegar a la barra, y solo entonces la barra se derrama a lo largo del borde (`--bar-spill-from`).
+- 2026-10-01 — El usuario precisó la gota: el micrófono debe comerse la onda. El micro está siempre a la derecha (`record` o el indicador al grabar), así que la contracción se ancla al último botón.

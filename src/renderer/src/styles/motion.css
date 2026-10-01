@@ -110,10 +110,33 @@
 }
 
 /* La píldora se encoge hasta ser una gota. */
+/* Dock al esconderse (tarea 34): la píldora se cierra hasta el tamaño de un botón (20 px +
+   padding + borde)... */
 @keyframes dock-pill-contract {
   to {
-    width: 28px;
-    padding: 0;
+    width: 29px;
+  }
+}
+
+/* ...la onda se encoge hacia el micrófono, que se la traga... */
+@keyframes dock-eaten {
+  to {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
+/* ...y el micrófono da un bocado al tragársela. */
+@keyframes dock-gulp {
+  0%,
+  60% {
+    transform: scale(1);
+  }
+  80% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 

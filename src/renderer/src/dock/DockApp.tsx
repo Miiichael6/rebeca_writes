@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { APP_NAME } from '@shared/app'
 import {
+  DOCK_CONTRACT_MS,
   dockAlign,
   dockEdge,
   dockShowsIndicator,
@@ -58,6 +59,7 @@ export function DockApp(): React.JSX.Element {
       className="dock"
       data-edge={dockEdge(position)}
       data-align={dockAlign(position)}
+      style={{ '--dock-contract-ms': `${DOCK_CONTRACT_MS}ms` } as React.CSSProperties}
       onContextMenu={(e) => {
         e.preventDefault()
         openMenu()
