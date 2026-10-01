@@ -1,3 +1,7 @@
+// Fuentes empaquetadas con la app (sin red): Figtree para el texto, EB Garamond para los títulos.
+import '@fontsource-variable/figtree'
+import '@fontsource-variable/eb-garamond'
+import '@fontsource-variable/eb-garamond/wght-italic.css'
 import './styles/tokens.css'
 import './styles/motion.css'
 import './styles/theme-light.css'

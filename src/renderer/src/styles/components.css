@@ -729,8 +729,8 @@
 .dialog-body h2 {
   margin-bottom: var(--space-3);
   font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 600;
+  font-size: var(--text-display);
+  font-weight: var(--font-display-weight);
 }
 
 .dialog-text {
@@ -816,18 +816,29 @@
 }
 
 /* ---------- Menu ---------- */
+/*
+ * El menú es un `popover`: va en la capa superior, así que ningún `overflow: hidden` de sus
+ * contenedores (la barra lateral, p. ej.) lo recorta. Se coloca respecto a su `.menu-anchor`
+ * con anchor positioning; `anchor-scope` hace que cada menú use el ancla que lo contiene.
+ */
 .menu-anchor {
   position: relative;
+  anchor-name: --menu;
+  anchor-scope: --menu;
 }
 
 .menu {
-  position: absolute;
-  z-index: 100;
+  position: fixed;
+  position-anchor: --menu;
+  inset: auto;
   min-width: 260px;
+  margin: 0;
   padding: var(--space-1);
+  overflow: visible;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-card);
+  color: inherit;
   box-shadow: var(--shadow-flyout);
 }
 
@@ -840,23 +851,32 @@
   animation: menu-out var(--duration-fast) var(--ease-out) forwards;
 }
 
+/* Si no cabe en la ventana, se da la vuelta. */
 .menu-top-end {
-  right: 0;
-  bottom: calc(100% + 6px);
+  right: anchor(right);
+  bottom: anchor(top);
+  margin-bottom: 6px;
+  position-try-fallbacks: flip-block, flip-inline;
 }
 
 .menu-bottom-start {
-  left: 0;
-  top: calc(100% + 4px);
+  top: anchor(bottom);
+  left: anchor(left);
+  margin-top: 4px;
+  position-try-fallbacks: flip-block, flip-inline;
 }
 
-.menu-bottom-end {
-  right: 0;
-  top: calc(100% + 4px);
+.menu-top-start {
+  bottom: anchor(top);
+  left: anchor(left);
+  margin-bottom: 6px;
+  position-try-fallbacks: flip-block, flip-inline;
 }
 
 .menu-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   width: 100%;
   height: 34px;
   padding: 0 var(--space-3);
@@ -882,10 +902,80 @@
   font-weight: 600;
 }
 
+.menu-item-label {
+  flex: 1;
+}
+
+.menu-item-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--space-1);
+  color: var(--text-2);
+}
+
+.menu-item-checked .menu-item-icon {
+  color: inherit;
+}
+
+.menu-item-hint {
+  overflow: hidden;
+  max-width: 160px;
+  color: var(--text-3);
+  font-weight: 400;
+  text-overflow: ellipsis;
+}
+
+.menu-item-chevron {
+  flex: none;
+  margin-right: calc(-1 * var(--space-1));
+  color: var(--text-2);
+}
+
+.menu-sub {
+  anchor-name: --menu-sub;
+  anchor-scope: --menu-sub;
+}
+
+.menu-item-sub[aria-expanded='true'] {
+  background: var(--bg-subtle-hover);
+}
+
+/*
+ * Flyout lateral: a la derecha del ítem y alineado con él hacia donde se abre el menú (el de
+ * abajo crece hacia arriba). Si no cabe, se da la vuelta.
+ */
+.menu.menu-submenu {
+  position-anchor: --menu-sub;
+  left: anchor(right);
+  margin: 0 0 0 calc(2 * var(--space-1));
+  position-try-fallbacks: flip-inline, flip-block;
+  animation: menu-in var(--duration-fast) var(--ease);
+}
+
+.menu-top-start .menu-submenu,
+.menu-top-end .menu-submenu {
+  bottom: calc(anchor(bottom) - var(--space-1) - 1px);
+}
+
+.menu-bottom-start .menu-submenu {
+  top: calc(anchor(top) - var(--space-1) - 1px);
+}
+
+.menu-content {
+  padding: 0 var(--space-3);
+}
+
 .menu-separator {
   height: 1px;
   margin: var(--space-1) calc(-1 * var(--space-1));
   background: var(--border);
+}
+
+.menu-heading {
+  padding: var(--space-1) var(--space-3);
+  color: var(--text-3);
+  font-size: var(--text-sm);
 }
 
 /* ---------- Drawer (panel lateral modal) ---------- */
@@ -941,8 +1031,8 @@
 .drawer-header h2 {
   flex: 1;
   font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 600;
+  font-size: var(--text-display);
+  font-weight: var(--font-display-weight);
 }
 
 .drawer-empty {

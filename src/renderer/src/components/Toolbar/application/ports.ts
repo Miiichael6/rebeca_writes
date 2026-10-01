@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react'
-import type { MicState, RecordingSource } from '@shared/recording'
 import type { TranscriptStatus } from '@shared/types'
 import type { Blocker } from '../domain/toolbar'
 
@@ -49,26 +48,11 @@ export interface ViewPort {
   openSettings(): void
 }
 
-/** Puerto de salida: grabar desde la app (tarea 29). */
-export interface MicPort {
-  useState(): MicState
-  /** Esperando la respuesta del main a empezar o parar. */
-  usePending(): boolean
-  /** Hay una sesión en vivo (de Listen o una grabación que aún termina de transcribirse). */
-  useLiveSession(): boolean
-  /** Fuente elegida en el menú (se recuerda entre sesiones). */
-  useSource(): RecordingSource
-  setSource(source: RecordingSource): void
-  start(source: RecordingSource, name: string): void
-  stop(): void
-}
-
 export interface ToolbarPorts {
   settings: SettingsPort
   models: ModelsPort
   transcription: TranscriptionPort
   view: ViewPort
-  mic: MicPort
 }
 
 export const PortsContext = createContext<ToolbarPorts | null>(null)

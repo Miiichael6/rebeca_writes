@@ -161,9 +161,15 @@
   padding: 0;
 }
 
+.sidebar.collapsed .sidebar-footer {
+  flex-direction: column;
+  gap: 8px;
+}
+
 .sidebar.collapsed .queue-btn {
   position: relative;
-  width: auto;
+  flex: none;
+  margin-left: 0;
 }
 
 .sidebar.collapsed .queue-count {
@@ -361,9 +367,17 @@
   font-size: var(--text-sm);
 }
 
-.queue-btn {
-  width: 100%;
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   margin-bottom: 4px;
+}
+
+.queue-btn {
+  flex: 1;
+  min-width: 0;
+  margin-left: 4px;
 }
 
 .queue-count {
@@ -428,7 +442,7 @@
   min-width: 96px;
 }
 
-/* Grabar (tarea 29): micrófono + flecha del menú de fuentes, pegados como un botón dividido. */
+/* Grabar (tarea 29), en el pie de la barra lateral: micrófono + flecha del menú de fuentes. */
 .mic-split {
   display: flex;
 }
@@ -447,6 +461,60 @@
   min-width: 4ch;
   font-variant-numeric: tabular-nums;
   text-align: left;
+}
+
+/* Medidor del submenú de micrófonos: nivel en vivo del elegido, antes de grabar. */
+.mic-level {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 30px;
+}
+
+.mic-level-track {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--bg-subtle-hover);
+}
+
+.mic-level-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 60ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-level-fill {
+    transition: none;
+  }
+}
+
+/* Onda de lo que se graba: barras que entran por la derecha a ~20 por segundo. */
+.mic-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+  margin-left: 6px;
+}
+
+.mic-wave > span {
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: currentColor;
+  transform-origin: center;
+  transition: transform 50ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-wave > span {
+    transition: none;
+  }
 }
 
 /* En ventanas angostas las etiquetas de los combos se ocultan (siguen para lectores de pantalla). */
@@ -1116,8 +1184,8 @@
 
 .settings-header h1 {
   font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: var(--font-display-weight);
 }
 
 .settings-content {

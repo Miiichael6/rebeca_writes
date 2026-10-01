@@ -1,4 +1,4 @@
-import { LocateFixed } from 'lucide-react'
+import { LocateFixed, Pencil, Undo2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Segment } from '@shared/types'
 import type { SearchMatch } from '@renderer/lib/search'
@@ -33,11 +33,16 @@ export function SegmentList({
   const menuSegment = menu ? segments[menu.index] : undefined
   const menuItems: MenuItem[] = []
   if (menu && menuSegment) {
-    menuItems.push({ label: t('transcript.edit'), onSelect: () => edit.start(menu.index) })
+    menuItems.push({
+      label: t('transcript.edit'),
+      icon: Pencil,
+      onSelect: () => edit.start(menu.index)
+    })
     const original = menuSegment.originalText
     if (menuSegment.edited && original !== undefined) {
       menuItems.push({
         label: t('transcript.restoreOriginal'),
+        icon: Undo2,
         onSelect: () => transcript.editSegment(menu.index, original)
       })
     }

@@ -94,7 +94,8 @@ export function Select<T extends string>({
   useOutsidePointer(open, () => anchorRef.current, close)
 
   const openList = (from: number = selected < 0 ? 0 : selected): void => {
-    if (anchorRef.current) setPlacement(placeList(anchorRef.current, options.length, direction === 'up'))
+    if (anchorRef.current)
+      setPlacement(placeList(anchorRef.current, options.length, direction === 'up'))
     setActive(from)
     setOpen(true)
   }

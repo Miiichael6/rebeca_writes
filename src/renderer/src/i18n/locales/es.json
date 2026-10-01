@@ -386,10 +386,15 @@
     "chooseSource": "Qué grabar",
     "busy": "Rebecca Listen está grabando o se está terminando de transcribir una grabación.",
     "sources": {
-      "system": "Computadora",
-      "voice": "Mi voz",
-      "both": "Ambos a la vez"
+      "system": "Sonido del sistema",
+      "voice": "Microfono",
+      "both": "Sistema y Microfono"
     },
+    "microphone": "Micrófono",
+    "defaultMicrophone": "Predeterminado de Windows",
+    "inputLevel": "Nivel de entrada",
+    "systemLevel": "Volumen del sistema",
+    "levels": "Niveles de audio",
     "entryName": "Grabación {{date}} · {{source}}",
     "interrupted": "Se perdió el dispositivo de audio. La grabación se guardó hasta ese momento.",
     "errorLiveBusy": "Ya hay una grabación en vivo en curso (Rebecca Listen).",

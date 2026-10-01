@@ -45,3 +45,10 @@ export function menuAnchor(e: Anchor, item: Box): { x: number; y: number } {
     y: keyboard ? item.bottom : e.clientY
   }
 }
+
+type Keys = Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey' | 'repeat'>
+
+/** F2 solo, como en el Explorador de Windows: renombra el archivo seleccionado. */
+export function isRenameShortcut(e: Keys): boolean {
+  return e.key === 'F2' && !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey && !e.repeat
+}

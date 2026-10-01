@@ -1,4 +1,4 @@
-import type { DeviceKind } from '../../domain/capture/sidecarProtocol'
+import type { AudioDevice, DeviceKind } from '../../domain/capture/sidecarProtocol'
 
 /** Un dispositivo abierto que va entregando audio (tarea 29). */
 export interface CaptureStream {
@@ -13,8 +13,13 @@ export interface CaptureStream {
 
 /** Puerto de salida: la captura de audio del sistema (en Windows, WASAPI con `rl-capture.exe`). */
 export interface AudioCapture {
-  /** Abre el dispositivo predeterminado de Windows de ese tipo; falla si no hay ninguno. */
-  openDefault(kind: DeviceKind): Promise<CaptureStream>
+  /** Los dispositivos activos de ese tipo. */
+  listDevices(kind: DeviceKind): Promise<AudioDevice[]>
+  /**
+   * Abre el dispositivo `deviceId` o, si no se indica o ya no está conectado, el predeterminado
+   * de Windows de ese tipo; falla si no hay ninguno.
+   */
+  open(kind: DeviceKind, deviceId?: string): Promise<CaptureStream>
   /** Al cerrar la app: termina el proceso de captura. */
   dispose(): void
 }

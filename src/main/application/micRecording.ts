@@ -1,11 +1,20 @@
 import { IpcChannel } from '@shared/ipc'
-import type { MicStartResult, MicState, RecordingSource } from '@shared/recording'
+import {
+  sourceDevices,
+  type MicDevice,
+  type MicStartResult,
+  type MicState,
+  type MonitorLevel,
+  type RecordingSource
+} from '@shared/recording'
+import { LevelMeter } from '../domain/capture/levelMeter'
 import { Pcm16kConverter } from '../domain/capture/pcm16k'
+import { microphoneName } from '../domain/capture/sidecarProtocol'
 import { LiveBusyError, type LiveControl } from './liveControl'
 import type { AudioCapture, CaptureStream } from './ports/audioCapture'
 import type { EventPublisher, Logger } from './ports/eventPublisher'
 import type { PcmWriter, RecordingEncoder, RecordingFiles } from './ports/recordingFiles'
-import { openRecordingSource } from './recordingSources'
+import { followDefaultOutput, openRecordingSource, withLoopbackSilence } from './recordingSources'
 
 export interface MicRecordingDeps {
   capture: AudioCapture
@@ -14,6 +23,8 @@ export interface MicRecordingDeps {
   live: Pick<LiveControl, 'handle' | 'recordingOrigin'>
   /** Carpeta de las grabaciones finales, según Configuración. */
   recordingsDir: () => string
+  /** Micrófono elegido en el menú; vacío = el predeterminado de Windows. */
+  micId: () => string
   publisher: EventPublisher
   log: Logger
 }
@@ -35,6 +46,8 @@ interface Recording {
  */
 export class MicRecording {
   private recording: Recording | null = null
+  /** Lo abierto solo para los medidores del menú (sin grabar). */
+  private monitor: CaptureStream[] = []
   private last: Promise<unknown> = Promise.resolve()
 
   constructor(private readonly deps: MicRecordingDeps) {}
@@ -53,9 +66,50 @@ export class MicRecording {
     return this.serial(() => this.finish(false))
   }
 
+  /** Los micrófonos conectados, para el menú del botón de grabar. */
+  async microphones(): Promise<MicDevice[]> {
+    const devices = await this.deps.capture.listDevices('capture')
+    return devices.map((d) => ({ id: d.id, name: microphoneName(d), isDefault: d.isDefault }))
+  }
+
+  /**
+   * Medidores del menú: abre los dispositivos de `source` (el sonido del sistema y/o `micId`,
+   * vacío = el predeterminado) solo para emitir su nivel por `mic:monitorLevel`, sin grabar.
+   * Cambiar de fuente o de micrófono es volver a llamarlo. Si uno no se puede abrir, el otro
+   * mide igual.
+   */
+  startMonitor(source: RecordingSource, micId: string): Promise<void> {
+    return this.serial(async () => {
+      await this.closeMonitor()
+      if (this.recording) return
+      const opened = await Promise.all(
+        sourceDevices(source).map((device) =>
+          device === 'system'
+            ? this.openMonitor(device, async () =>
+                withLoopbackSilence(await followDefaultOutput(this.deps.capture))
+              )
+            : this.openMonitor(device, () => this.deps.capture.open('capture', micId || undefined))
+        )
+      )
+      const streams = opened.filter((stream) => stream !== null)
+      // Un `startMonitor`/`stopMonitor` posterior va detrás en la cola, así que nada lo pisa.
+      this.monitor = streams
+      for (const stream of streams) {
+        stream.onError(() => {
+          this.monitor = this.monitor.filter((s) => s !== stream)
+        })
+      }
+    })
+  }
+
+  stopMonitor(): Promise<void> {
+    return this.serial(() => this.closeMonitor())
+  }
+
   /** Al cerrar la app: no da tiempo a convertir; la entrada queda con lo transcrito. */
   dispose(): void {
     this.recording = null
+    this.monitor = []
     this.deps.capture.dispose()
   }
 
@@ -67,11 +121,13 @@ export class MicRecording {
 
   private async begin(source: RecordingSource, name: string): Promise<MicStartResult> {
     if (this.recording) return { ok: true, state: this.state() }
+    await this.closeMonitor()
     if (this.deps.live.recordingOrigin() === 'listen') return { ok: false, error: 'liveBusy' }
 
     let stream: CaptureStream
     try {
-      stream = await openRecordingSource(this.deps.capture, source)
+      const micId = this.deps.micId() || undefined
+      stream = await openRecordingSource(this.deps.capture, source, micId)
     } catch (err) {
       this.deps.log.warn(`Micrófono: no se pudo abrir la fuente ${source}: ${String(err)}`)
       return { ok: false, error: 'noDevice' }
@@ -80,9 +136,16 @@ export class MicRecording {
     try {
       const { path: pcm, writer } = await this.deps.files.createPcm()
       const converter = new Pcm16kConverter(stream.sampleRate, stream.channels)
-      stream.onData((samples) => writer.append(converter.convert(samples)))
-      stream.onError((reason) => this.interrupt(reason))
+      const meter = new LevelMeter(stream.sampleRate, stream.channels)
       const recording = { source, name, startedAt: Date.now(), stream, pcm, writer, converter }
+      stream.onData((samples) => {
+        writer.append(converter.convert(samples))
+        if (this.recording !== recording) return
+        for (const level of meter.push(samples)) {
+          this.deps.publisher.publish(IpcChannel.MicLevel, level)
+        }
+      })
+      stream.onError((reason) => this.interrupt(reason))
       this.recording = recording
       await this.deps.live.handle({ kind: 'start', pcm, name }, 'mic').catch(async (err) => {
         this.recording = null
@@ -101,6 +164,34 @@ export class MicRecording {
     )
     this.publishState()
     return { ok: true, state: this.state() }
+  }
+
+  /** Abre un dispositivo para su medidor; `null` si no se puede (se avisa en el log). */
+  private async openMonitor(
+    device: MonitorLevel['device'],
+    open: () => Promise<CaptureStream>
+  ): Promise<CaptureStream | null> {
+    let stream: CaptureStream
+    try {
+      stream = await open()
+    } catch (err) {
+      this.deps.log.warn(`Micrófono: no se pudo abrir ${device} para medir: ${String(err)}`)
+      return null
+    }
+    const meter = new LevelMeter(stream.sampleRate, stream.channels)
+    stream.onData((samples) => {
+      if (!this.monitor.includes(stream)) return
+      for (const level of meter.push(samples)) {
+        this.deps.publisher.publish(IpcChannel.MicMonitorLevel, { device, level })
+      }
+    })
+    return stream
+  }
+
+  private async closeMonitor(): Promise<void> {
+    const streams = this.monitor
+    this.monitor = []
+    await Promise.all(streams.map((stream) => stream.stop().catch(() => {})))
   }
 
   /** El dispositivo se perdió: se cierra con lo grabado hasta ahí. */

@@ -18,6 +18,13 @@ export interface AudioDevice {
   sampleRate: number
 }
 
+/** Como lo escribe Windows: `Micrófono (Realtek(R) Audio)`, o solo el nombre si no hay grupo. */
+export function microphoneName(device: Pick<AudioDevice, 'name' | 'groupName'>): string {
+  return device.groupName && device.groupName !== device.name
+    ? `${device.name} (${device.groupName})`
+    : device.name
+}
+
 export type SidecarCommand =
   | { cmd: 'list' }
   | { cmd: 'open'; streamId: number; deviceId: string; kind: DeviceKind }

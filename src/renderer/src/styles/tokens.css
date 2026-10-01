@@ -35,15 +35,18 @@
   --space-8: 32px;
 
   /* Tipografía */
-  --font: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
-  --font-display:
-    'Segoe UI Variable Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font: 'Figtree Variable', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  /* Títulos: serif fina, a peso normal (la negrita le quita la elegancia). */
+  --font-display: 'EB Garamond Variable', Georgia, 'Times New Roman', serif;
+  --font-display-weight: 500;
   --font-mono: 'Cascadia Mono', Consolas, 'Courier New', monospace;
   --text-xs: 11px;
   --text-sm: 12px;
   --text-md: 13px;
   --text-lg: 14px;
   --text-xl: 20px;
+  /* Títulos con `--font-display`: la serif es más pequeña a igual tamaño. */
+  --text-display: 24px;
 
   /* Tamaños */
   --control-height: 32px;

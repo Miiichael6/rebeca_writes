@@ -1,6 +1,12 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
-import type { MicStartError, MicState, RecordingSource } from '@shared/recording'
+import type {
+  MicDevice,
+  MicStartError,
+  MicState,
+  MonitorLevel,
+  RecordingSource
+} from '@shared/recording'
 import i18n from '@renderer/i18n'
 import { toast } from './toast'
 
@@ -57,6 +63,33 @@ export function startMic(source: RecordingSource, name: string): Promise<void> {
 
 export function stopMic(): Promise<void> {
   return whilePending(() => window.api.mic.stop())
+}
+
+/** Los micrófonos conectados; vacío si el sidecar no contesta (queda el predeterminado). */
+export function listMicrophones(): Promise<MicDevice[]> {
+  return window.api.mic.listDevices().catch((err) => {
+    console.error(err)
+    return []
+  })
+}
+
+/** El micrófono abierto solo para medir (menú de micrófonos); los errores van al log del main. */
+export function startMicMonitor(source: RecordingSource, micId: string): void {
+  window.api.mic.startMonitor(source, micId).catch(console.error)
+}
+
+export function stopMicMonitor(): void {
+  window.api.mic.stopMonitor().catch(console.error)
+}
+
+/** Nivel (0..1) de lo que se graba. Devuelve la baja. */
+export function onMicLevel(listener: (level: number) => void): () => void {
+  return window.api.mic.onLevel(listener)
+}
+
+/** Niveles de los medidores del menú. Devuelve la baja. */
+export function onMonitorLevel(listener: (level: MonitorLevel) => void): () => void {
+  return window.api.mic.onMonitorLevel(listener)
 }
 
 /** Sigue el estado de la grabación. Se llama una vez, en App. */

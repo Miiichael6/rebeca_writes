@@ -169,6 +169,11 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   })
   handle(IpcChannel.MicStop, () => mic.stop())
   handle(IpcChannel.MicGetState, () => mic.state())
+  handle(IpcChannel.MicListDevices, () => mic.microphones())
+  handle(IpcChannel.MicMonitorStart, (_event, source, micId) =>
+    mic.startMonitor(source, String(micId))
+  )
+  handle(IpcChannel.MicMonitorStop, () => mic.stopMonitor())
   handle(IpcChannel.MicGetRecordingsDir, () => recordingsFolder.dir())
   handle(IpcChannel.MicPickRecordingsDir, (event) => recordingsFolder.pick(ownerOf(event)))
   handle(IpcChannel.MicOpenRecordingsDir, () => openFolder(recordingsFolder.dir()))

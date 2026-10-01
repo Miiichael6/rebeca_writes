@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  Captions,
+  FileClock,
+  FileDown,
+  FileText,
+  Music,
+  Subtitles,
+  type LucideIcon
+} from 'lucide-react'
 import type { MenuItem } from '@renderer/components/ui'
+import type { ExportFormat } from '@shared/exporters'
 import { EXPORT_ENTRIES, isExportShortcut } from '../domain/export'
 import { usePorts } from './ports'
 
@@ -15,6 +25,14 @@ export interface ExportMenu {
   cancelReplace: () => void
 }
 
+const FORMAT_ICONS: Record<ExportFormat, LucideIcon> = {
+  txtTimestamps: FileClock,
+  txt: FileText,
+  vtt: Captions,
+  lrc: Music,
+  srt: Subtitles
+}
+
 /** El menú Exportar, su atajo `Ctrl+E` y la confirmación de reemplazar el `.srt` existente. */
 export function useExportMenu(empty: boolean): ExportMenu {
   const { t } = useTranslation()
@@ -27,10 +45,12 @@ export function useExportMenu(empty: boolean): ExportMenu {
     (): MenuItem[] => [
       ...EXPORT_ENTRIES.map(({ format, labelKey }) => ({
         label: t(`bottomBar.${labelKey}`),
+        icon: FORMAT_ICONS[format],
         onSelect: () => transcript.exportAs(format)
       })),
       {
         label: t('bottomBar.saveSrtNextToFile'),
+        icon: FileDown,
         onSelect: () => void transcript.saveSrtBeside().then(setReplacePath),
         separator: true
       }

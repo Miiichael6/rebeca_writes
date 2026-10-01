@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { HistoryEntry } from '@shared/types'
 import { shownName } from '@renderer/components/Sidebar/domain/entry'
 import {
+  isRenameShortcut,
   menuAnchor,
   movedTooFar,
   resizeKeyDelta
@@ -52,5 +53,20 @@ describe('interacción', () => {
     const item = { left: 10, bottom: 90 }
     expect(menuAnchor({ clientX: 50, clientY: 60 }, item)).toEqual({ x: 50, y: 60 })
     expect(menuAnchor({ clientX: 0, clientY: 0 }, item)).toEqual({ x: 30, y: 90 })
+  })
+
+  it('isRenameShortcut: F2 sin modificadores ni repetición', () => {
+    const keys = {
+      key: 'F2',
+      ctrlKey: false,
+      altKey: false,
+      shiftKey: false,
+      metaKey: false,
+      repeat: false
+    }
+    expect(isRenameShortcut(keys)).toBe(true)
+    expect(isRenameShortcut({ ...keys, ctrlKey: true })).toBe(false)
+    expect(isRenameShortcut({ ...keys, repeat: true })).toBe(false)
+    expect(isRenameShortcut({ ...keys, key: 'F3' })).toBe(false)
   })
 })

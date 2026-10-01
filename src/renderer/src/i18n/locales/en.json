@@ -381,6 +381,11 @@
       "voice": "My voice",
       "both": "Both at once"
     },
+    "microphone": "Microphone",
+    "defaultMicrophone": "Windows default",
+    "inputLevel": "Input level",
+    "systemLevel": "System volume",
+    "levels": "Audio levels",
     "entryName": "Recording {{date}} · {{source}}",
     "interrupted": "The audio device was lost. The recording was saved up to that point.",
     "errorLiveBusy": "A live recording is already in progress (Rebecca Listen).",

@@ -1,4 +1,4 @@
-import type { RecordingSource } from '@shared/recording'
+import type { MicDevice, RecordingSource } from '@shared/recording'
 import { formatClock } from '@renderer/lib/time'
 
 const pad = (n: number): string => String(n).padStart(2, '0')
@@ -12,6 +12,32 @@ export function recordingStamp(date: Date): string {
 /** Contador del botón mientras graba: `m:ss`, y `h:mm:ss` desde la primera hora. */
 export function elapsedLabel(startedAt: number, now: number): string {
   return formatClock((now - startedAt) / 1000)
+}
+
+/** Barras de la onda junto al contador. */
+export const WAVE_BARS = 12
+
+/** La onda en reposo: todas las barras a cero. */
+export function silentWave(bars = WAVE_BARS): number[] {
+  return new Array<number>(bars).fill(0)
+}
+
+/** La onda avanza: entra `level` por la derecha y sale la barra más vieja. */
+export function pushLevel(wave: number[], level: number): number[] {
+  return [...wave.slice(1), Math.max(0, Math.min(1, level))]
+}
+
+/** Computadora no usa el micrófono: solo Mi voz y Ambos muestran la lista de micrófonos. */
+export function usesMicrophone(source: RecordingSource): boolean {
+  return source !== 'system'
+}
+
+/**
+ * El micrófono que se marca en el menú: el guardado si sigue conectado; si no, el predeterminado
+ * (`''`), que es el que abre el main en ese caso.
+ */
+export function selectedMicId(micId: string, microphones: MicDevice[]): string {
+  return microphones.some((d) => d.id === micId) ? micId : ''
 }
 
 /** Botón de grabar: qué muestra y si se puede pulsar. */

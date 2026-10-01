@@ -71,6 +71,7 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     autoCheckUpdates: bool,
     previewCacheMaxGB: positive,
     recordingSource: oneOf(RECORDING_SOURCES),
+    recordingMicId: text(1000),
     recordingsDir: text(1000)
   }
 }

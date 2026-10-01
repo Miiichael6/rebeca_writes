@@ -31,7 +31,13 @@ import type {
   UpdateInstallResult,
   UpdateStatus
 } from './types'
-import type { MicStartResult, MicState, RecordingSource } from './recording'
+import type {
+  MicDevice,
+  MicStartResult,
+  MicState,
+  MonitorLevel,
+  RecordingSource
+} from './recording'
 import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
 /** Canales IPC. El renderer nunca los usa directamente: pasa por `window.api`. */
@@ -103,7 +109,12 @@ export const IpcChannel = {
   MicStart: 'mic:start',
   MicStop: 'mic:stop',
   MicGetState: 'mic:state',
+  MicListDevices: 'mic:devices',
   MicChanged: 'mic:changed',
+  MicLevel: 'mic:level',
+  MicMonitorStart: 'mic:monitorStart',
+  MicMonitorLevel: 'mic:monitorLevel',
+  MicMonitorStop: 'mic:monitorStop',
   MicGetRecordingsDir: 'mic:get-recordings-dir',
   MicPickRecordingsDir: 'mic:pickRecordingsDir',
   MicOpenRecordingsDir: 'mic:openRecordingsDir',
@@ -207,6 +218,9 @@ export interface IpcInvokeMap {
   [IpcChannel.MicStart]: { args: [source: RecordingSource, name: string]; result: MicStartResult }
   [IpcChannel.MicStop]: { args: []; result: void }
   [IpcChannel.MicGetState]: { args: []; result: MicState }
+  [IpcChannel.MicListDevices]: { args: []; result: MicDevice[] }
+  [IpcChannel.MicMonitorStart]: { args: [source: RecordingSource, micId: string]; result: void }
+  [IpcChannel.MicMonitorStop]: { args: []; result: void }
   [IpcChannel.MicGetRecordingsDir]: { args: []; result: string }
   [IpcChannel.MicPickRecordingsDir]: { args: []; result: string | null }
   [IpcChannel.MicOpenRecordingsDir]: { args: []; result: void }
@@ -235,6 +249,8 @@ export interface IpcEventMap {
   [IpcChannel.LiveStarted]: LiveSessionInfo
   [IpcChannel.LiveEnded]: LiveEndedEvent
   [IpcChannel.MicChanged]: MicState
+  [IpcChannel.MicLevel]: number
+  [IpcChannel.MicMonitorLevel]: MonitorLevel
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -444,7 +460,19 @@ export interface AppApi {
     /** Resuelve cuando el MP3 está guardado y la sesión recibió el fin. */
     stop: () => Promise<void>
     getState: () => Promise<MicState>
+    /** Los micrófonos conectados ahora mismo. */
+    listDevices: () => Promise<MicDevice[]>
     onChanged: (listener: (state: MicState) => void) => () => void
+    /** Nivel (0..1) de lo que se graba, cada 50 ms. */
+    onLevel: (listener: (level: number) => void) => () => void
+    /** Niveles de los medidores del menú mientras `startMonitor` está activo. */
+    onMonitorLevel: (listener: (level: MonitorLevel) => void) => () => void
+    /**
+     * Abre el sonido del sistema y el micrófono (vacío = predeterminado) solo para medir su
+     * nivel, sin grabar.
+     */
+    startMonitor: (source: RecordingSource, micId: string) => Promise<void>
+    stopMonitor: () => Promise<void>
     /** Carpeta donde se guardan los MP3 (la de ajustes o la de por defecto). */
     getRecordingsDir: () => Promise<string>
     /** Diálogo para elegir otra carpeta; la guarda en ajustes. `null` si se cancela. */

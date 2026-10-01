@@ -208,6 +208,7 @@ export function createServices(paths: AppPaths): Services {
     encoder: ffmpegRecordingEncoder,
     live,
     recordingsDir: () => recordingsFolder.dir(),
+    micId: () => settings.get().recordingMicId,
     publisher,
     log
   })

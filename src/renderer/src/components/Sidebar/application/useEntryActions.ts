@@ -40,6 +40,10 @@ export function useEntryActions({ requeueMessage }: Options): EntryActions {
   const [dialog, setDialog] = useState<EntryDialog | null>(null)
   const closeDialog = useCallback(() => setDialog(null), [])
   const [newName, setNewName] = useState('')
+  const startRename = useCallback((entry: HistoryEntry) => {
+    setNewName(shownName(entry))
+    setDialog({ kind: 'rename', entry })
+  }, [])
 
   const queueAgain = async (entry: HistoryEntry): Promise<void> => {
     const added = await history.retranscribe(entry.id).catch(() => false)
@@ -60,10 +64,7 @@ export function useEntryActions({ requeueMessage }: Options): EntryActions {
       if (dialog) void history.remove(dialog.entry.id)
       setDialog(null)
     },
-    startRename: (entry) => {
-      setNewName(shownName(entry))
-      setDialog({ kind: 'rename', entry })
-    },
+    startRename,
     newName,
     setNewName,
     confirmRename: () => {

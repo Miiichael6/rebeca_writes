@@ -77,6 +77,8 @@ export interface Settings {
   // Grabar con el micrófono (tarea 29).
   /** Fuente elegida en el menú del botón de grabar. */
   recordingSource: RecordingSource
+  /** Micrófono para Mi voz y Ambos; vacío = el predeterminado de Windows. */
+  recordingMicId: string
   /** Carpeta de los MP3 grabados; vacío = `Documentos\RebeccaWrites\Grabaciones`. */
   recordingsDir: string
 
@@ -135,6 +137,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     autoCheckUpdates: true,
     previewCacheMaxGB: 5,
     recordingSource: DEFAULT_RECORDING_SOURCE,
+    recordingMicId: '',
     recordingsDir: '',
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }

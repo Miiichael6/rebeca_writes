@@ -341,4 +341,5 @@ export type UpdateStatus =
 /** Por qué no se puede reiniciar ahora para instalar. */
 export type UpdateInstallBlocker = 'transcribing' | 'cudaDownload'
 
-export type UpdateInstallResult = { ok: true } | { ok: false; reason: UpdateInstallBlocker | 'notReady' }
+export type UpdateInstallResult =
+  { ok: true } | { ok: false; reason: UpdateInstallBlocker | 'notReady' }

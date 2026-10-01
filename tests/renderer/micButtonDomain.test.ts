@@ -2,10 +2,27 @@ import { describe, expect, it } from 'vitest'
 import {
   elapsedLabel,
   micButtonState,
-  recordingStamp
-} from '../../src/renderer/src/components/Toolbar/domain/mic'
+  pushLevel,
+  recordingStamp,
+  selectedMicId,
+  silentWave,
+  usesMicrophone
+} from '../../src/renderer/src/components/MicButton/domain/mic'
 
-describe('Toolbar · grabar', () => {
+describe('MicButton', () => {
+  it('solo Mi voz y Ambos eligen micrófono', () => {
+    expect(usesMicrophone('system')).toBe(false)
+    expect(usesMicrophone('voice')).toBe(true)
+    expect(usesMicrophone('both')).toBe(true)
+  })
+
+  it('marca el micrófono guardado solo si sigue conectado', () => {
+    const mics = [{ id: 'a', name: 'USB', isDefault: false }]
+    expect(selectedMicId('a', mics)).toBe('a')
+    expect(selectedMicId('b', mics)).toBe('')
+    expect(selectedMicId('', mics)).toBe('')
+  })
+
   it('sella la fecha local sin dos puntos (vale como nombre de archivo)', () => {
     expect(recordingStamp(new Date(2026, 0, 5, 9, 7))).toBe('2026-01-05 09-07')
   })
@@ -29,5 +46,13 @@ describe('Toolbar · grabar', () => {
       source: 'both',
       startedAt: 5
     })
+  })
+})
+
+describe('pushLevel', () => {
+  it('entra por la derecha, sale la más vieja y se recorta a 0..1', () => {
+    expect(pushLevel([0.1, 0.2, 0.3], 0.4)).toEqual([0.2, 0.3, 0.4])
+    expect(pushLevel([0, 0], 2)).toEqual([0, 1])
+    expect(silentWave(3)).toEqual([0, 0, 0])
   })
 })

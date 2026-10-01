@@ -53,19 +53,27 @@ export class SidecarAudioCapture implements AudioCapture {
     )
   }
 
-  async openDefault(kind: DeviceKind): Promise<CaptureStream> {
-    const devices = await this.listDevices()
-    const device = devices.find((d) => d.kind === kind && d.isDefault)
+  async listDevices(kind: DeviceKind): Promise<AudioDevice[]> {
+    return (await this.allDevices()).filter((d) => d.kind === kind)
+  }
+
+  async open(kind: DeviceKind, deviceId?: string): Promise<CaptureStream> {
+    const devices = await this.listDevices(kind)
+    const chosen = deviceId ? devices.find((d) => d.id === deviceId) : undefined
+    if (deviceId && !chosen) {
+      this.log.warn(`Captura: ${deviceId} no está conectado; se usa el predeterminado`)
+    }
+    const device = chosen ?? devices.find((d) => d.isDefault)
     if (!device) throw new Error(`No hay dispositivo predeterminado de tipo ${kind}`)
     this.log.info(`Captura: se abre "${device.name} (${device.groupName})" (${kind})`)
-    return this.open(device)
+    return this.openDevice(device)
   }
 
   dispose(): void {
     this.process.dispose()
   }
 
-  private async listDevices(): Promise<AudioDevice[]> {
+  private async allDevices(): Promise<AudioDevice[]> {
     const event = await this.request(
       { cmd: 'list' },
       (e) => e.type === 'devices' || e.type === 'error'
@@ -74,7 +82,7 @@ export class SidecarAudioCapture implements AudioCapture {
     return event.devices
   }
 
-  private async open(device: AudioDevice): Promise<CaptureStream> {
+  private async openDevice(device: AudioDevice): Promise<CaptureStream> {
     const streamId = this.nextStreamId
     this.nextStreamId = (this.nextStreamId % MAX_STREAM_ID) + 1
     const handlers: StreamHandlers = {}

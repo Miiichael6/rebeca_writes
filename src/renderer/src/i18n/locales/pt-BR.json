@@ -390,6 +390,11 @@
       "voice": "Minha voz",
       "both": "Ambos ao mesmo tempo"
     },
+    "microphone": "Microfone",
+    "defaultMicrophone": "Padrão do Windows",
+    "inputLevel": "Nível de entrada",
+    "systemLevel": "Volume do sistema",
+    "levels": "Níveis de áudio",
     "entryName": "Gravação {{date}} · {{source}}",
     "interrupted": "O dispositivo de áudio foi perdido. A gravação foi salva até esse momento.",
     "errorLiveBusy": "Já há uma gravação ao vivo em andamento (Rebecca Listen).",
