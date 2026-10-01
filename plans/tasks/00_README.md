@@ -33,6 +33,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 - [x] **D3** ¿Se reutiliza el scaffold actual de `src/` o se rehace la fase 1? → afecta 01–04 — **Se reutiliza** (2026-09-27)
 - [x] **D4** ¿`npm run build` debe generar el instalador (criterio §9) o se deja en `build:win`? → afecta 22 — **Se deja en `build:win`** (2026-09-28)
 - [x] **D5** ¿El repo es público o los Releases van en otro repo? → afecta 25 — **Repo público** `Miiichael6/rebeca_writes` (2026-09-28)
+- [x] **D6** Al parar una grabación de micrófono, ¿en qué formato y carpeta se guarda? (propuesta: MP3 en `Documentos\RebeccaWrites\Grabaciones`, cambiable en Configuración) → afecta 29 — **MP3**; carpeta la propuesta, cambiable en Configuración (2026-09-30)
+- [x] **D7** ¿Se graba siempre del micrófono predeterminado de Windows o se añade un selector de entrada en Configuración? → afecta 29 — **Tres fuentes: Computadora, Mi voz y Ambos**, con los dispositivos predeterminados de Windows (2026-09-30)
 
 ## Tablero
 
@@ -67,6 +69,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 26 | [Animaciones y microinteracciones](in_progress/26_animaciones_microinteracciones.md) | 9 Pulido | 22 | 🔄 En progreso |
 | 27 | [Transcripción en vivo desde Rebecca Listen](done/27_transcripcion_en_vivo_desde_rebecca_listen.md) | 9 Pulido | 17, 18, 19 | ✅ Terminada |
 | 28 | [Hexagonal: lo que falta de main](done/28_hexagonal_main_restante.md) | 9 Pulido | — | ✅ Terminada |
+| 29 | [Grabar con el micrófono](pending/29_grabar_con_microfono.md) | 9 Pulido | 27, 28 | ⬜ Pendiente |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -85,4 +88,6 @@ todas → 22 → 23 → 24
               23 → 23.1
         22 → 25 (actualizaciones; primera versión con ellas: v1.1.0)
         22 → 26 (animaciones y Select propio)
+17 + 18 + 19 → 27 (vivo desde Listen) ┐
+                               28 ─┴→ 29 (grabar con micrófono)
 ```
