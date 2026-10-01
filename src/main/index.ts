@@ -23,7 +23,7 @@ import { UpdateService } from './application/updateService'
 import { MediaRegistry } from './domain/mediaRegistry'
 import { whisperBinaries } from './infrastructure/binaries/whisperBinaries'
 import { zipCudaInstaller } from './infrastructure/downloads/zipCudaInstaller'
-import { createArgvHandler } from './infrastructure/electron/argvHandler'
+import { createArgvHandler } from './application/argvHandler'
 import { electronDialogs } from './infrastructure/electron/electronDialogs'
 import { electronShell } from './infrastructure/electron/electronShell'
 import { createElectronUpdater } from './infrastructure/electron/electronUpdater'
@@ -45,8 +45,8 @@ import { JsonQueueRepository } from './infrastructure/persistence/jsonQueueRepos
 import { JsonSettingsRepository } from './infrastructure/persistence/jsonSettingsRepository'
 import { whisperCli } from './infrastructure/whisper/whisperCli'
 import { registerIpcHandlers } from './ipc'
-import { setupLogging } from './logging'
-import { watchNativeTheme } from './theme'
+import { setupLogging } from './infrastructure/electron/logging'
+import { watchNativeTheme } from './infrastructure/electron/theme'
 
 app.setName(APP_NAME)
 // Instancia única (spec §6): una segunda instancia le pasa su argv a esta y se cierra. Va

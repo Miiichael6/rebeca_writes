@@ -18,7 +18,7 @@ export function createElectronUpdater(): Updater {
   let configured = false
   const listeners: (() => void)[] = []
 
-  /** Los oyentes se enganchan al configurar, para no crear `autoUpdater` antes de tiempo. */
+  /** Los oyentes previos se enganchan al configurar, para no crear `autoUpdater` antes de tiempo. */
   function configure(): void {
     if (configured) return
     configured = true
@@ -61,7 +61,9 @@ export function createElectronUpdater(): Updater {
           ),
         error: () => autoUpdater.on('error', listener as UpdaterEvents['error'])
       }
-      listeners.push(attach[event])
+      // Ya configurado: `autoUpdater` existe y el oyente se engancha en el acto.
+      if (configured) attach[event]()
+      else listeners.push(attach[event])
     },
 
     async check() {

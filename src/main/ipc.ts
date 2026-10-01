@@ -14,8 +14,8 @@ import type { QueueService } from './application/queueService'
 import type { TranscriptionManager } from './application/transcriptionManager'
 import type { UpdateService } from './application/updateService'
 import { notify, openFolder } from './infrastructure/electron/systemActions'
-import { logsDir } from './logging'
-import { resolvedTheme } from './theme'
+import { logsDir } from './infrastructure/electron/logging'
+import { resolvedTheme } from './infrastructure/electron/theme'
 
 type Handler<C extends keyof IpcInvokeMap> = (
   event: IpcMainInvokeEvent,

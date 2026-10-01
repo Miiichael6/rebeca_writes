@@ -1,9 +1,9 @@
 import type { QueueAddResult } from '@shared/types'
-import type { LiveControl } from '../../application/liveControl'
-import type { Logger } from '../../application/ports/eventPublisher'
-import type { QueueIntake } from '../../application/queueIntake'
-import { pathsFromArgv } from '../../domain/argvPaths'
-import { isLiveArgv, parseLiveCommand } from '../../domain/liveArgs'
+import type { LiveControl } from './liveControl'
+import type { Logger } from './ports/eventPublisher'
+import type { QueueIntake } from './queueIntake'
+import { pathsFromArgv } from '../domain/argvPaths'
+import { isLiveArgv, parseLiveCommand } from '../domain/liveArgs'
 
 export interface ArgvHandlerDeps {
   live: Pick<LiveControl, 'handle'>

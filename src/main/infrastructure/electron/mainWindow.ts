@@ -7,7 +7,7 @@ import type { WindowBounds } from '@shared/settings'
 import { WINDOW_COLORS } from '@shared/theme'
 import type { Logger } from '../../application/ports/eventPublisher'
 import type { SettingsRepository } from '../../application/ports/settingsRepository'
-import { resolvedTheme, titleBarOverlay } from '../../theme'
+import { resolvedTheme, titleBarOverlay } from './theme'
 
 const MIN_WIDTH = 960
 const MIN_HEIGHT = 600

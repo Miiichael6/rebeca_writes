@@ -14,13 +14,25 @@ function samePath(a: string, b: string): boolean {
  */
 export class LiveControl {
   private session: LiveSession | null = null
+  /** Última orden en curso: cada orden espera a la anterior. */
+  private last: Promise<void> = Promise.resolve()
 
   constructor(
     private readonly deps: LiveDeps,
     private readonly intake: Pick<QueueIntake, 'addPaths'>
   ) {}
 
-  async handle(command: LiveCommand): Promise<void> {
+  /**
+   * Atiende las órdenes de una en una. Así un fin que llega mientras se crea la sesión, o un
+   * segundo inicio, ven la sesión ya creada y no la dejan huérfana.
+   */
+  handle(command: LiveCommand): Promise<void> {
+    const run = this.last.then(() => this.apply(command))
+    this.last = run.catch(() => {})
+    return run
+  }
+
+  private async apply(command: LiveCommand): Promise<void> {
     if (command.kind === 'start') {
       if (this.session && samePath(this.session.pcm, command.pcm)) return
       this.session?.end(null)
