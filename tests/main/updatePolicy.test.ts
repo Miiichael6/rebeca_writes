@@ -4,7 +4,7 @@ import {
   installBlocker,
   shouldAutoCheck,
   updateErrorCode
-} from '../../src/main/services/updatePolicy'
+} from '../../src/main/domain/updatePolicy'
 
 const base = { packaged: true, autoCheck: true, lastCheckAt: null, now: 1_000_000_000 }
 

@@ -5,15 +5,14 @@ import type { AddressInfo } from 'net'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import type { DownloadProgress } from '../../src/main/application/ports/fileDownloader'
+import { DownloadError, partPath } from '../../src/main/domain/downloads'
 import {
   contentRangeStart,
-  DownloadError,
   downloadWithResume,
   hasGgmlHeader,
-  partPath,
-  SpeedMeter,
-  type DownloadProgress
-} from '../../src/main/services/modelDownload'
+  SpeedMeter
+} from '../../src/main/infrastructure/downloads/modelDownload'
 
 const DATA = Buffer.from(Array.from({ length: 64 * 1024 }, (_, i) => i % 251))
 

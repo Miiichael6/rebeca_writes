@@ -5,12 +5,12 @@ import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CudaInstallError } from '../../src/main/domain/downloads'
 import {
-  CudaInstallError,
   installFromZip,
   keepFile,
   VC_RUNTIME
-} from '../../src/main/services/cudaInstall'
+} from '../../src/main/infrastructure/downloads/cudaInstall'
 
 const TAR = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe')
 

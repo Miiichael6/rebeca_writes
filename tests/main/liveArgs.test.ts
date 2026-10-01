@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isLiveArgv, parseLiveCommand } from '../../src/main/live/liveArgs'
+import { isLiveArgv, parseLiveCommand } from '../../src/main/domain/liveArgs'
 
 const exe = 'C:\\RW\\rebeccawrites.exe'
 const pcm = 'C:\\Temp\\rebecca-live\\1790790579084.pcm'

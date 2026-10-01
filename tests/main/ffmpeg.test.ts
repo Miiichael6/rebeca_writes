@@ -8,14 +8,16 @@ import { isChromiumPlayable, mediaFileFilters } from '@shared/formats'
 import {
   conversionErrorCode,
   createProgressParser,
-  ffmpegPath,
   MediaError,
   parseProbeOutput,
+  wavArgs
+} from '../../src/main/domain/media'
+import {
+  ffmpegPath,
   probe,
   toWav,
-  unpackedPath,
-  wavArgs
-} from '../../src/main/services/ffmpeg'
+  unpackedPath
+} from '../../src/main/infrastructure/ffmpeg/ffmpegTools'
 
 // Salida real de ffprobe 4.0.2 (ffprobe-static), recortada a los campos que se leen.
 const MKV_TWO_TRACKS = JSON.stringify({

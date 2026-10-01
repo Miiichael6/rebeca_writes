@@ -1,15 +1,13 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
-vi.mock('electron', () => ({
-  app: { isPackaged: false, getAppPath: () => '', getPath: () => '' }
-}))
-
-const { getWhisperCli, installedBackends, whisperCliPath } =
-  await import('../../src/main/engine/paths')
-const { BackendNotInstalledError } = await import('../../src/main/engine/fallback')
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { BackendNotInstalledError } from '../../src/main/domain/fallback'
+import {
+  getWhisperCli,
+  installedBackends,
+  whisperCliPath
+} from '../../src/main/infrastructure/binaries/binaryPaths'
 
 let dir: string
 let bundled: string

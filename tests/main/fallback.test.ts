@@ -8,7 +8,7 @@ import {
   probeFoundDevice,
   withBackendFallback,
   type LoadAttempt
-} from '../../src/main/engine/fallback'
+} from '../../src/main/domain/fallback'
 
 // Fragmentos reales de whisper-cli b5130 (build cublas-12.4) en una RTX 3050.
 const CUDA_OK = `ggml_cuda_init: found 1 CUDA devices (Total VRAM: 6143 MiB):

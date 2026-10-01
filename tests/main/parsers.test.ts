@@ -4,7 +4,7 @@ import {
   parseDetectedLanguage,
   parseProgress,
   parseSegmentLine
-} from '../../src/main/engine/parsers'
+} from '../../src/main/domain/parsers'
 
 describe('parseSegmentLine', () => {
   it('parsea una línea normal a segundos', () => {

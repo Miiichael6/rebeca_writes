@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { followDetected, isCudaDownloadable, needsDetection } from '../../src/main/engine/detection'
+import { followDetected, isCudaDownloadable, needsDetection } from '../../src/main/domain/detection'
 
 describe('needsDetection', () => {
   it('detecta en el primer arranque', () => {

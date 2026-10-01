@@ -1,193 +1,162 @@
-import { mkdir } from 'fs/promises'
-import {
-  app,
-  BrowserWindow,
-  clipboard,
-  ipcMain,
-  Notification,
-  shell,
-  type IpcMainInvokeEvent
-} from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
+import type { BackendService } from './application/backendService'
+import type { CudaService } from './application/cudaService'
+import type { ExportService } from './application/exportService'
+import type { HistoryService } from './application/historyService'
+import type { LiveControl } from './application/liveControl'
+import type { MediaOpener } from './application/mediaOpener'
+import type { ModelService } from './application/modelService'
+import type { SettingsRepository } from './application/ports/settingsRepository'
+import type { PreviewService } from './application/previewService'
+import type { QueueIntake } from './application/queueIntake'
+import type { QueueService } from './application/queueService'
+import type { TranscriptionManager } from './application/transcriptionManager'
+import type { UpdateService } from './application/updateService'
+import { notify, openFolder } from './infrastructure/electron/systemActions'
 import { logsDir } from './logging'
 import { resolvedTheme } from './theme'
-import { getBackendInfo } from './engine/backend'
-import { cancelTranscription, startTranscription } from './engine/transcribeManager'
-import { cancelLiveSession, currentLiveSession } from './live/liveControl'
-import {
-  clearHistoryEntries,
-  createHistoryEntry,
-  getHistoryEntry,
-  listHistoryEntries,
-  relocateHistoryEntry,
-  removeHistoryEntry,
-  renameHistoryEntry,
-  searchHistoryEntries,
-  showHistoryEntryInFolder,
-  updateHistorySegment
-} from './services/history'
-import {
-  addPathsToQueue,
-  openFilesDialog,
-  openQueueJob,
-  pickFilesToQueue,
-  queue,
-  retranscribeEntry
-} from './services/queue'
-import { saveExport, saveSrtBesideEntry, showExportInFolder } from './services/exporter'
-import { clearPreviewCache, previewCacheSize } from './services/previews'
-import {
-  cancelCudaDownload,
-  cudaPackageStatus,
-  downloadCudaPackage,
-  removeCudaPackage
-} from './services/cudaPackage'
-import { loadSettings, updateSettings } from './services/settings'
-import { checkForUpdates, downloadUpdate, getUpdateStatus, installUpdate } from './services/updater'
-import {
-  addCustomModel,
-  cancelDownload,
-  deleteModel,
-  downloadModel,
-  listModels,
-  modelsDir,
-  pickCustomModelFile
-} from './services/models'
 
 type Handler<C extends keyof IpcInvokeMap> = (
   event: IpcMainInvokeEvent,
   ...args: IpcInvokeMap[C]['args']
 ) => IpcInvokeMap[C]['result'] | Promise<IpcInvokeMap[C]['result']>
 
-/** Notificaciones mostradas: sin una referencia viva, el GC se las lleva y el clic no llega. */
-const notifications = new Set<Notification>()
-
-function notify(window: BrowserWindow | null, title: string, body: string): void {
-  if (!Notification.isSupported()) return
-  const notification = new Notification({ title, body })
-  notifications.add(notification)
-  notification.on('close', () => notifications.delete(notification))
-  notification.on('click', () => {
-    notifications.delete(notification)
-    if (!window || window.isDestroyed()) return
-    if (window.isMinimized()) window.restore()
-    window.show()
-    window.focus()
-  })
-  notification.show()
-}
-
-/** Abre una carpeta de `userData` en el Explorador; la crea si todavía no existe. */
-async function openFolder(dir: string): Promise<void> {
-  await mkdir(dir, { recursive: true })
-  const error = await shell.openPath(dir)
-  if (error) throw new Error(error)
+/** Los casos de uso que atiende `ipc.ts`; se crean en `index.ts`. */
+export interface IpcDeps {
+  settings: SettingsRepository
+  backends: BackendService
+  cuda: CudaService
+  models: ModelService
+  previews: PreviewService
+  opener: MediaOpener
+  history: HistoryService
+  exporter: ExportService
+  queue: QueueService
+  intake: QueueIntake
+  manager: TranscriptionManager
+  live: LiveControl
+  updates: UpdateService
 }
 
 function handle<C extends keyof IpcInvokeMap>(channel: C, handler: Handler<C>): void {
   ipcMain.handle(channel, handler as Parameters<typeof ipcMain.handle>[1])
 }
 
-export function registerIpcHandlers(): void {
+/** La ventana que hizo la petición: dueña de los diálogos que se abran. */
+const ownerOf = (event: IpcMainInvokeEvent): BrowserWindow | null =>
+  BrowserWindow.fromWebContents(event.sender)
+
+/**
+ * Adaptador de entrada: cada canal IPC valida lo mínimo y delega en un caso de uso. Aquí no
+ * hay reglas de negocio.
+ */
+export function registerIpcHandlers(deps: IpcDeps): void {
+  const {
+    settings,
+    backends,
+    cuda,
+    models,
+    previews,
+    history,
+    exporter,
+    queue,
+    intake,
+    manager,
+    live,
+    updates
+  } = deps
+
   handle(IpcChannel.AppGetVersion, () => app.getVersion())
   handle(IpcChannel.AppGetPreferredLanguages, () => {
     const languages = app.getPreferredSystemLanguages()
     return languages.length > 0 ? languages : [app.getLocale()]
   })
   handle(IpcChannel.AppOpenLogs, () => openFolder(logsDir()))
-  handle(IpcChannel.AppGetModelsDir, () => modelsDir())
-  handle(IpcChannel.AppOpenModelsDir, () => openFolder(modelsDir()))
+  handle(IpcChannel.AppGetModelsDir, () => models.dir)
+  handle(IpcChannel.AppOpenModelsDir, () => openFolder(models.dir))
 
   handle(IpcChannel.AppNotify, (event, title, body) =>
-    notify(BrowserWindow.fromWebContents(event.sender), String(title), String(body))
+    notify(ownerOf(event), String(title), String(body))
   )
 
   handle(IpcChannel.ClipboardWriteText, (_event, text) => clipboard.writeText(String(text)))
 
-  handle(IpcChannel.SettingsGet, () => loadSettings())
+  handle(IpcChannel.SettingsGet, () => settings.load())
   // El patch se valida clave por clave en `mergeSettings`: lo inválido se ignora.
-  handle(IpcChannel.SettingsSet, (_event, patch) => updateSettings(patch))
+  handle(IpcChannel.SettingsSet, (_event, patch) => settings.update(patch))
 
   handle(IpcChannel.ThemeGetResolved, () => resolvedTheme())
 
-  handle(IpcChannel.BackendGetInfo, () => getBackendInfo())
-  handle(IpcChannel.BackendCudaStatus, () => cudaPackageStatus())
-  handle(IpcChannel.BackendCudaDownload, () => downloadCudaPackage())
-  handle(IpcChannel.BackendCudaCancel, () => cancelCudaDownload())
-  handle(IpcChannel.BackendCudaRemove, () => removeCudaPackage())
+  handle(IpcChannel.BackendGetInfo, () => backends.info())
+  handle(IpcChannel.BackendCudaStatus, () => cuda.status())
+  handle(IpcChannel.BackendCudaDownload, () => cuda.download())
+  handle(IpcChannel.BackendCudaCancel, () => cuda.cancel())
+  handle(IpcChannel.BackendCudaRemove, () => cuda.remove())
 
-  handle(IpcChannel.ModelsList, () => listModels())
-  handle(IpcChannel.ModelsDownload, (_event, id) => downloadModel(String(id)))
-  handle(IpcChannel.ModelsCancel, (_event, id) => cancelDownload(String(id)))
-  handle(IpcChannel.ModelsDelete, (_event, id) => deleteModel(String(id)))
-  handle(IpcChannel.ModelsPickCustomFile, (event) =>
-    pickCustomModelFile(BrowserWindow.fromWebContents(event.sender))
-  )
+  handle(IpcChannel.ModelsList, () => models.list())
+  handle(IpcChannel.ModelsDownload, (_event, id) => models.download(String(id)))
+  handle(IpcChannel.ModelsCancel, (_event, id) => models.cancelDownload(String(id)))
+  handle(IpcChannel.ModelsDelete, (_event, id) => models.delete(String(id)))
+  handle(IpcChannel.ModelsPickCustomFile, (event) => models.pickCustomFile(ownerOf(event)))
   handle(IpcChannel.ModelsAddCustom, (_event, path, name) =>
-    addCustomModel(String(path), String(name))
+    models.addCustom(String(path), String(name))
   )
 
   handle(IpcChannel.MediaOpenFiles, (event, filterLabels) =>
-    openFilesDialog(BrowserWindow.fromWebContents(event.sender), filterLabels)
+    intake.openFiles(ownerOf(event), filterLabels)
   )
-  handle(IpcChannel.MediaClearPreviewCache, () => clearPreviewCache())
-  handle(IpcChannel.MediaPreviewCacheSize, () => previewCacheSize())
+  handle(IpcChannel.MediaClearPreviewCache, () => previews.clearCache())
+  handle(IpcChannel.MediaPreviewCacheSize, () => previews.cacheSize())
 
-  handle(IpcChannel.HistoryCreate, (_event, input) => createHistoryEntry(input))
+  handle(IpcChannel.HistoryCreate, (_event, input) => history.create(input))
   handle(IpcChannel.HistoryUpdateSegment, (_event, id, index, text) =>
-    updateHistorySegment(id, index, text)
+    history.updateSegment(id, index, text)
   )
-  handle(IpcChannel.HistoryList, () => listHistoryEntries())
-  handle(IpcChannel.HistoryGet, (_event, id) => getHistoryEntry(id))
-  handle(IpcChannel.HistorySearch, (_event, query) => searchHistoryEntries(query))
-  handle(IpcChannel.HistoryRename, (_event, id, displayName) => renameHistoryEntry(id, displayName))
-  handle(IpcChannel.HistoryRemove, (_event, id) => removeHistoryEntry(id))
-  handle(IpcChannel.HistoryClear, () => clearHistoryEntries())
+  handle(IpcChannel.HistoryList, () => history.list())
+  handle(IpcChannel.HistoryGet, (_event, id) => history.get(id))
+  handle(IpcChannel.HistorySearch, (_event, query) => history.search(query))
+  handle(IpcChannel.HistoryRename, (_event, id, displayName) => history.rename(id, displayName))
+  handle(IpcChannel.HistoryRemove, (_event, id) => history.remove(id))
+  handle(IpcChannel.HistoryClear, () => history.clear())
   handle(IpcChannel.HistoryRelocate, (event, id, filterLabels) =>
-    relocateHistoryEntry(BrowserWindow.fromWebContents(event.sender), id, filterLabels)
+    history.relocate(id, () => deps.opener.pickOne(ownerOf(event), filterLabels))
   )
-  handle(IpcChannel.HistoryShowInFolder, (_event, id) => showHistoryEntryInFolder(id))
-  handle(IpcChannel.HistoryRetranscribe, (_event, id) => retranscribeEntry(id))
+  handle(IpcChannel.HistoryShowInFolder, (_event, id) => history.showInFolder(id))
+  handle(IpcChannel.HistoryRetranscribe, (_event, id) => intake.retranscribe(id))
 
   handle(IpcChannel.ExportSave, (event, entryId, format, segments, options, filterLabel) =>
-    saveExport(
-      BrowserWindow.fromWebContents(event.sender),
-      entryId,
-      format,
-      segments,
-      options,
-      filterLabel
-    )
+    exporter.save(ownerOf(event), entryId, format, segments, options, filterLabel)
   )
   handle(IpcChannel.ExportSaveSrtBeside, (_event, entryId, segments, overwrite) =>
-    saveSrtBesideEntry(entryId, segments, overwrite)
+    exporter.saveSrtBeside(entryId, segments, overwrite)
   )
-  handle(IpcChannel.ExportShowInFolder, (_event, path) => showExportInFolder(path))
+  handle(IpcChannel.ExportShowInFolder, (_event, path) => exporter.showInFolder(path))
 
-  handle(IpcChannel.QueueGet, () => queue().getState())
+  handle(IpcChannel.QueueGet, () => queue.getState())
   handle(IpcChannel.QueuePickFiles, (event, filterLabels) =>
-    pickFilesToQueue(BrowserWindow.fromWebContents(event.sender), filterLabels)
+    intake.pickFiles(ownerOf(event), filterLabels)
   )
-  handle(IpcChannel.QueueAddPaths, (_event, paths) => addPathsToQueue(paths))
-  handle(IpcChannel.QueueRemove, (_event, id) => queue().remove(String(id)))
+  handle(IpcChannel.QueueAddPaths, (_event, paths) => intake.addPaths(paths))
+  handle(IpcChannel.QueueRemove, (_event, id) => queue.remove(String(id)))
   handle(IpcChannel.QueueReorder, (_event, ids) =>
-    queue().reorder(Array.isArray(ids) ? ids.map(String) : [])
+    queue.reorder(Array.isArray(ids) ? ids.map(String) : [])
   )
-  handle(IpcChannel.QueuePause, () => queue().pause())
-  handle(IpcChannel.QueueResume, () => queue().resume())
-  handle(IpcChannel.QueueDiscard, () => queue().discard())
-  handle(IpcChannel.QueueCancelCurrent, () => queue().cancelCurrent())
-  handle(IpcChannel.QueueClearCompleted, () => queue().clearCompleted())
-  handle(IpcChannel.QueueOpenJob, (_event, id) => openQueueJob(id))
+  handle(IpcChannel.QueuePause, () => queue.pause())
+  handle(IpcChannel.QueueResume, () => queue.resume())
+  handle(IpcChannel.QueueDiscard, () => queue.discard())
+  handle(IpcChannel.QueueCancelCurrent, () => queue.cancelCurrent())
+  handle(IpcChannel.QueueClearCompleted, () => queue.clearCompleted())
+  handle(IpcChannel.QueueOpenJob, (_event, id) => intake.openJob(id))
 
-  handle(IpcChannel.TranscribeStart, (_event, job) => startTranscription(job))
+  handle(IpcChannel.TranscribeStart, (_event, job) => manager.start(job))
   handle(IpcChannel.TranscribeCancel, (_event, jobId) => {
-    if (!cancelLiveSession(String(jobId))) cancelTranscription(String(jobId))
+    if (!live.cancel(String(jobId))) manager.cancel(String(jobId))
   })
-  handle(IpcChannel.LiveCurrent, () => currentLiveSession())
+  handle(IpcChannel.LiveCurrent, () => live.current())
 
-  handle(IpcChannel.UpdatesGetStatus, () => getUpdateStatus())
-  handle(IpcChannel.UpdatesCheck, () => checkForUpdates())
-  handle(IpcChannel.UpdatesDownload, () => downloadUpdate())
-  handle(IpcChannel.UpdatesInstall, () => installUpdate())
+  handle(IpcChannel.UpdatesGetStatus, () => updates.getStatus())
+  handle(IpcChannel.UpdatesCheck, () => updates.check())
+  handle(IpcChannel.UpdatesDownload, () => updates.download())
+  handle(IpcChannel.UpdatesInstall, () => updates.install())
 }

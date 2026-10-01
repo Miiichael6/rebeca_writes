@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mimeTypeFor, parseRange } from '../../src/main/services/mediaRange'
+import { mimeTypeFor, parseRange } from '../../src/main/domain/mediaRange'
 
 describe('parseRange', () => {
   const size = 1000

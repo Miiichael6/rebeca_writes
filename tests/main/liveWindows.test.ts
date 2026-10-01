@@ -5,8 +5,8 @@ import {
   nextWindowLength,
   SAMPLE_RATE,
   shiftSegments
-} from '../../src/main/live/liveWindows'
-import { pcmToWav } from '../../src/main/live/pcmWav'
+} from '../../src/main/domain/liveWindows'
+import { pcmToWav } from '../../src/main/domain/pcmWav'
 
 /** Audio de prueba: tono fuerte con un hueco de silencio en `gapAt` (segundos). */
 function audio(seconds: number, gapAt?: number): Int16Array {

@@ -5,17 +5,17 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { MediaInfo } from '@shared/types'
-import { ffmpegPath, probe } from '../../src/main/services/ffmpeg'
+import { ffmpegPath, probe } from '../../src/main/infrastructure/ffmpeg/ffmpegTools'
+import type { PreviewCacheEvents } from '../../src/main/application/ports/previewGenerator'
 import {
   audioEncoders,
   audioPreviewArgs,
   pickEvictions,
-  PreviewCache,
   previewKey,
   previewPlan,
-  videoPreviewArgs,
-  type PreviewCacheEvents
-} from '../../src/main/services/previewCache'
+  videoPreviewArgs
+} from '../../src/main/domain/previewPlan'
+import { PreviewCache } from '../../src/main/infrastructure/ffmpeg/previewCache'
 
 function info(
   container: string,

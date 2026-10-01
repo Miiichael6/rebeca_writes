@@ -1,27 +1,52 @@
-import { app, shell, BrowserWindow, nativeTheme, screen } from 'electron'
+import { availableParallelism } from 'os'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
-import { APP_ID, APP_NAME, appTitle } from '@shared/app'
+import { app, BrowserWindow, nativeTheme } from 'electron'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
 import log from 'electron-log/main'
-import { registerIpcHandlers } from './ipc'
-import { getBackendInfo } from './engine/backend'
-import { resolvedTheme, titleBarOverlay, watchNativeTheme } from './theme'
-import { WINDOW_COLORS } from '@shared/theme'
-import type { WindowBounds } from '@shared/settings'
-import type { QueueAddResult } from '@shared/types'
-import { setupLogging } from './logging'
-import { flushAllWrites, hasPendingWrites } from './services/fsAtomic'
-import { handleMediaProtocol, registerMediaScheme } from './services/mediaProtocol'
-import { disposePreviews } from './services/previews'
-import { addPathsToQueue, initQueue, queue } from './services/queue'
-import { pathsFromArgv } from './services/fileInput'
-import { isLiveArgv, parseLiveCommand } from './live/liveArgs'
-import { handleLiveCommand, stopLiveSessions } from './live/liveControl'
+import { APP_ID, APP_NAME } from '@shared/app'
 import { IpcChannel } from '@shared/ipc'
-import { cancelAllTranscriptions } from './engine/transcribeManager'
-import { scheduleAutoCheck } from './services/updater'
-import { getSettings, loadSettings, onSettingsChanged, updateSettings } from './services/settings'
+import { BackendService } from './application/backendService'
+import { CudaService } from './application/cudaService'
+import { ExportService } from './application/exportService'
+import { HistoryService } from './application/historyService'
+import { LiveControl } from './application/liveControl'
+import { MediaOpener } from './application/mediaOpener'
+import { ModelService } from './application/modelService'
+import { PipelineChunkTranscriber } from './application/pipelineChunkTranscriber'
+import { PreviewService } from './application/previewService'
+import { QueueIntake } from './application/queueIntake'
+import { QueueJobRunner } from './application/queueJobRunner'
+import { QueueService } from './application/queueService'
+import { TranscriptionManager } from './application/transcriptionManager'
+import { TranscriptionPipeline } from './application/transcriptionPipeline'
+import { UpdateService } from './application/updateService'
+import { MediaRegistry } from './domain/mediaRegistry'
+import { whisperBinaries } from './infrastructure/binaries/whisperBinaries'
+import { zipCudaInstaller } from './infrastructure/downloads/zipCudaInstaller'
+import { createArgvHandler } from './infrastructure/electron/argvHandler'
+import { electronDialogs } from './infrastructure/electron/electronDialogs'
+import { electronShell } from './infrastructure/electron/electronShell'
+import { createElectronUpdater } from './infrastructure/electron/electronUpdater'
+import { MainWindow } from './infrastructure/electron/mainWindow'
+import { handleMediaProtocol, registerMediaScheme } from './infrastructure/electron/mediaProtocol'
+import { netDownloader } from './infrastructure/electron/netDownloader'
+import { windowPublisher } from './infrastructure/electron/windowPublisher'
+import { ffmpegMediaTools } from './infrastructure/ffmpeg/ffmpegTools'
+import { PreviewCache } from './infrastructure/ffmpeg/previewCache'
+import { nodeDisk } from './infrastructure/fs/nodeDisk'
+import { fsPathExpander } from './infrastructure/fs/expandPaths'
+import { createTempWorkspace } from './infrastructure/fs/tempWorkspace'
+import { createFsPcmFiles } from './infrastructure/live/fsPcmFiles'
+import { createHistoryMedia } from './infrastructure/media/historyMediaAdapter'
+import { flushAllWrites, hasPendingWrites } from './infrastructure/persistence/fsAtomic'
+import { JsonHistoryRepository } from './infrastructure/persistence/jsonHistoryRepository'
+import { createJsonModelStore } from './infrastructure/persistence/jsonModelStore'
+import { JsonQueueRepository } from './infrastructure/persistence/jsonQueueRepository'
+import { JsonSettingsRepository } from './infrastructure/persistence/jsonSettingsRepository'
+import { whisperCli } from './infrastructure/whisper/whisperCli'
+import { registerIpcHandlers } from './ipc'
+import { setupLogging } from './logging'
+import { watchNativeTheme } from './theme'
 
 app.setName(APP_NAME)
 // Instancia única (spec §6): una segunda instancia le pasa su argv a esta y se cierra. Va
@@ -31,161 +56,155 @@ if (!primary) app.quit()
 setupLogging()
 registerMediaScheme()
 
-const MIN_WIDTH = 960
-const MIN_HEIGHT = 600
-/** Espera tras el último resize/move antes de guardar el tamaño de la ventana. */
-const SAVE_BOUNDS_MS = 500
+// --- Composición: todas las instancias de main se crean aquí y solo aquí. ---
 
-/** Tamaño y posición guardados; la posición se descarta si ya no cae en ningún monitor. */
-function initialBounds(
-  saved: WindowBounds
-): Electron.Rectangle | { width: number; height: number } {
-  const width = Math.max(MIN_WIDTH, saved.width)
-  const height = Math.max(MIN_HEIGHT, saved.height)
-  if (saved.x === undefined || saved.y === undefined) return { width, height }
-  const bounds = { x: saved.x, y: saved.y, width, height }
-  const { workArea } = screen.getDisplayMatching(bounds)
-  // La barra de título tiene que quedar a la vista para poder arrastrar la ventana.
-  const visible =
-    bounds.x < workArea.x + workArea.width - 100 &&
-    bounds.x + bounds.width > workArea.x + 100 &&
-    bounds.y >= workArea.y - 10 &&
-    bounds.y < workArea.y + workArea.height - 50
-  return visible ? bounds : { width, height }
+const userData = app.getPath('userData')
+/** `resources/bin`: en producción los binarios quedan fuera del asar (`asarUnpack: resources/**`). */
+const bundledBinDir = app.isPackaged
+  ? join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'bin')
+  : join(app.getAppPath(), 'resources', 'bin')
+/** Backends descargados desde la app (CUDA, tarea 23.1): `userData/backends/<backend>`. */
+const downloadedBinDir = join(userData, 'backends')
+
+const publisher = windowPublisher
+
+const settings = new JsonSettingsRepository({
+  path: join(userData, 'settings.json'),
+  cpuCount: availableParallelism(),
+  onCorrupt: (backup, err) => log.error(`settings.json corrupto; respaldado en ${backup}`, err)
+})
+settings.onChanged((next) => publisher.publish(IpcChannel.SettingsChanged, next))
+
+const history = new JsonHistoryRepository({
+  dir: join(userData, 'history'),
+  onCorrupt: (backup, err) => log.error(`Historial corrupto; respaldado en ${backup}`, err)
+})
+const queueStore = new JsonQueueRepository({
+  path: join(userData, 'queue.json'),
+  onCorrupt: (backup, err) => log.error(`Cola corrupta; respaldada en ${backup}`, err)
+})
+
+const binaries = whisperBinaries([bundledBinDir, downloadedBinDir])
+const temp = createTempWorkspace(join(app.getPath('temp'), APP_NAME.toLowerCase()))
+
+const backends = new BackendService({ binaries, settings, publisher, log })
+const models = new ModelService({
+  store: createJsonModelStore(join(userData, 'models')),
+  disk: nodeDisk,
+  downloader: netDownloader,
+  dialogs: electronDialogs,
+  publisher,
+  log
+})
+const cuda = new CudaService({
+  backends,
+  binaries,
+  settings,
+  disk: nodeDisk,
+  downloader: netDownloader,
+  installer: zipCudaInstaller,
+  publisher,
+  log,
+  downloadedRoot: downloadedBinDir,
+  cpuBinDir: join(bundledBinDir, 'cpu')
+})
+
+const registry = new MediaRegistry()
+const previewCache = new PreviewCache({
+  dir: join(userData, 'preview-cache'),
+  // `previewCacheMaxGB` ya viene validado (> 0) desde settings.
+  maxBytes: async () => (await settings.load()).previewCacheMaxGB * 1024 ** 3
+})
+const previews = new PreviewService(previewCache, registry, publisher, log)
+const opener = new MediaOpener(registry, ffmpegMediaTools, previews, electronDialogs, log)
+
+const pipelineDeps = {
+  media: ffmpegMediaTools,
+  temp,
+  whisper: whisperCli,
+  binaries,
+  backends,
+  models,
+  log
 }
+const manager = new TranscriptionManager({
+  engine: new TranscriptionPipeline(pipelineDeps),
+  history,
+  publisher,
+  log
+})
+// La transcripción en vivo tiene su propio pipeline: sus eventos no llegan al renderer tal cual.
+const liveChunks = new PipelineChunkTranscriber(new TranscriptionPipeline(pipelineDeps))
 
-/** Guarda tamaño, posición y maximizado. Se usa `getNormalBounds` para no guardar el tamaño maximizado. */
-function trackBounds(window: BrowserWindow): void {
-  let timer: NodeJS.Timeout | null = null
-  const save = (): void => {
-    if (timer) clearTimeout(timer)
-    timer = null
-    if (window.isDestroyed() || window.isMinimized()) return
-    const { x, y, width, height } = window.getNormalBounds()
-    updateSettings({ window: { x, y, width, height, maximized: window.isMaximized() } }).catch(
-      (err) => log.error('No se pudo guardar el tamaño de la ventana', err)
-    )
+const exporter = new ExportService({
+  history,
+  disk: nodeDisk,
+  dialogs: electronDialogs,
+  shell: electronShell
+})
+const queue = new QueueService({
+  store: queueStore,
+  runner: new QueueJobRunner({
+    manager,
+    history,
+    media: ffmpegMediaTools,
+    exporter,
+    settings,
+    disk: nodeDisk,
+    publisher,
+    log
+  }),
+  notifier: {
+    onChange: (state) => publisher.publish(IpcChannel.QueueChanged, state),
+    onDrained: (event) => publisher.publish(IpcChannel.QueueDrained, event)
   }
-  const schedule = (): void => {
-    if (timer) clearTimeout(timer)
-    timer = setTimeout(save, SAVE_BOUNDS_MS)
-  }
-  window.on('resize', schedule)
-  window.on('move', schedule)
-  window.on('maximize', save)
-  window.on('unmaximize', save)
-  window.on('close', save)
-}
+})
+const intake = new QueueIntake({ queue, settings, history, opener, expander: fsPathExpander })
 
-/** La ventana principal, para enfocarla y avisarle desde fuera de `createWindow`. */
-let appWindow: BrowserWindow | null = null
+const live = new LiveControl(
+  {
+    history,
+    publisher,
+    log,
+    settings: () => settings.get(),
+    hold: (id) => manager.hold(id),
+    chunks: liveChunks,
+    files: createFsPcmFiles(temp.dir),
+    mediaDuration: async (path) =>
+      (await ffmpegMediaTools.probe(path).catch(() => null))?.durationSec ?? null,
+    currentBackend: async () => (await backends.info()).backend
+  },
+  intake
+)
 
-/**
- * "Abrir con" o arrastrar al ícono: lo que venga en el argv va a la cola. Las órdenes en vivo
- * de Rebecca Listen (`--live-*`, tarea 27) van a su sesión y nunca a la cola.
- */
-async function queueFromArgv(argv: readonly string[], cwd: string): Promise<QueueAddResult | null> {
-  const live = parseLiveCommand(argv)
-  if (live) {
-    log.info(`Orden en vivo recibida: ${live.kind} ${live.pcm}`)
-    await handleLiveCommand(live).catch((err) =>
-      log.error('No se pudo atender la orden en vivo', err)
-    )
-    return null
-  }
-  if (isLiveArgv(argv)) {
-    log.warn(`Orden en vivo sin entender: ${JSON.stringify(argv)}`)
-    return null
-  }
-  // Sin empaquetar, `electron .` pasa la carpeta del proyecto como argumento: no es un "Abrir con".
-  if (!app.isPackaged) return null
-  const paths = pathsFromArgv(argv, cwd, app.getAppPath())
-  if (paths.length === 0) return null
-  log.info(`Archivos recibidos por línea de comandos: ${paths.join(', ')}`)
-  return addPathsToQueue(paths).catch((err) => {
-    log.error('No se pudieron encolar los archivos recibidos', err)
-    return null
-  })
-}
+const updates = new UpdateService({
+  updater: createElectronUpdater(),
+  settings,
+  disk: nodeDisk,
+  publisher,
+  log,
+  dataDir: userData,
+  busy: () => ({ transcribing: manager.isTranscribing(), cudaJob: cuda.isBusy() })
+})
 
-function focusAppWindow(): void {
-  if (!appWindow || appWindow.isDestroyed()) return
-  if (appWindow.isMinimized()) appWindow.restore()
-  appWindow.show()
-  appWindow.focus()
-}
+const mainWindow = new MainWindow(settings, log)
+const queueFromArgv = createArgvHandler({
+  live,
+  intake,
+  log,
+  packaged: app.isPackaged,
+  appPath: app.getAppPath()
+})
 
 app.on('second-instance', (_event, argv, workingDirectory) => {
-  focusAppWindow()
+  mainWindow.focus()
   void queueFromArgv(argv, workingDirectory).then((result) => {
-    if (result && appWindow && !appWindow.isDestroyed()) {
-      appWindow.webContents.send(IpcChannel.QueueFilesReceived, result)
-    }
+    if (result) mainWindow.current()?.webContents.send(IpcChannel.QueueFilesReceived, result)
   })
 })
 
-function createWindow(): void {
-  const theme = resolvedTheme()
-  const saved = getSettings().window
-
-  // Ventana sin marco: la barra de título la dibuja el renderer (TitleBar) y Windows pone
-  // los botones nativos min/max/cerrar encima (titleBarOverlay).
-  const mainWindow = new BrowserWindow({
-    // Solo el servidor de desarrollo define esta variable (ni el instalador ni `npm start`).
-    title: appTitle(Boolean(process.env['ELECTRON_RENDERER_URL'])),
-    ...initialBounds(saved),
-    minWidth: MIN_WIDTH,
-    minHeight: MIN_HEIGHT,
-    show: false,
-    autoHideMenuBar: true,
-    backgroundColor: WINDOW_COLORS[theme].background,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: titleBarOverlay(theme),
-    icon,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true
-    }
-  })
-
-  mainWindow.on('ready-to-show', () => {
-    if (saved.maximized) mainWindow.maximize()
-    mainWindow.show()
-  })
-  trackBounds(mainWindow)
-
-  // window.open nunca abre ventanas nuevas; los enlaces https van al navegador del sistema.
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https://')) shell.openExternal(url)
-    return { action: 'deny' }
-  })
-
-  // El renderer no puede navegar fuera de la app (solo recargas del propio origen en dev).
-  mainWindow.webContents.on('will-navigate', (event, url) => {
-    const devUrl = process.env['ELECTRON_RENDERER_URL']
-    if (is.dev && devUrl && url.startsWith(devUrl)) return
-    event.preventDefault()
-  })
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
-  appWindow = mainWindow
-  mainWindow.on('closed', () => (appWindow = null))
-}
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   if (!primary) return
-  // Set app user model id for windows
   electronApp.setAppUserModelId(APP_ID)
 
   // Default open or close DevTools by F12 in development
@@ -196,25 +215,48 @@ app.whenReady().then(async () => {
   })
 
   // Antes de la ventana: de aquí salen el tema y el tamaño con que se abre.
-  const settings = await loadSettings().catch((err) => {
+  const loaded = await settings.load().catch((err) => {
     log.error('No se pudo leer settings.json; se usan los valores por defecto', err)
     return null
   })
-  if (settings) nativeTheme.themeSource = settings.theme
+  if (loaded) nativeTheme.themeSource = loaded.theme
   // Cambiar themeSource dispara nativeTheme 'updated' → watchNativeTheme recolorea la ventana.
-  onSettingsChanged(({ theme }) => {
+  settings.onChanged(({ theme }) => {
     if (nativeTheme.themeSource !== theme) nativeTheme.themeSource = theme
   })
 
-  handleMediaProtocol()
-  registerIpcHandlers()
-  initQueue()
+  handleMediaProtocol((id) => registry.resolve(id))
+  registerIpcHandlers({
+    settings,
+    backends,
+    cuda,
+    models,
+    previews,
+    opener,
+    history: new HistoryService(
+      history,
+      createHistoryMedia({
+        registry,
+        opener,
+        previews,
+        disk: nodeDisk,
+        shell: electronShell
+      })
+    ),
+    exporter,
+    queue,
+    intake,
+    manager,
+    live,
+    updates
+  })
+  queue.init().catch((err) => log.error('No se pudo leer la cola', err))
   watchNativeTheme()
   // Autodetección del backend en segundo plano; la ventana no la espera.
-  getBackendInfo().catch((err) => log.error('No se pudo resolver el backend', err))
+  backends.info().catch((err) => log.error('No se pudo resolver el backend', err))
 
-  createWindow()
-  scheduleAutoCheck()
+  mainWindow.create()
+  updates.scheduleAutoCheck()
   // Arranque en frío con archivos ("Abrir con"). Si la cola pregunta si retomar, esperan a
   // la respuesta y "Descartar" no los quita.
   void queueFromArgv(process.argv, process.cwd())
@@ -222,7 +264,7 @@ app.whenReady().then(async () => {
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) mainWindow.create()
   })
 })
 
@@ -230,15 +272,15 @@ app.whenReady().then(async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('will-quit', () => {
-  disposePreviews()
-  cancelAllTranscriptions()
-  stopLiveSessions()
+  previews.dispose()
+  manager.cancelAll()
+  live.stop()
 })
 
 // Settings, historial y cola se guardan con debounce: al salir se escribe lo pendiente.
 let writesFlushed = false
 app.on('before-quit', (event) => {
-  queue().shutdown()
+  queue.shutdown()
   if (writesFlushed || !hasPendingWrites()) return
   event.preventDefault()
   flushAllWrites()

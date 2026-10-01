@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { QueueJob, QueueState } from '@shared/types'
-import {
-  QueueService,
-  type QueueDeps,
-  type RunHooks,
-  type RunOutcome
-} from '../../src/main/services/queueService'
+import { QueueService, type QueueDeps } from '../../src/main/application/queueService'
+import type { RunHooks, RunOutcome } from '../../src/main/application/ports/queueRunner'
 
 const frozen = { model: 'small', language: 'es', translate: false }
 const files = (...names: string[]): { filePath: string; fileName: string }[] =>
@@ -41,17 +37,18 @@ function setup(options: { saved?: QueueJob[]; skip?: (job: QueueJob) => boolean 
       load: async () => options.saved ?? [],
       save: (jobs) => (savedJobs = jobs().map((j) => ({ ...j })))
     },
-    run: (job, hooks) =>
-      new Promise((resolve) => {
-        const pending = { job, hooks, finish: resolve }
-        runs.push(pending)
-        waiting.shift()?.(pending)
-      }),
-    cancel,
-    waitIdle: async () => {},
-    shouldSkip: async (job) => options.skip?.(job) ?? false,
-    onChange: (state) => states.push(state),
-    onDrained: drained,
+    runner: {
+      run: (job, hooks) =>
+        new Promise((resolve) => {
+          const pending = { job, hooks, finish: resolve }
+          runs.push(pending)
+          waiting.shift()?.(pending)
+        }),
+      cancel,
+      waitIdle: async () => {},
+      shouldSkip: async (job) => options.skip?.(job) ?? false
+    },
+    notifier: { onChange: (state) => states.push(state), onDrained: drained },
     now: () => 1000
   }
   const queue = new QueueService(deps)

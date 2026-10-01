@@ -3,7 +3,8 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { hasMediaExtension } from '@shared/formats'
-import { expandPaths, pathsFromArgv } from '../../src/main/services/fileInput'
+import { pathsFromArgv } from '../../src/main/domain/argvPaths'
+import { expandPaths } from '../../src/main/infrastructure/fs/expandPaths'
 
 let root: string
 

@@ -8,7 +8,7 @@ import {
   hasPendingWrites,
   readJsonSafe,
   writeJsonAtomic
-} from '../../src/main/services/fsAtomic'
+} from '../../src/main/infrastructure/persistence/fsAtomic'
 
 let dir: string
 

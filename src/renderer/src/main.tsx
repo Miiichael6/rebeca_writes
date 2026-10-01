@@ -8,7 +8,7 @@ import './styles/app.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App'
+import App from './app'
 import { APP_NAME } from '@shared/app'
 import { initI18n } from './i18n'
 import { loadSettings } from './store/settings'

@@ -3,15 +3,18 @@ import { mkdtemp, open, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { mediaUrl } from '@shared/media'
-import { createMediaHandler } from '../../src/main/services/mediaHandler'
-import { registerMedia, resolveMedia, unregisterMedia } from '../../src/main/services/mediaRegistry'
+import { createMediaHandler } from '../../src/main/infrastructure/media/mediaHandler'
+import { MediaRegistry } from '../../src/main/domain/mediaRegistry'
 
 const GB = 1024 * 1024 * 1024
 
 let dir: string
 let smallPath: string
 let bigPath: string
-const handler = createMediaHandler(resolveMedia)
+const registry = new MediaRegistry()
+const registerMedia = (path: string): string => registry.register(path)
+const unregisterMedia = (id: string): void => registry.unregister(id)
+const handler = createMediaHandler((id) => registry.resolve(id))
 
 function get(url: string, range?: string): Promise<Response> {
   return handler(new Request(url, { headers: range ? { Range: range } : {} }))
