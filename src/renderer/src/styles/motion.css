@@ -119,25 +119,11 @@
   }
 }
 
-/* ...la onda se encoge hacia el micrófono, que se la traga... */
+/* ...y la onda se encoge hacia el micrófono, que se la traga. */
 @keyframes dock-eaten {
   to {
     opacity: 0;
     transform: scaleX(0);
-  }
-}
-
-/* ...y el micrófono da un bocado al tragársela. */
-@keyframes dock-gulp {
-  0%,
-  60% {
-    transform: scale(1);
-  }
-  80% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 
