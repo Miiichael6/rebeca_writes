@@ -66,7 +66,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 25 | [Publicación y actualizaciones automáticas](in_progress/25_actualizaciones_automaticas.md) | 8 Distribución | 22 | 🔄 En progreso |
 | 26 | [Animaciones y microinteracciones](in_progress/26_animaciones_microinteracciones.md) | 9 Pulido | 22 | 🔄 En progreso |
 | 27 | [Transcripción en vivo desde Rebecca Listen](done/27_transcripcion_en_vivo_desde_rebecca_listen.md) | 9 Pulido | 17, 18, 19 | ✅ Terminada |
-| 28 | [Hexagonal: lo que falta de main](in_progress/28_hexagonal_main_restante.md) | 9 Pulido | — | 🔄 En progreso |
+| 28 | [Hexagonal: lo que falta de main](done/28_hexagonal_main_restante.md) | 9 Pulido | — | ✅ Terminada |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
