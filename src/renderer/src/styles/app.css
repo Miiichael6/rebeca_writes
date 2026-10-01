@@ -134,7 +134,7 @@
   flex-direction: column;
 }
 
-.sidebar.collapsed .sidebar-actions .btn:first-child {
+.sidebar.collapsed .sidebar-actions .sidebar-open-file {
   flex: none;
 }
 
@@ -183,7 +183,8 @@
   gap: 8px;
 }
 
-.sidebar-actions .btn:first-child {
+/* "Abrir archivo" ocupa el ancho que sobra; el botón de plegar y el de borrar quedan cuadrados. */
+.sidebar-actions .sidebar-open-file {
   flex: 1;
 }
 

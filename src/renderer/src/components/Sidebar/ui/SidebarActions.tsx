@@ -73,6 +73,7 @@ export function SidebarActions({
         onClick={layout.toggleCollapsed}
       />
       <Button
+        className="sidebar-open-file"
         icon={<FolderOpen size={16} strokeWidth={1.5} />}
         title={`${t('sidebar.openFile')} (Ctrl+O)`}
         aria-label={collapsed ? t('sidebar.openFile') : undefined}
