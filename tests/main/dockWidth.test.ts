@@ -22,4 +22,14 @@ describe('dockWidth', () => {
   it('la pregunta ocupa más que la onda', () => {
     expect(dockWidth(QUESTION)).toBeGreaterThan(dockWidth({ ...QUESTION, question: null }))
   })
+
+  it('"¿Grabar reunión?" es más larga que "¿Salir?" y deja más hueco', () => {
+    const meeting: DockView = {
+      ...QUESTION,
+      question: 'meeting',
+      left: 'dismissMeeting',
+      right: 'recordMeeting'
+    }
+    expect(dockWidth(meeting)).toBeGreaterThan(dockWidth(QUESTION))
+  })
 })
