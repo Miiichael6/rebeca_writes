@@ -109,6 +109,26 @@
   }
 }
 
+/* La píldora se encoge hasta ser una gota. */
+@keyframes dock-pill-contract {
+  to {
+    width: 28px;
+    padding: 0;
+  }
+}
+
+/* La gota cae sobre el borde: se aplasta, rebota un poco y se asienta como barra. */
+@keyframes dock-bar-land {
+  from {
+    opacity: 0.6;
+    transform: scale(2.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.8);
+  }
+}
+
 @keyframes pill-pop {
   from {
     opacity: 0;

@@ -1122,6 +1122,28 @@
   transform-origin: center bottom;
 }
 
+/* Contrayéndose: se encoge hacia la barra hasta ser una gota y el contenido se desvanece. */
+.edge-pill.edge-pill-contract {
+  animation: dock-pill-contract var(--duration-slow) ease-in forwards;
+  overflow: hidden;
+}
+
+.edge-pill-contract > * {
+  animation: fade-out var(--duration-fast) forwards;
+}
+
+.dock[data-edge='right'] .edge-pill-area {
+  justify-content: flex-end;
+}
+
+.dock[data-edge='left'] .edge-pill-area {
+  justify-content: flex-start;
+}
+
+.dock:is([data-edge='top'], [data-edge='bottom']) .edge-pill-area {
+  justify-content: center;
+}
+
 /* Escondida, toda la ventana (del tamaño de la barra) es una barra negra; mientras entra
    deslizándose al tamaño de la píldora, una franja del lado que asoma (el contrario al borde),
    tan gruesa como lo que asoma (PEEK_PX) y tan larga como la barra (BAR_PX). */
@@ -1129,9 +1151,11 @@
   position: fixed;
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: #000;
+  animation: dock-bar-land var(--duration-slow) var(--ease-spring);
 }
 
 .dock[data-edge='right'] .edge-pill-bar {
+  transform-origin: right center;
   inset: 0 auto 0 0;
   width: 6px;
   border-right: none;
@@ -1139,6 +1163,7 @@
 }
 
 .dock[data-edge='left'] .edge-pill-bar {
+  transform-origin: left center;
   inset: 0 0 0 auto;
   width: 6px;
   border-left: none;
@@ -1146,6 +1171,7 @@
 }
 
 .dock[data-edge='top'] .edge-pill-bar {
+  transform-origin: center top;
   bottom: 0;
   width: 48px;
   height: 6px;
@@ -1154,6 +1180,7 @@
 }
 
 .dock[data-edge='bottom'] .edge-pill-bar {
+  transform-origin: center bottom;
   top: 0;
   width: 48px;
   height: 6px;

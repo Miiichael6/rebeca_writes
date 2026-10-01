@@ -1,6 +1,6 @@
 import { BrowserWindow, screen } from 'electron'
 import { IpcChannel } from '@shared/ipc'
-import type { DockPosition, DockView } from '@shared/dock'
+import { DOCK_CONTRACT_MS, type DockPosition, type DockView } from '@shared/dock'
 import type { DockSurface } from '../../application/ports/dockSurface'
 import { dockWidth } from '../../domain/dock/dockWidth'
 import { contains, dockBounds, tuckedBounds, type Area, type Point } from '../../domain/dock/edge'
@@ -68,7 +68,7 @@ function slideWindow(
 
 /**
  * Adaptador de `DockSurface` sobre la ventana del dock, en el borde que dice `position()`
- * (tarea 33). Sale y entra deslizándose desde la barra; si la posición cambia, salta a la nueva.
+ * (tarea 33). Sale deslizándose desde la barra; para entrar, la píldora se contrae como una gota y se desliza; si la posición cambia, salta a la nueva.
  */
 export class ElectronDockSurface implements DockSurface {
   private window: BrowserWindow | null = null
@@ -126,10 +126,23 @@ export class ElectronDockSurface implements DockSurface {
     const to = view.out ? dockBounds(area, width, position) : tucked
     const final = view.out ? to : dockBounds(area, null, position)
     this.atEdge = false
-    this.stopSlide = slideWindow(window, from, to, final, () => {
+    const done = (): void => {
       this.atEdge = !view.out
       this.stopSlide = null
-    })
+    }
+    if (view.out) {
+      this.stopSlide = slideWindow(window, from, to, final, done)
+      return
+    }
+    // Al esconderse, primero la píldora se contrae como una gota (la anima el renderer).
+    let stopMoving: (() => void) | null = null
+    const wait = setTimeout(() => {
+      stopMoving = slideWindow(window, from, to, final, done)
+    }, DOCK_CONTRACT_MS)
+    this.stopSlide = () => {
+      clearTimeout(wait)
+      stopMoving?.()
+    }
   }
 
   /** La posición cambió en Configuración: sin deslizar por media pantalla, aparece en la nueva. */

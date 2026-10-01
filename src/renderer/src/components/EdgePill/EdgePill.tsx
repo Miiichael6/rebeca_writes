@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { DOCK_CONTRACT_MS } from '@shared/dock'
 
 /** Alturas de la onda quieta, en % del centro de la píldora (las de Rebecca Listen). */
 const BARS = [30, 55, 80, 100, 70, 90, 60, 40, 25]
@@ -61,6 +63,27 @@ function PillButton({ button }: { button: EdgePillButton }): React.JSX.Element {
 }
 
 /**
+ * Al pasar de fuera a escondida, la píldora sigue dibujada `DOCK_CONTRACT_MS` más para
+ * contraerse como una gota antes de volverse la barra (tarea 34).
+ */
+function useContractingAsDrop(collapsed: boolean): boolean {
+  const [contracting, setContracting] = useState(false)
+  const wasCollapsed = useRef(collapsed)
+  useEffect(() => {
+    const justCollapsed = collapsed && !wasCollapsed.current
+    wasCollapsed.current = collapsed
+    if (!justCollapsed) {
+      setContracting(false)
+      return
+    }
+    setContracting(true)
+    const timer = setTimeout(() => setContracting(false), DOCK_CONTRACT_MS)
+    return () => clearTimeout(timer)
+  }, [collapsed])
+  return contracting
+}
+
+/**
  * La píldora del dock (tarea 30, copiada de Rebecca Listen): cristal oscuro con borde blanco,
  * un botón redondo en cada extremo y, entre ellos, la onda o una pregunta. Escondida, es una
  * barra negra en el borde. Solo presentacional: quien la usa decide qué hace cada botón.
@@ -68,7 +91,8 @@ function PillButton({ button }: { button: EdgePillButton }): React.JSX.Element {
 export function EdgePill(props: EdgePillProps): React.JSX.Element {
   const { collapsed, active, levels, question, questionTitle, left, right, onHover } = props
   const activeClass = active ? ' edge-pill-active' : ''
-  if (collapsed) return <div className={`edge-pill-bar${activeClass}`} onMouseEnter={onHover} />
+  const contracting = useContractingAsDrop(collapsed)
+  if (collapsed && !contracting) return <div className={`edge-pill-bar${activeClass}`} onMouseEnter={onHover} />
 
   const heights = levels?.map((level) => Math.max(MIN_LEVEL_PCT, level * 100)) ?? BARS
 
@@ -76,7 +100,7 @@ export function EdgePill(props: EdgePillProps): React.JSX.Element {
   // que la sacó no debe contar como que se fue.
   return (
     <div className="edge-pill-area" onMouseEnter={onHover}>
-      <div className={`edge-pill${activeClass}`}>
+      <div className={`edge-pill${activeClass}${contracting ? ' edge-pill-contract' : ''}`}>
         {left && <PillButton button={left} />}
         {question ? (
           <span className="edge-pill-question" title={questionTitle}>
