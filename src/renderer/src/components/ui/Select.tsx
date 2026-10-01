@@ -25,11 +25,15 @@ export interface SelectProps<T extends string> {
 /** Alto aproximado de una opción, para saber si la lista cabe debajo del botón. */
 const OPTION_HEIGHT = 32
 const LIST_MAX_HEIGHT = 280
+/** = `max-width` de `.select-list`: la lista puede ser más ancha que el botón. */
+const LIST_MAX_WIDTH = 360
 const LIST_GAP = 4
 const VIEWPORT_MARGIN = 8
 
 interface Placement {
   up: boolean
+  /** Alinea la lista al borde derecho del botón porque a la derecha no cabe. */
+  end: boolean
   maxHeight: number
 }
 
@@ -42,6 +46,7 @@ function placeList(anchor: HTMLElement, count: number, forceUp: boolean): Placem
   const up = forceUp || (below < wanted && above > below)
   return {
     up,
+    end: rect.left + LIST_MAX_WIDTH > window.innerWidth - VIEWPORT_MARGIN,
     maxHeight: Math.max(OPTION_HEIGHT * 2, Math.min(LIST_MAX_HEIGHT, up ? above : below))
   }
 }
@@ -70,7 +75,11 @@ export function Select<T extends string>({
 }: SelectProps<T>): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
-  const [placement, setPlacement] = useState<Placement>({ up: false, maxHeight: LIST_MAX_HEIGHT })
+  const [placement, setPlacement] = useState<Placement>({
+    up: false,
+    end: false,
+    maxHeight: LIST_MAX_HEIGHT
+  })
   const anchorRef = useRef<HTMLDivElement>(null)
   const query = useRef(EMPTY_QUERY)
   const { mounted, state } = useMountTransition(open, MOTION_FAST)
@@ -165,6 +174,7 @@ export function Select<T extends string>({
           onHover={setActive}
           state={state}
           up={placement.up}
+          end={placement.end}
           maxHeight={placement.maxHeight}
         />
       )}

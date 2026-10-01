@@ -328,7 +328,7 @@
 
 .select-button {
   min-width: 120px;
-  padding-right: 34px;
+  padding-right: 32px;
   color: inherit;
   font: inherit;
   text-align: left;
@@ -336,6 +336,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+
+.select-button:active,
+.select-button[aria-expanded='true'] {
+  background: var(--bg-control-pressed);
+  border-bottom-color: var(--border-bottom);
 }
 
 .select > svg {
@@ -343,88 +352,148 @@
   right: 10px;
   color: var(--text-2);
   pointer-events: none;
-  transition: transform var(--duration-fast) var(--ease);
+  transition:
+    transform var(--duration) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.select:hover > svg {
+  color: var(--text-1);
 }
 
 .select:has(.select-button[aria-expanded='true']) > svg {
+  color: var(--text-1);
   transform: rotate(180deg);
 }
 
-/* Lista flotante del Select: mismo lenguaje que el menú (relleno, borde, sombra). */
+.select:has(.select-button:disabled) > svg {
+  color: var(--text-disabled);
+}
+
+/* Lista flotante del Select: mismo lenguaje que el menú (relleno, borde, sombra).
+   Mide al menos lo que el botón y crece hasta que quepa la opción más larga. */
 .select-list {
   position: absolute;
   z-index: 100;
   left: 0;
   top: calc(100% + 4px);
-  width: 100%;
+  box-sizing: border-box;
+  min-width: 100%;
+  width: max-content;
+  max-width: 360px;
   max-height: 280px;
   padding: var(--space-1);
-  overflow-y: auto;
+  overflow: hidden auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-card);
   box-shadow: var(--shadow-flyout);
+  transform-origin: top center;
+  scrollbar-width: thin;
 }
 
 .select-list.up {
   top: auto;
   bottom: calc(100% + 4px);
+  transform-origin: bottom center;
 }
 
+.select-list.end {
+  left: auto;
+  right: 0;
+}
+
+/* Entra desde el botón: hacia abajo si abre debajo, hacia arriba si abre encima. */
 .select-list.entering {
-  animation: menu-in var(--duration-fast) var(--ease);
+  animation: select-in var(--duration) var(--ease);
 }
 
 .select-list.exiting {
   pointer-events: none;
-  animation: menu-out var(--duration-fast) var(--ease-out) forwards;
+  animation: select-out var(--duration-fast) var(--ease-out) forwards;
+}
+
+.select-list.up.entering {
+  animation-name: select-in-up;
+}
+
+.select-list.up.exiting {
+  animation-name: select-out-up;
+}
+
+@keyframes select-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scaleY(0.96);
+  }
+}
+
+@keyframes select-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes select-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scaleY(0.96);
+  }
+}
+
+@keyframes select-out-up {
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 .select-option {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  height: 34px;
-  padding: 0 var(--space-3) 0 var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
+  overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
 }
 
-.select-list {
-  box-sizing: border-box;
-  overflow-x: hidden;
+.select-option + .select-option {
+  margin-top: 2px;
 }
 
 .select-option.active {
   background: var(--bg-subtle-hover);
 }
 
-.select-option:active {
-  background: var(--bg-subtle-pressed);
-}
-
+/* Elegida: fondo propio y la píldora de acento a la izquierda, como el ComboBox de Windows 11. */
 .select-option[aria-selected='true'] {
   background: var(--bg-selected);
+}
+
+.select-option[aria-selected='true'].active {
+  background: color-mix(in srgb, var(--bg-selected), var(--text-1) 5%);
+}
+
+.select-option:active {
+  background: var(--bg-subtle-pressed);
 }
 
 .select-option[aria-selected='true']::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 7px;
-  bottom: 7px;
+  top: 50%;
   width: 3px;
-  border-radius: 2px;
+  height: 16px;
+  border-radius: var(--radius-round);
   background: var(--accent);
-}
-
-.select-option-check {
-  display: grid;
-  place-items: center;
-  width: 16px;
-  color: var(--accent);
+  transform: translateY(-50%);
 }
 
 .number-input input {

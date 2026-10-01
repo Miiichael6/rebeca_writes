@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import type { MountState } from '@renderer/lib/mountTransition'
 import type { SelectOption } from './selectOption'
@@ -17,6 +16,8 @@ export interface SelectListProps<T extends string> {
   state: MountState
   /** Se abre hacia arriba porque debajo del botón no hay espacio. */
   up?: boolean
+  /** Se alinea al borde derecho del botón porque a la derecha no hay espacio. */
+  end?: boolean
   maxHeight?: number
 }
 
@@ -32,6 +33,7 @@ export function SelectList<T extends string>({
   onHover,
   state,
   up,
+  end,
   maxHeight,
   ...rest
 }: SelectListProps<T>): React.JSX.Element {
@@ -47,7 +49,7 @@ export function SelectList<T extends string>({
     <div
       ref={ref}
       id={id}
-      className={`select-list ${state}${up ? ' up' : ''}`}
+      className={`select-list ${state}${up ? ' up' : ''}${end ? ' end' : ''}`}
       style={maxHeight ? { maxHeight } : undefined}
       role="listbox"
       aria-label={rest['aria-label']}
@@ -64,9 +66,6 @@ export function SelectList<T extends string>({
           onPointerDown={() => onPick(index)}
           onPointerEnter={() => onHover(index)}
         >
-          <span className="select-option-check">
-            {option.value === value && <Check size={14} strokeWidth={2} aria-hidden />}
-          </span>
           {option.label}
         </div>
       ))}
