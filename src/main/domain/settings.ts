@@ -8,6 +8,7 @@ import {
   type Settings,
   type WindowBounds
 } from '@shared/settings'
+import { normalizeShortcut } from '@shared/shortcut'
 import type { Backend } from '@shared/types'
 import { BACKEND_ORDER } from '@shared/whisper'
 import { isRecord } from './guards'
@@ -41,6 +42,10 @@ const oneOf =
 
 const backendOrNull = oneOf([...BACKEND_ORDER, null])
 
+/** Atajo normalizado, o `null` (desactivado); uno que no vale se ignora. */
+const shortcutOrNull: Validator<string | null> = (v) =>
+  v === null ? null : typeof v === 'string' ? (normalizeShortcut(v) ?? undefined) : undefined
+
 /** Lista de backends sin repetidos y en el orden de preferencia. */
 const backendList: Validator<Backend[]> = (v) =>
   Array.isArray(v) ? BACKEND_ORDER.filter((b) => v.includes(b)) : undefined
@@ -72,7 +77,8 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     previewCacheMaxGB: positive,
     recordingSource: oneOf(RECORDING_SOURCES),
     recordingMicId: text(1000),
-    recordingsDir: text(1000)
+    recordingsDir: text(1000),
+    recordShortcut: shortcutOrNull
   }
 }
 

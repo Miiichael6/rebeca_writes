@@ -36,8 +36,10 @@ import type {
   MicStartResult,
   MicState,
   MonitorLevel,
+  RecordingNameTemplates,
   RecordingSource
 } from './recording'
+import type { HotkeyStatus } from './shortcut'
 import type { DockButton, DockMenuAction, DockMenuSize, DockView } from './dock'
 import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
@@ -128,6 +130,10 @@ export const IpcChannel = {
   MicGetRecordingsDir: 'mic:get-recordings-dir',
   MicPickRecordingsDir: 'mic:pickRecordingsDir',
   MicOpenRecordingsDir: 'mic:openRecordingsDir',
+  HotkeyGetStatus: 'hotkey:status',
+  HotkeyStatusChanged: 'hotkey:statusChanged',
+  HotkeySetPaused: 'hotkey:setPaused',
+  HotkeySetNameTemplates: 'hotkey:setNameTemplates',
   TranscribeStart: 'transcribe:start',
   TranscribeCancel: 'transcribe:cancel',
   TranscribeSegment: 'transcribe:segment',
@@ -241,6 +247,12 @@ export interface IpcInvokeMap {
   [IpcChannel.MicGetRecordingsDir]: { args: []; result: string }
   [IpcChannel.MicPickRecordingsDir]: { args: []; result: string | null }
   [IpcChannel.MicOpenRecordingsDir]: { args: []; result: void }
+  [IpcChannel.HotkeyGetStatus]: { args: []; result: HotkeyStatus }
+  [IpcChannel.HotkeySetPaused]: { args: [paused: boolean]; result: void }
+  [IpcChannel.HotkeySetNameTemplates]: {
+    args: [templates: RecordingNameTemplates]
+    result: void
+  }
   [IpcChannel.TranscribeStart]: { args: [job: TranscribeJob]; result: void }
   [IpcChannel.TranscribeCancel]: { args: [jobId: string]; result: void }
   [IpcChannel.UpdatesGetStatus]: { args: []; result: UpdateStatus }
@@ -270,6 +282,7 @@ export interface IpcEventMap {
   [IpcChannel.DockView]: DockView
   [IpcChannel.DockMenuOpen]: boolean
   [IpcChannel.MicMonitorLevel]: MonitorLevel
+  [IpcChannel.HotkeyStatusChanged]: HotkeyStatus
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
   [IpcChannel.TranscribeDone]: TranscribeDoneEvent
@@ -515,6 +528,15 @@ export interface AppApi {
     chooseMenu: (action: DockMenuAction) => Promise<void>
     /** Lo que ocupa el menú; la ventana se ajusta y se muestra. */
     setMenuSize: (size: DockMenuSize) => Promise<void>
+  }
+  /** El atajo global para grabar (tarea 31). */
+  hotkey: {
+    getStatus: () => Promise<HotkeyStatus>
+    onStatus: (listener: (status: HotkeyStatus) => void) => () => void
+    /** Mientras Configuración captura un atajo nuevo, el actual no graba. */
+    setPaused: (paused: boolean) => Promise<void>
+    /** Nombres de entrada traducidos (con `{date}`) para lo que graba el atajo; los manda el dock. */
+    setNameTemplates: (templates: RecordingNameTemplates) => Promise<void>
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

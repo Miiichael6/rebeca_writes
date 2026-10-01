@@ -74,7 +74,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 28 | [Hexagonal: lo que falta de main](done/28_hexagonal_main_restante.md) | 9 Pulido | — | ✅ Terminada |
 | 29 | [Grabar con el micrófono](done/29_grabar_con_microfono.md) | 9 Pulido | 27, 28 | ✅ Terminada |
 | 30 | [Dock en el borde de la pantalla](done/30_dock_en_el_borde.md) | 9 Pulido | 29 | ✅ Terminada |
-| 31 | [Atajo de teclado para grabar](pending/31_atajo_grabar.md) | 9 Pulido | 30 | ⬜ Pendiente |
+| 31 | [Atajo de teclado para grabar](in_progress/31_atajo_grabar.md) | 9 Pulido | 30 | 🔄 En progreso |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 

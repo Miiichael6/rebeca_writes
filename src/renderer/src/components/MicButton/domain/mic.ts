@@ -1,14 +1,6 @@
 import type { MicDevice, RecordingSource } from '@shared/recording'
 import { formatClock } from '@renderer/lib/time'
 
-const pad = (n: number): string => String(n).padStart(2, '0')
-
-/** `AAAA-MM-DD HH-mm` en hora local: va en el nombre de la entrada y del MP3 (sin `:`). */
-export function recordingStamp(date: Date): string {
-  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-  return `${day} ${pad(date.getHours())}-${pad(date.getMinutes())}`
-}
-
 /** Contador del botón mientras graba: `m:ss`, y `h:mm:ss` desde la primera hora. */
 export function elapsedLabel(startedAt: number, now: number): string {
   return formatClock((now - startedAt) / 1000)

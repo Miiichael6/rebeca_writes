@@ -1533,6 +1533,22 @@ button.queue-job-open:hover .queue-job-name {
   font-size: var(--text-sm);
 }
 
+/* Atajo para grabar (tarea 31) */
+.shortcut-capture {
+  min-width: 128px;
+  font-family: var(--font-mono);
+}
+
+.shortcut-capture.capturing {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.shortcut-warning {
+  color: var(--critical);
+  font-size: var(--text-sm);
+}
+
 .setting-path {
   font-family: var(--font-mono);
   word-break: break-all;

@@ -140,6 +140,12 @@ const api: AppApi = {
     chooseMenu: (action) => invoke(IpcChannel.DockMenuAction, action),
     setMenuSize: (size) => invoke(IpcChannel.DockMenuSize, size)
   },
+  hotkey: {
+    getStatus: () => invoke(IpcChannel.HotkeyGetStatus),
+    onStatus: (listener) => on(IpcChannel.HotkeyStatusChanged, listener),
+    setPaused: (paused) => invoke(IpcChannel.HotkeySetPaused, paused),
+    setNameTemplates: (templates) => invoke(IpcChannel.HotkeySetNameTemplates, templates)
+  },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),
     cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),

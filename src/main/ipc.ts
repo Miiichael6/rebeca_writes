@@ -16,10 +16,12 @@ import type { SettingsRepository } from './application/ports/settingsRepository'
 import type { PreviewService } from './application/previewService'
 import type { QueueIntake } from './application/queueIntake'
 import type { QueueService } from './application/queueService'
+import type { RecordHotkey } from './application/recordHotkey'
 import type { RecordingsFolder } from './application/recordingsFolder'
 import type { TranscriptionManager } from './application/transcriptionManager'
 import type { UpdateService } from './application/updateService'
 import { toDockMenuAction } from './domain/dock/menuActionInput'
+import { toNameTemplates } from './domain/hotkey/nameTemplates'
 import { notify, openFolder } from './infrastructure/electron/systemActions'
 import { logsDir } from './infrastructure/electron/logging'
 import { resolvedTheme } from './infrastructure/electron/theme'
@@ -48,6 +50,7 @@ export interface IpcDeps {
   updates: UpdateService
   dock: Dock
   dockMenu: DockMenu
+  hotkey: RecordHotkey
   /** Abre la ventana principal (la crea si se cerró: la app sigue en segundo plano). */
   showMainWindow: () => void
 }
@@ -82,6 +85,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     updates,
     dock,
     dockMenu,
+    hotkey,
     showMainWindow
   } = deps
 
@@ -201,6 +205,13 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.DockMenuSize, (_event, size) =>
     dockMenu.resize({ width: Number(size?.width) || 0, height: Number(size?.height) || 0 })
   )
+
+  handle(IpcChannel.HotkeyGetStatus, () => hotkey.status())
+  handle(IpcChannel.HotkeySetPaused, (_event, paused) => hotkey.setPaused(paused === true))
+  handle(IpcChannel.HotkeySetNameTemplates, (_event, templates) => {
+    const valid = toNameTemplates(templates)
+    if (valid) hotkey.setNameTemplates(valid)
+  })
 
   handle(IpcChannel.UpdatesGetStatus, () => updates.getStatus())
   handle(IpcChannel.UpdatesCheck, () => updates.check())

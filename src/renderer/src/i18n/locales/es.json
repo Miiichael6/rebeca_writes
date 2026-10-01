@@ -270,7 +270,21 @@
     "thirdPartyIntro": "{{app}} usa los siguientes componentes de código abierto. Gracias a sus autores.",
     "showLicense": "Ver licencia",
     "recordingsFolder": "Carpeta de grabaciones",
-    "changeFolder": "Cambiar…"
+    "changeFolder": "Cambiar…",
+    "recording": "Grabación",
+    "recordShortcut": "Atajo para grabar",
+    "recordShortcutDescription": "Funciona aunque la app esté en segundo plano. Mantenlo pulsado para grabar hasta que lo sueltes; púlsalo dos veces seguidas (p. ej. Ctrl+Win, Win) para grabar sin manos hasta pararlo en el dock.",
+    "recordShortcutCapturing": "Pulsa la combinación…",
+    "recordShortcutReset": "Volver a Ctrl + Win",
+    "recordShortcutFailed": "Windows no dejó activar el atajo. Prueba con otra combinación o reinicia la app.",
+    "recordShortcutErrors": {
+      "empty": "No se pulsó ninguna tecla.",
+      "noModifier": "El atajo necesita al menos Ctrl, Alt, Shift o Win.",
+      "needsTwoModifiers": "Sin otra tecla, el atajo necesita dos modificadores (p. ej. Ctrl + Win).",
+      "repeated": "La combinación repite una tecla.",
+      "unknownKey": "Esa tecla no se puede usar: elige una letra, un número, F1–F24 o Espacio.",
+      "twoKeys": "Usa una sola tecla además de los modificadores."
+    }
   },
   "models": {
     "title": "Modelos Whisper",

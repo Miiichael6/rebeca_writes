@@ -29,6 +29,8 @@ export interface DockDeps {
 export class Dock {
   private question: DockQuestion | null = null
   private hovered = false
+  /** Sale mientras dure la grabación que empezó el atajo de teclado (tarea 31). */
+  private revealed = false
   private mouseWatch: ReturnType<typeof setInterval> | null = null
 
   constructor(private readonly deps: DockDeps) {}
@@ -37,7 +39,7 @@ export class Dock {
     const recording = this.deps.mic.state().recording
     const question = visibleQuestion(this.question, recording)
     return {
-      out: this.hovered || question !== null,
+      out: this.hovered || question !== null || (this.revealed && recording),
       recording,
       question,
       ...dockButtons(question, recording)
@@ -51,6 +53,7 @@ export class Dock {
   close(): void {
     this.stopWatching()
     this.hovered = false
+    this.revealed = false
     this.question = null
     this.deps.surface.close()
   }
@@ -107,8 +110,15 @@ export class Dock {
     if (!result.ok) this.deps.log.warn(`Dock: no se pudo empezar a grabar (${result.error})`)
   }
 
+  /** Sale hasta que termine la grabación en curso (la empezó el atajo de teclado). */
+  revealUntilStopped(): void {
+    this.revealed = true
+    this.refresh()
+  }
+
   /** Vuelve a pintar el dock (p. ej. al empezar o parar una grabación). */
   refresh(): void {
+    if (!this.deps.mic.state().recording) this.revealed = false
     this.deps.surface.show(this.view())
   }
 

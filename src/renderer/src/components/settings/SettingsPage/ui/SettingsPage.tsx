@@ -7,6 +7,7 @@ import AboutSection from '../../AboutSection'
 import BackendSetting from '../../BackendSetting'
 import InterfaceSettings from '../../InterfaceSettings'
 import ModelsSection from '../../ModelsSection'
+import ShortcutSettings from '../../ShortcutSettings'
 import StorageSettings from '../../StorageSettings'
 import TranscriptionOptions from '../../TranscriptionOptions'
 
@@ -36,6 +37,9 @@ export function SettingsPage(): React.JSX.Element {
         </SettingsSection>
         <SettingsSection title={t('settings.interface')}>
           <InterfaceSettings />
+        </SettingsSection>
+        <SettingsSection title={t('settings.recording')}>
+          <ShortcutSettings />
         </SettingsSection>
         <SettingsSection title={t('settings.storage')}>
           <StorageSettings />

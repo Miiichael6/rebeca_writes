@@ -1,5 +1,6 @@
 import type { UiLanguageSetting } from './i18n'
 import { DEFAULT_RECORDING_SOURCE, type RecordingSource } from './recording'
+import { DEFAULT_RECORD_SHORTCUT } from './shortcut'
 import type { ThemeMode } from './theme'
 import type { Backend, TranscribeOptions } from './types'
 import { AUTO_LANGUAGE } from './whisper'
@@ -81,6 +82,8 @@ export interface Settings {
   recordingMicId: string
   /** Carpeta de los MP3 grabados; vacío = `Documentos\RebeccaWrites\Grabaciones`. */
   recordingsDir: string
+  /** Atajo global para grabar (tarea 31), como `Ctrl+Super`; `null` = desactivado. */
+  recordShortcut: string | null
 
   queue: QueueSettings
   window: WindowBounds
@@ -139,6 +142,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     recordingSource: DEFAULT_RECORDING_SOURCE,
     recordingMicId: '',
     recordingsDir: '',
+    recordShortcut: DEFAULT_RECORD_SHORTCUT,
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }
   }

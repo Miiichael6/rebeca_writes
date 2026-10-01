@@ -1,13 +1,16 @@
-// Copia el sidecar de captura (rl-capture.exe, tarea 29) compilado en release a resources/bin/,
-// desde donde main lo lanza y electron-builder lo empaqueta fuera del asar (asarUnpack: resources/**).
+// Copia los sidecars compilados en release a resources/bin/, desde donde main los lanza y
+// electron-builder los empaqueta fuera del asar (asarUnpack: resources/**): rl-capture.exe
+// (captura de audio, tarea 29) y rl-hotkey.exe (atajo para grabar, tarea 31).
 import { copyFileSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-const BINARY = 'rl-capture.exe'
+const BINARIES = ['rl-capture.exe', 'rl-hotkey.exe']
 const ROOT = resolve(import.meta.dirname, '..')
-const source = join(ROOT, 'native', 'target', 'release', BINARY)
+const sourceDir = join(ROOT, 'native', 'target', 'release')
 const destinationDir = join(ROOT, 'resources', 'bin')
 
 mkdirSync(destinationDir, { recursive: true })
-copyFileSync(source, join(destinationDir, BINARY))
-console.log(`${BINARY} copiado a ${destinationDir}`)
+for (const binary of BINARIES) {
+  copyFileSync(join(sourceDir, binary), join(destinationDir, binary))
+  console.log(`${binary} copiado a ${destinationDir}`)
+}

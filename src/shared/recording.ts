@@ -46,3 +46,25 @@ export function sourceDevices(source: RecordingSource): MonitorLevel['device'][]
       return ['system', 'voice']
   }
 }
+
+const pad = (n: number): string => String(n).padStart(2, '0')
+
+/** `AAAA-MM-DD HH-mm` en hora local: va en el nombre de la entrada y del MP3 (sin `:`). */
+export function recordingStamp(date: Date): string {
+  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  return `${day} ${pad(date.getHours())}-${pad(date.getMinutes())}`
+}
+
+/** Hueco de la fecha en una plantilla de nombre. */
+export const RECORDING_DATE_TOKEN = '{date}'
+
+/**
+ * Nombre de la entrada de cada fuente ya traducido, con `RECORDING_DATE_TOKEN` en lugar de la
+ * fecha. El renderer se lo pasa al main para que el atajo (tarea 31) nombre sus grabaciones.
+ */
+export type RecordingNameTemplates = Record<RecordingSource, string>
+
+/** El nombre de una grabación que empieza en `date` a partir de su plantilla. */
+export function fillRecordingName(template: string, date: Date): string {
+  return template.split(RECORDING_DATE_TOKEN).join(recordingStamp(date))
+}

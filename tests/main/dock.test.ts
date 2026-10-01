@@ -145,6 +145,20 @@ describe('Dock', () => {
     expect(dock.view()).toMatchObject({ question: null, right: 'record' })
   })
 
+  it('sale mientras graba lo que empezó el atajo, y se esconde al terminar', async () => {
+    const { dock, mic, surface } = setup()
+    await dock.record('voice', 'Grabación')
+    dock.revealUntilStopped()
+    expect(surface.last?.out).toBe(true)
+    await mic.stop()
+    dock.refresh()
+    expect(surface.last?.out).toBe(false)
+    // Ya no recuerda la grabación anterior: la siguiente no lo saca sola.
+    await dock.record('voice', 'Grabación')
+    dock.refresh()
+    expect(surface.last?.out).toBe(false)
+  })
+
   it('avisa en el log si no puede grabar', async () => {
     const { dock, mic } = setup()
     mic.start.mockResolvedValueOnce({ ok: false, error: 'noDevice' } as never)

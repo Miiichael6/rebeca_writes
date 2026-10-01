@@ -261,7 +261,21 @@
     "thirdPartyIntro": "{{app}} uses the following open-source components. Thanks to their authors.",
     "showLicense": "View license",
     "recordingsFolder": "Recordings folder",
-    "changeFolder": "Change…"
+    "changeFolder": "Change…",
+    "recording": "Recording",
+    "recordShortcut": "Recording shortcut",
+    "recordShortcutDescription": "Works even with the app in the background. Hold it to record until you let go; press it twice in a row (e.g. Ctrl+Win, Win) to record hands-free until you stop it from the dock.",
+    "recordShortcutCapturing": "Press the keys…",
+    "recordShortcutReset": "Back to Ctrl + Win",
+    "recordShortcutFailed": "Windows did not allow the shortcut. Try another combination or restart the app.",
+    "recordShortcutErrors": {
+      "empty": "No key was pressed.",
+      "noModifier": "The shortcut needs at least Ctrl, Alt, Shift or Win.",
+      "needsTwoModifiers": "Without another key, the shortcut needs two modifiers (e.g. Ctrl + Win).",
+      "repeated": "The combination repeats a key.",
+      "unknownKey": "That key can’t be used: pick a letter, a number, F1–F24 or Space.",
+      "twoKeys": "Use a single key besides the modifiers."
+    }
   },
   "models": {
     "title": "Whisper models",

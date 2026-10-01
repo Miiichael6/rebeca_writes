@@ -39,7 +39,7 @@ const services = createServices(
 )
 const { settings, registry, queue, backends, previews, manager, live, mic, updates, dock } =
   services
-const { dockMenu } = services
+const { dockMenu, hotkey } = services
 const mainWindow = new MainWindow(settings, log)
 
 app.on('second-instance', (_event, argv, workingDirectory) => {
@@ -81,6 +81,8 @@ app.whenReady().then(async () => {
   mainWindow.create()
   dock.open()
   dockMenu.prepare()
+  // Los cambios posteriores llegan por `settings.onChanged` (composition).
+  hotkey.configure(settings.get().recordShortcut)
   updates.scheduleAutoCheck()
   // Arranque en frío con archivos ("Abrir con"). Si la cola pregunta si retomar, esperan a
   // la respuesta y "Descartar" no los quita.
@@ -98,6 +100,8 @@ app.on('will-quit', () => {
   manager.cancelAll()
   mic.dispose()
   live.stop()
+  // Cierra stdin de `rl-hotkey.exe`: termina solo y no queda vigilando el teclado.
+  hotkey.dispose()
 })
 
 /** Antes de cerrar: la grabación en curso se guarda (D9) y se escribe lo pendiente. */

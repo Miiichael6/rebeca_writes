@@ -109,3 +109,57 @@ Secuencia de bloques binarios, cada uno con cabecera little-endian de 7 bytes se
 ```
 
 `channels` va en cada bloque porque stdout y stderr son tuberías distintas: el primer bloque puede llegar antes que el `opened`. Los formatos enteros del dispositivo (i16, i32, u8) se convierten a f32 en el sidecar.
+
+---
+
+# Protocolo de `rl-hotkey`
+
+Segundo binario del crate (tarea 31): vigila **una** combinación de teclas con un gancho de teclado de bajo nivel (`WH_KEYBOARD_LL`) y avisa a main cuando se pulsa y se suelta. Qué gesto es (mantener, doble pulsación) lo decide main (`src/main/domain/hotkey/gesture.ts`).
+
+| Tubería | Dirección      | Contenido                    |
+| ------- | -------------- | ---------------------------- |
+| stdin   | main → sidecar | Comandos JSON, uno por línea |
+| stderr  | sidecar → main | Eventos JSON, uno por línea  |
+| stdout  | —              | Sin uso                      |
+
+Si stdin se cierra, el sidecar termina. Arranca sin vigilar nada hasta el primer `watch`.
+
+## Comandos (stdin)
+
+| `cmd`   | Respuesta  | Qué hace                                         |
+| ------- | ---------- | ------------------------------------------------ |
+| `watch` | `watching` | Vigila esta combinación (reemplaza la anterior)  |
+| `off`   | `off`      | Deja de vigilar: no llegan más eventos de teclas |
+
+```json
+{"cmd":"watch","modifiers":["ctrl","win"],"key":null}
+{"cmd":"watch","modifiers":["ctrl","shift"],"key":82}
+{"cmd":"off"}
+```
+
+- `modifiers`: `ctrl`, `alt`, `shift`, `win` (cualquier lado, izquierdo o derecho). Los que no están en la lista no pueden estar pulsados.
+- `key`: código de tecla virtual (`VK_*`) de la tecla que no es modificador, o `null`.
+
+## Eventos (stderr)
+
+```json
+{"type":"down"}
+{"type":"up"}
+{"type":"other"}
+{"type":"error","code":"hook_failed","message":"..."}
+```
+
+| `type`             | Cuándo                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `down`             | La combinación queda completa (todas sus teclas pulsadas y ningún otro modificador)                |
+| `up`               | Deja de estar completa                                                                             |
+| `other`            | Se pulsa otra tecla con la combinación o parte de ella (Ctrl+Win+→): main lo descarta como atajo   |
+| `watching` / `off` | Respuesta a `watch` / `off`                                                                        |
+| `error`            | `bad_command` (línea no válida) o `hook_failed` (Windows rechazó el gancho; el sidecar sale con 1) |
+
+## Efectos sobre el teclado
+
+- El gancho nunca bloquea los atajos de Windows: Ctrl+Win+→ sigue cambiando de escritorio.
+- Si la combinación lleva Win, al soltar Win tras completarla el sidecar descarta ese `keyup` y lo reenvía detrás de una pulsación de `VK 0xE8` (sin asignar), como la "mask key" de AutoHotkey: así Windows no abre el menú Inicio.
+- Si la combinación lleva una tecla normal (`key`), esa tecla no llega a la app enfocada mientras los modificadores coinciden.
+- Las pulsaciones inyectadas (`LLKHF_INJECTED`), incluidas las suyas, se ignoran.

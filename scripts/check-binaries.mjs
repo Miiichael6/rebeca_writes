@@ -36,4 +36,4 @@ if (missing.length > 0) {
   console.error('')
   process.exit(1)
 }
-console.log('Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, ffmpeg, ffprobe).')
+console.log('Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, ffmpeg, ffprobe).')

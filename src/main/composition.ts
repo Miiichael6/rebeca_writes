@@ -20,6 +20,7 @@ import { PreviewService } from './application/previewService'
 import { QueueIntake } from './application/queueIntake'
 import { QueueJobRunner } from './application/queueJobRunner'
 import { QueueService } from './application/queueService'
+import { RecordHotkey } from './application/recordHotkey'
 import { RecordingsFolder } from './application/recordingsFolder'
 import { TranscriptionManager } from './application/transcriptionManager'
 import { TranscriptionPipeline } from './application/transcriptionPipeline'
@@ -39,6 +40,7 @@ import { windowPublisher as publisher } from './infrastructure/electron/windowPu
 import { ffmpegRecordingEncoder } from './infrastructure/ffmpeg/ffmpegRecordingEncoder'
 import { ffmpegPreviewEncoder } from './infrastructure/ffmpeg/ffmpegPreviewEncoder'
 import { ffmpegMediaTools } from './infrastructure/ffmpeg/ffmpegTools'
+import { HOTKEY_BINARY, HotkeySidecar } from './infrastructure/hotkey/hotkeySidecar'
 import { fsPathExpander } from './infrastructure/fs/expandPaths'
 import { fsPreviewStore } from './infrastructure/fs/fsPreviewStore'
 import { nodeDisk } from './infrastructure/fs/nodeDisk'
@@ -244,6 +246,17 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     log
   })
 
+  // --- Atajo para grabar (tarea 31) ---
+  const hotkey = new RecordHotkey({
+    source: new HotkeySidecar(join(bundledBinDir, HOTKEY_BINARY), log),
+    mic,
+    dock,
+    recordingSource: () => settings.get().recordingSource,
+    publisher,
+    log
+  })
+  settings.onChanged((next) => hotkey.configure(next.recordShortcut))
+
   // --- Actualizaciones ---
   const updates = new UpdateService({
     updater: createElectronUpdater(),
@@ -273,6 +286,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     updates,
     dock,
     dockMenu,
+    hotkey,
     showMainWindow: control.showMainWindow,
     registry,
     queueFromArgv: createArgvHandler({

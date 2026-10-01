@@ -12,6 +12,7 @@ import { onMicLevel } from '@renderer/store/mic'
 import { useSettingsStore, useSettingsSync } from '@renderer/store/settings'
 import { useThemeSync } from '@renderer/store/ui'
 import { useDock } from './application/useDock'
+import { useRecordingNameTemplates } from './application/useRecordingNameTemplates'
 import { DOCK_ACTIONS, RECORDING_INDICATOR } from './dockButtons'
 
 /**
@@ -21,6 +22,7 @@ import { DOCK_ACTIONS, RECORDING_INDICATOR } from './dockButtons'
 export function DockApp(): React.JSX.Element {
   useThemeSync()
   useSettingsSync()
+  useRecordingNameTemplates()
   const { t } = useTranslation()
   const { view, press, hover, openMenu } = useDock()
   const source = useSettingsStore((s) => s.settings.recordingSource)

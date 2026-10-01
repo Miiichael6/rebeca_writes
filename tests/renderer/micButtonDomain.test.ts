@@ -3,11 +3,11 @@ import {
   elapsedLabel,
   micButtonState,
   pushLevel,
-  recordingStamp,
   selectedMicId,
   silentWave,
   usesMicrophone
 } from '../../src/renderer/src/components/MicButton/domain/mic'
+import { fillRecordingName, recordingStamp } from '../../src/shared/recording'
 
 describe('MicButton', () => {
   it('solo Mi voz y Ambos eligen micrófono', () => {
@@ -25,6 +25,12 @@ describe('MicButton', () => {
 
   it('sella la fecha local sin dos puntos (vale como nombre de archivo)', () => {
     expect(recordingStamp(new Date(2026, 0, 5, 9, 7))).toBe('2026-01-05 09-07')
+  })
+
+  it('rellena la fecha de una plantilla de nombre (la del atajo)', () => {
+    expect(fillRecordingName('Grabación {date} · Mi voz', new Date(2026, 9, 1, 14, 30))).toBe(
+      'Grabación 2026-10-01 14-30 · Mi voz'
+    )
   })
 
   it('cuenta m:ss y pasa a h:mm:ss desde la primera hora', () => {
