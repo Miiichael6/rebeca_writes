@@ -4,14 +4,13 @@ import type { MicDevice, MonitorLevel, RecordingSource } from '@shared/recording
 import {
   elapsedLabel,
   micButtonState,
-  pushLevel,
   selectedMicId,
-  silentWave,
   usesMicrophone,
   type MicButtonState
 } from '../domain/mic'
 import { recordingName } from '@renderer/lib/recordingName'
 import { usePorts } from './ports'
+import { useWave } from './useWave'
 
 const TICK_MS = 1000
 
@@ -48,23 +47,6 @@ function useNow(active: boolean): number {
     return () => clearInterval(timer)
   }, [active])
   return now
-}
-
-/** Los últimos niveles de lo que se graba; vuelve a cero al dejar de grabar. */
-function useWave(
-  active: boolean,
-  onLevel: (listener: (level: number) => void) => () => void
-): number[] {
-  const [wave, setWave] = useState(silentWave)
-  useEffect(() => {
-    if (!active) return
-    const off = onLevel((level) => setWave((w) => pushLevel(w, level)))
-    return () => {
-      off()
-      setWave(silentWave())
-    }
-  }, [active, onLevel])
-  return wave
 }
 
 export type MonitorLevels = Record<MonitorLevel['device'], number>

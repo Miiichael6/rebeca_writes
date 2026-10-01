@@ -1,9 +1,11 @@
 import type { LucideIcon } from 'lucide-react'
 
-/** Alturas de las barras de la onda, en % del centro de la píldora (las de Rebecca Listen). */
+/** Alturas de la onda quieta, en % del centro de la píldora (las de Rebecca Listen). */
 const BARS = [30, 55, 80, 100, 70, 90, 60, 40, 25]
-/** Cada barra rebota un poco después que la anterior. */
-const BAR_DELAY_MS = 90
+/** Cuántos niveles dibuja la onda en vivo: una barra por nivel. */
+export const EDGE_PILL_BARS = BARS.length
+/** Altura mínima de una barra en vivo, para que el silencio siga pareciendo una onda. */
+const MIN_LEVEL_PCT = 12
 const ICON_SIZE = 12
 const ICON_STROKE = 2.2
 
@@ -17,8 +19,10 @@ export interface EdgePillButton {
 export interface EdgePillProps {
   /** Pegada al borde: solo una barra negra, esperando al ratón. */
   collapsed: boolean
-  /** Borde azul y onda en movimiento (grabando). */
+  /** Borde azul (grabando). */
   active: boolean
+  /** Niveles (0..1) de lo que se graba, uno por barra; sin ellos la onda queda quieta. */
+  levels?: number[]
   /** En el centro en vez de la onda. */
   question: string | null
   /** Título completo de la pregunta, por si no cabe. */
@@ -57,9 +61,11 @@ function PillButton({ button }: { button: EdgePillButton }): React.JSX.Element {
  * barra negra en el borde. Solo presentacional: quien la usa decide qué hace cada botón.
  */
 export function EdgePill(props: EdgePillProps): React.JSX.Element {
-  const { collapsed, active, question, questionTitle, left, right, onHover } = props
+  const { collapsed, active, levels, question, questionTitle, left, right, onHover } = props
   const activeClass = active ? ' edge-pill-active' : ''
   if (collapsed) return <div className={`edge-pill-bar${activeClass}`} onMouseEnter={onHover} />
+
+  const heights = levels?.map((level) => Math.max(MIN_LEVEL_PCT, level * 100)) ?? BARS
 
   // El área del ratón es toda la ventana (tan alta como la barra), no solo la píldora: el ratón
   // que la sacó no debe contar como que se fue.
@@ -73,11 +79,8 @@ export function EdgePill(props: EdgePillProps): React.JSX.Element {
           </span>
         ) : (
           <span className="edge-pill-wave" aria-hidden="true">
-            {BARS.map((height, index) => (
-              <i
-                key={index}
-                style={{ height: `${height}%`, animationDelay: `${index * BAR_DELAY_MS}ms` }}
-              />
+            {heights.map((height, index) => (
+              <i key={index} style={{ height: `${height}%` }} />
             ))}
           </span>
         )}

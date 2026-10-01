@@ -15,6 +15,8 @@ export interface DockDeps {
   mic: Pick<MicRecording, 'state' | 'start' | 'stop'>
   /** La fuente elegida en el botón de grabar. */
   source: () => RecordingSource
+  /** El menú contextual del dock está abierto: mientras lo esté, el dock no se esconde. */
+  menuOpen: () => boolean
   /** Cierra la app del todo (D9). */
   quit: () => void
   log: Logger
@@ -53,14 +55,15 @@ export class Dock {
     this.deps.surface.close()
   }
 
-  /** El ratón llegó a la barra: sale y vigila cuándo se va. */
+  /** El ratón llegó a la barra: sale y vigila cuándo se va (navegar por su menú no cuenta). */
   hover(): void {
     this.hovered = true
     this.refresh()
     if (this.mouseWatch) return
     let away = 0
     this.mouseWatch = setInterval(() => {
-      away = this.deps.surface.cursorInside() ? 0 : away + WATCH_MS
+      const staying = this.deps.surface.cursorInside() || this.deps.menuOpen()
+      away = staying ? 0 : away + WATCH_MS
       if (away < HIDE_DELAY_MS) return
       this.stopWatching()
       this.hovered = false

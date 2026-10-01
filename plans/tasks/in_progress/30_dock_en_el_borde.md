@@ -61,11 +61,12 @@ El menú contextual no es el nativo: es el `Menu` de la app (Fluent, con submen�
 ### Paso 6 — Renderer del dock
 
 - [x] `components/EdgePill/`: presentacional, a partir de `EdgePill.tsx` de Listen, con botón izquierdo opcional (■ / ✕), onda o pregunta en el centro y a la derecha 🎤 (botón sin grabar, indicador grabando) o ✓ con iconos de `lucide-react` (`Mic`, `Square`, `X`, `Check`); estilos en `styles/components.css` con los mismos colores y medidas
-- [x] Animaciones de Listen: la onda queda quieta sin grabar y rebota mientras graba (`bounce`, 900 ms alternado con retraso por barra) y la píldora aparece con un fundido corto al salir; con `prefers-reduced-motion` la onda queda quieta, como el resto de animaciones de la app (tarea 26)
+- [x] Animaciones de Listen: la onda queda quieta sin grabar y ~~rebota mientras graba (`bounce`, 900 ms alternado con retraso por barra)~~ sigue el nivel del sonido grabado (`mic:level`, el `useWave` del botón de grabar) y la píldora aparece con un fundido corto al salir; con `prefers-reduced-motion` la onda queda quieta, como el resto de animaciones de la app (tarea 26)
 - [x] Grabando: borde de la píldora y de la barra escondida en **azul** (token nuevo en `tokens.css`, en claro y oscuro)
 - [x] `src/renderer/src/dock/DockApp.tsx` + `application/useDock.ts`: sigue `dock:view` y el estado de grabación (`store/mic.ts`), manda ratón, botones y clic derecho (abre el menú)
 - [x] `main.tsx`: con `#/dock` monta `DockApp` y con `#/dock-menu` `DockMenu` (fondo transparente) en vez de la app
 - [x] Textos del dock (títulos de los botones, "¿Terminar?", "¿Salir de RebeccaWrites?" y el menú) en es, en y pt-BR
+- [x] El menú contextual del dock, más compacto que los de la ventana; el dock no se esconde mientras su menú está abierto (petición del usuario)
 - [x] El largo de la píldora se ajusta a lo que muestra (`domain/dock/dockWidth.ts`): sin hueco para el botón que no está; crece grabando y con pregunta (petición del usuario)
 
 ### Paso 7 — Verificación
@@ -94,3 +95,4 @@ El menú contextual no es el nativo: es el `Menu` de la app (Fluent, con submen�
 - 2026-10-01 — D9 resuelta: "Salir" en el menú, con confirmación, cierra todo sin rastro. Píldora cambiada a petición del usuario: sin grabar onda quieta + 🎤; grabando ■ · onda · ✓; ■ pregunta "¿Terminar?" (✕ / ✓). ✕ ya no esconde la píldora (se esconde sola al quitar el ratón).
 - 2026-10-01 — Grabando pasa a ■ · onda · 🎤; "¿Terminar?" ✓ para y guarda, ✕ vuelve a la vista de grabando. Ya no hay terminar sin guardar, así que no hace falta descartar grabaciones.
 - 2026-10-01 — Probado de verdad: dock, menú y submenú, 🎤 graba (borde azul, MP3 guardado), "Salir" ✕/✓ sin procesos. Falta probar a mano ■ "¿Terminar?", grabar desde el submenú y cerrar/reabrir la ventana: el ratón automático chocaba con la sesión del usuario. Preguntas cortas ("¿Salir?") con el texto completo en el tooltip; el azul va en los temas, no en `tokens.css`; `npm run dev` necesita `ELECTRON_RUN_AS_NODE` sin definir.
+- 2026-10-01 — La onda grabando ya no rebota con `bounce`: dibuja los últimos niveles de `mic:level`, como el botón de grabar (petición del usuario).

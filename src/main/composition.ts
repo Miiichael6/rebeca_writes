@@ -229,6 +229,8 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     surface: new ElectronDockSurface(),
     mic,
     source: () => settings.get().recordingSource,
+    // `dockMenu` se crea justo después; solo se consulta con el dock ya fuera.
+    menuOpen: () => dockMenu.isOpen(),
     quit: control.quit,
     log
   })

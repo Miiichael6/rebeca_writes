@@ -1,8 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { APP_NAME } from '@shared/app'
 import { dockShowsIndicator, type DockAction, type DockButton } from '@shared/dock'
-import { EdgePill, type EdgePillButton } from '@renderer/components/EdgePill/EdgePill'
+import {
+  EDGE_PILL_BARS,
+  EdgePill,
+  type EdgePillButton
+} from '@renderer/components/EdgePill/EdgePill'
+import { useWave } from '@renderer/components/MicButton/application/useWave'
 import { recordingName } from '@renderer/lib/recordingName'
+import { onMicLevel } from '@renderer/store/mic'
 import { useSettingsStore, useSettingsSync } from '@renderer/store/settings'
 import { useThemeSync } from '@renderer/store/ui'
 import { useDock } from './application/useDock'
@@ -18,6 +24,7 @@ export function DockApp(): React.JSX.Element {
   const { t } = useTranslation()
   const { view, press, hover, openMenu } = useDock()
   const source = useSettingsStore((s) => s.settings.recordingSource)
+  const wave = useWave(view.recording, onMicLevel, EDGE_PILL_BARS)
 
   const button = (side: DockButton, action: DockAction | null): EdgePillButton | null => {
     if (action) {
@@ -44,6 +51,7 @@ export function DockApp(): React.JSX.Element {
       <EdgePill
         collapsed={!view.out}
         active={view.recording}
+        levels={view.recording ? wave : undefined}
         question={question}
         questionTitle={questionTitle ?? undefined}
         left={button('left', view.left)}

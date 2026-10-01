@@ -35,8 +35,16 @@ function setup() {
     })
   }
   const quit = vi.fn()
-  const dock = new Dock({ surface, mic, source: () => 'voice', quit, log })
-  return { dock, surface, mic, quit }
+  const menu = { open: false }
+  const dock = new Dock({
+    surface,
+    mic,
+    source: () => 'voice',
+    menuOpen: () => menu.open,
+    quit,
+    log
+  })
+  return { dock, surface, mic, quit, menu }
 }
 
 beforeEach(() => vi.useFakeTimers())
@@ -63,6 +71,19 @@ describe('Dock', () => {
     surface.cursor = true
     vi.advanceTimersByTime(HIDE_DELAY_MS * 2)
     expect(surface.last?.out).toBe(true)
+  })
+
+  it('no se esconde mientras su menú está abierto, y sí al cerrarlo', () => {
+    const { dock, surface, menu } = setup()
+    dock.hover()
+    menu.open = true
+    surface.cursor = false
+    vi.advanceTimersByTime(HIDE_DELAY_MS * 3)
+    expect(surface.last?.out).toBe(true)
+
+    menu.open = false
+    vi.advanceTimersByTime(HIDE_DELAY_MS)
+    expect(surface.last?.out).toBe(false)
   })
 
   it('🎤 graba con la fuente elegida y luego ■ pregunta si terminar', async () => {

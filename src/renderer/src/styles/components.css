@@ -1144,13 +1144,8 @@
 }
 
 .edge-pill-active .edge-pill-wave i {
-  animation: edge-pill-bounce 900ms ease-in-out infinite alternate;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .edge-pill-active .edge-pill-wave i {
-    animation: none;
-  }
+  /* Suaviza el salto entre niveles (llegan cada 50 ms, `LEVEL_WINDOW_MS`). */
+  transition: height 50ms linear;
 }
 
 .edge-pill-question {
@@ -1174,6 +1169,19 @@
 
 .dock-menu-anchor .menu {
   position-try-fallbacks: none;
+  /* Más compacto que los menús de la ventana: es un menú contextual suelto en el escritorio. */
+  min-width: 180px;
+  font-size: 12px;
+}
+
+.dock-menu-anchor .menu-item {
+  height: 28px;
+  padding: 0 var(--space-2);
+}
+
+.dock-menu-anchor .menu-item-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .dock-menu-anchor .menu.menu-submenu {
