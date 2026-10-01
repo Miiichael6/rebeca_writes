@@ -400,5 +400,31 @@
     "errorLiveBusy": "Ya hay una grabación en vivo en curso (Rebecca Listen).",
     "errorNoDevice": "No se encontró el dispositivo de audio. Revisa el micrófono o la salida de sonido en Windows.",
     "errorFailed": "No se pudo empezar a grabar. Consulta los registros para más detalles."
+  },
+  "dock": {
+    "record": "Grabar",
+    "recording": "Grabando",
+    "askEnd": "Terminar la grabación",
+    "stopAndSave": "Parar y guardar",
+    "keepRecording": "Seguir grabando",
+    "quit": "Salir",
+    "stay": "No salir",
+    "questions": {
+      "end": "¿Terminar?",
+      "quit": "¿Salir?",
+      "quitRecording": "¿Salir?"
+    },
+    "questionTitles": {
+      "end": "¿Terminar la grabación y guardarla?",
+      "quit": "¿Salir de {{app}}?",
+      "quitRecording": "¿Salir de {{app}}? La grabación en curso se guarda antes."
+    },
+    "menu": {
+      "label": "Menú de {{app}}",
+      "open": "Abrir {{app}}",
+      "record": "Grabar",
+      "stop": "Parar y guardar",
+      "quit": "Salir"
+    }
   }
 }

@@ -391,5 +391,31 @@
     "errorLiveBusy": "A live recording is already in progress (Rebecca Listen).",
     "errorNoDevice": "No audio device was found. Check the microphone or sound output in Windows.",
     "errorFailed": "Could not start recording. See the logs for details."
+  },
+  "dock": {
+    "record": "Record",
+    "recording": "Recording",
+    "askEnd": "End the recording",
+    "stopAndSave": "Stop and save",
+    "keepRecording": "Keep recording",
+    "quit": "Quit",
+    "stay": "Don’t quit",
+    "questions": {
+      "end": "End?",
+      "quit": "Quit?",
+      "quitRecording": "Quit?"
+    },
+    "questionTitles": {
+      "end": "End the recording and save it?",
+      "quit": "Quit {{app}}?",
+      "quitRecording": "Quit {{app}}? The current recording is saved first."
+    },
+    "menu": {
+      "label": "{{app}} menu",
+      "open": "Open {{app}}",
+      "record": "Record",
+      "stop": "Stop and save",
+      "quit": "Quit"
+    }
   }
 }

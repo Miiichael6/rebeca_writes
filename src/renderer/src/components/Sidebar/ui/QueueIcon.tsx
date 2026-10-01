@@ -1,5 +1,11 @@
 /** Icono de la cola: una línea larga (el trabajo en curso) y dos cortas (los pendientes). */
-export function QueueIcon({ size = 16, strokeWidth = 1.5 }): React.JSX.Element {
+export function QueueIcon({
+  size = 16,
+  strokeWidth = 1.5
+}: {
+  size?: number
+  strokeWidth?: number
+}): React.JSX.Element {
   return (
     <svg
       width={size}

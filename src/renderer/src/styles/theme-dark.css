@@ -34,6 +34,8 @@
   --thumb: #454545;
 
   --info: #4c9aff;
+  /* Borde de la píldora del dock mientras graba (tarea 30). */
+  --dock-recording: #4c9aff;
   --success: #6ccb5f;
   --critical: #ff99a4;
 

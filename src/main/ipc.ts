@@ -1,8 +1,11 @@
 import { app, BrowserWindow, clipboard, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { RECORDING_SOURCES, type RecordingSource } from '@shared/recording'
+import { DOCK_BUTTONS, type DockButton } from '@shared/dock'
 import type { BackendService } from './application/backendService'
 import type { CudaService } from './application/cudaService'
+import type { Dock } from './application/dock'
+import type { DockMenu } from './application/dockMenu'
 import type { ExportService } from './application/exportService'
 import type { HistoryService } from './application/historyService'
 import type { LiveControl } from './application/liveControl'
@@ -16,6 +19,7 @@ import type { QueueService } from './application/queueService'
 import type { RecordingsFolder } from './application/recordingsFolder'
 import type { TranscriptionManager } from './application/transcriptionManager'
 import type { UpdateService } from './application/updateService'
+import { toDockMenuAction } from './domain/dock/menuActionInput'
 import { notify, openFolder } from './infrastructure/electron/systemActions'
 import { logsDir } from './infrastructure/electron/logging'
 import { resolvedTheme } from './infrastructure/electron/theme'
@@ -42,6 +46,10 @@ export interface IpcDeps {
   mic: MicRecording
   recordingsFolder: RecordingsFolder
   updates: UpdateService
+  dock: Dock
+  dockMenu: DockMenu
+  /** Abre la ventana principal (la crea si se cerró: la app sigue en segundo plano). */
+  showMainWindow: () => void
 }
 
 function handle<C extends keyof IpcInvokeMap>(channel: C, handler: Handler<C>): void {
@@ -71,7 +79,10 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     live,
     mic,
     recordingsFolder,
-    updates
+    updates,
+    dock,
+    dockMenu,
+    showMainWindow
   } = deps
 
   handle(IpcChannel.AppGetVersion, () => app.getVersion())
@@ -83,8 +94,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.AppGetModelsDir, () => models.dir)
   handle(IpcChannel.AppOpenModelsDir, () => openFolder(models.dir))
 
-  handle(IpcChannel.AppNotify, (event, title, body) =>
-    notify(ownerOf(event), String(title), String(body))
+  handle(IpcChannel.AppNotify, (_event, title, body) =>
+    notify(showMainWindow, String(title), String(body))
   )
 
   handle(IpcChannel.ClipboardWriteText, (_event, text) => clipboard.writeText(String(text)))
@@ -177,6 +188,19 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.MicGetRecordingsDir, () => recordingsFolder.dir())
   handle(IpcChannel.MicPickRecordingsDir, (event) => recordingsFolder.pick(ownerOf(event)))
   handle(IpcChannel.MicOpenRecordingsDir, () => openFolder(recordingsFolder.dir()))
+
+  handle(IpcChannel.DockGet, () => dock.view())
+  handle(IpcChannel.DockHover, () => dock.hover())
+  handle(IpcChannel.DockPress, (_event, button, recordingName) => {
+    if (!DOCK_BUTTONS.includes(button as DockButton)) return
+    return dock.press(button, String(recordingName))
+  })
+  handle(IpcChannel.DockOpenMenu, () => dockMenu.open())
+  handle(IpcChannel.DockMenuIsOpen, () => dockMenu.isOpen())
+  handle(IpcChannel.DockMenuAction, (_event, action) => dockMenu.choose(toDockMenuAction(action)))
+  handle(IpcChannel.DockMenuSize, (_event, size) =>
+    dockMenu.resize({ width: Number(size?.width) || 0, height: Number(size?.height) || 0 })
+  )
 
   handle(IpcChannel.UpdatesGetStatus, () => updates.getStatus())
   handle(IpcChannel.UpdatesCheck, () => updates.check())

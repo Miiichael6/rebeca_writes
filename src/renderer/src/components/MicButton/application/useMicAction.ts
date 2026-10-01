@@ -5,12 +5,12 @@ import {
   elapsedLabel,
   micButtonState,
   pushLevel,
-  recordingStamp,
   selectedMicId,
   silentWave,
   usesMicrophone,
   type MicButtonState
 } from '../domain/mic'
+import { recordingName } from '@renderer/lib/recordingName'
 import { usePorts } from './ports'
 
 const TICK_MS = 1000
@@ -119,11 +119,7 @@ export function useMicAction(): MicAction {
     refreshMicrophones: () => void mic.listMicrophones().then(setMicrophones),
     toggle: () => {
       if (button.kind === 'recording') return mic.stop()
-      const name = t('mic.entryName', {
-        date: recordingStamp(new Date()),
-        source: sourceLabel(source)
-      })
-      mic.start(source, name)
+      mic.start(source, recordingName(source))
     }
   }
 }

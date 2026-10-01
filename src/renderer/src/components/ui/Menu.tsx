@@ -42,7 +42,7 @@ export interface MenuProps {
   onClose: () => void
   items: MenuItem[]
   /** Dónde se abre respecto al contenedor `.menu-anchor`. */
-  placement?: 'top-start' | 'top-end' | 'bottom-start'
+  placement?: 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'
   'aria-label': string
 }
 

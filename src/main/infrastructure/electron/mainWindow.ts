@@ -1,12 +1,11 @@
-import { join } from 'path'
 import { BrowserWindow, screen, shell } from 'electron'
-import { is } from '@electron-toolkit/utils'
 import icon from '../../../../resources/icon.png?asset'
 import { appTitle } from '@shared/app'
 import type { WindowBounds } from '@shared/settings'
 import { WINDOW_COLORS } from '@shared/theme'
 import type { Logger } from '../../application/ports/eventPublisher'
 import type { SettingsRepository } from '../../application/ports/settingsRepository'
+import { devRendererUrl, loadRendererPage, secureWebPreferences } from './rendererPage'
 import { resolvedTheme, titleBarOverlay } from './theme'
 
 const MIN_WIDTH = 960
@@ -32,7 +31,10 @@ function initialBounds(
   return visible ? bounds : { width, height }
 }
 
-/** La ventana principal: su creación, el tamaño guardado y enfocarla desde fuera. */
+/**
+ * La ventana principal: su creación, el tamaño guardado y traerla al frente desde fuera. Cerrarla
+ * no cierra la app (tarea 30): el dock la mantiene viva y `show()` la vuelve a crear.
+ */
 export class MainWindow {
   private window: BrowserWindow | null = null
 
@@ -46,9 +48,10 @@ export class MainWindow {
     return this.window && !this.window.isDestroyed() ? this.window : null
   }
 
-  focus(): void {
+  /** La trae al frente: la crea si está cerrada y la restaura si está minimizada. */
+  show(): void {
     const window = this.current()
-    if (!window) return
+    if (!window) return this.create()
     if (window.isMinimized()) window.restore()
     window.show()
     window.focus()
@@ -62,7 +65,7 @@ export class MainWindow {
     // los botones nativos min/max/cerrar encima (titleBarOverlay).
     const window = new BrowserWindow({
       // Solo el servidor de desarrollo define esta variable (ni el instalador ni `npm start`).
-      title: appTitle(Boolean(process.env['ELECTRON_RENDERER_URL'])),
+      title: appTitle(Boolean(devRendererUrl())),
       ...initialBounds(saved),
       minWidth: MIN_WIDTH,
       minHeight: MIN_HEIGHT,
@@ -72,12 +75,7 @@ export class MainWindow {
       titleBarStyle: 'hidden',
       titleBarOverlay: titleBarOverlay(theme),
       icon,
-      webPreferences: {
-        preload: join(__dirname, '../preload/index.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: true
-      }
+      webPreferences: secureWebPreferences()
     })
 
     window.on('ready-to-show', () => {
@@ -94,18 +92,12 @@ export class MainWindow {
 
     // El renderer no puede navegar fuera de la app (solo recargas del propio origen en dev).
     window.webContents.on('will-navigate', (event, url) => {
-      const devUrl = process.env['ELECTRON_RENDERER_URL']
-      if (is.dev && devUrl && url.startsWith(devUrl)) return
+      const devUrl = devRendererUrl()
+      if (devUrl && url.startsWith(devUrl)) return
       event.preventDefault()
     })
 
-    // HMR for renderer base on electron-vite cli.
-    // Load the remote URL for development or the local html file for production.
-    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-      window.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    } else {
-      window.loadFile(join(__dirname, '../renderer/index.html'))
-    }
+    loadRendererPage(window)
     this.window = window
     window.on('closed', () => {
       if (this.window === window) this.window = null

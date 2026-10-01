@@ -38,6 +38,7 @@ import type {
   MonitorLevel,
   RecordingSource
 } from './recording'
+import type { DockButton, DockMenuAction, DockMenuSize, DockView } from './dock'
 import type { ModelActionResult, ModelDownloadResult, ModelProgress, ModelStatus } from './models'
 
 /** Canales IPC. El renderer nunca los usa directamente: pasa por `window.api`. */
@@ -115,6 +116,15 @@ export const IpcChannel = {
   MicMonitorStart: 'mic:monitorStart',
   MicMonitorLevel: 'mic:monitorLevel',
   MicMonitorStop: 'mic:monitorStop',
+  DockGet: 'dock:get',
+  DockHover: 'dock:hover',
+  DockPress: 'dock:press',
+  DockView: 'dock:view',
+  DockOpenMenu: 'dock:openMenu',
+  DockMenuIsOpen: 'dock:menuIsOpen',
+  DockMenuOpen: 'dock:menuOpen',
+  DockMenuAction: 'dock:menuAction',
+  DockMenuSize: 'dock:menuSize',
   MicGetRecordingsDir: 'mic:get-recordings-dir',
   MicPickRecordingsDir: 'mic:pickRecordingsDir',
   MicOpenRecordingsDir: 'mic:openRecordingsDir',
@@ -221,6 +231,13 @@ export interface IpcInvokeMap {
   [IpcChannel.MicListDevices]: { args: []; result: MicDevice[] }
   [IpcChannel.MicMonitorStart]: { args: [source: RecordingSource, micId: string]; result: void }
   [IpcChannel.MicMonitorStop]: { args: []; result: void }
+  [IpcChannel.DockGet]: { args: []; result: DockView }
+  [IpcChannel.DockHover]: { args: []; result: void }
+  [IpcChannel.DockPress]: { args: [button: DockButton, recordingName: string]; result: void }
+  [IpcChannel.DockOpenMenu]: { args: []; result: void }
+  [IpcChannel.DockMenuIsOpen]: { args: []; result: boolean }
+  [IpcChannel.DockMenuAction]: { args: [action: DockMenuAction]; result: void }
+  [IpcChannel.DockMenuSize]: { args: [size: DockMenuSize]; result: void }
   [IpcChannel.MicGetRecordingsDir]: { args: []; result: string }
   [IpcChannel.MicPickRecordingsDir]: { args: []; result: string | null }
   [IpcChannel.MicOpenRecordingsDir]: { args: []; result: void }
@@ -250,6 +267,8 @@ export interface IpcEventMap {
   [IpcChannel.LiveEnded]: LiveEndedEvent
   [IpcChannel.MicChanged]: MicState
   [IpcChannel.MicLevel]: number
+  [IpcChannel.DockView]: DockView
+  [IpcChannel.DockMenuOpen]: boolean
   [IpcChannel.MicMonitorLevel]: MonitorLevel
   [IpcChannel.TranscribeSegment]: TranscribeSegmentEvent
   [IpcChannel.TranscribeProgress]: TranscribeProgressEvent
@@ -479,6 +498,23 @@ export interface AppApi {
     pickRecordingsDir: () => Promise<string | null>
     /** Abre la carpeta de grabaciones en el Explorador (la crea si no existe). */
     openRecordingsDir: () => Promise<void>
+  }
+  /** El dock en el borde y su menú contextual (tarea 30); solo lo usan sus ventanas. */
+  dock: {
+    get: () => Promise<DockView>
+    /** El ratón llegó al dock: sale hasta que se vaya. */
+    hover: () => Promise<void>
+    /** `recordingName` es el nombre de la entrada, ya traducido, por si el botón graba. */
+    press: (button: DockButton, recordingName: string) => Promise<void>
+    onView: (listener: (view: DockView) => void) => () => void
+    /** Clic derecho en el dock. */
+    openMenu: () => Promise<void>
+    /** Si el menú está abierto (para la ventana del menú que termina de cargar). */
+    menuIsOpen: () => Promise<boolean>
+    onMenuOpen: (listener: (open: boolean) => void) => () => void
+    chooseMenu: (action: DockMenuAction) => Promise<void>
+    /** Lo que ocupa el menú; la ventana se ajusta y se muestra. */
+    setMenuSize: (size: DockMenuSize) => Promise<void>
   }
   transcribe: {
     /** Arranca el trabajo; el resultado llega por `onSegment`/`onProgress`/`onDone`/`onError`. */

@@ -866,6 +866,13 @@
   position-try-fallbacks: flip-block, flip-inline;
 }
 
+.menu-bottom-end {
+  top: anchor(bottom);
+  right: anchor(right);
+  margin-top: 4px;
+  position-try-fallbacks: flip-block, flip-inline;
+}
+
 .menu-top-start {
   bottom: anchor(top);
   left: anchor(left);
@@ -958,7 +965,8 @@
   bottom: calc(anchor(bottom) - var(--space-1) - 1px);
 }
 
-.menu-bottom-start .menu-submenu {
+.menu-bottom-start .menu-submenu,
+.menu-bottom-end .menu-submenu {
   top: calc(anchor(top) - var(--space-1) - 1px);
 }
 
@@ -1038,4 +1046,138 @@
 .drawer-empty {
   padding: var(--space-5);
   color: var(--text-3);
+}
+
+/* ---------- Dock en el borde (tarea 30) ----------
+ * La píldora de Rebecca Listen: cristal oscuro con borde blanco y botones redondos en los
+ * extremos, en una ventana transparente. Mismos colores en los dos temas; solo el azul de
+ * grabando sale del tema.
+ */
+:root[data-page='dock'] body {
+  background: transparent;
+}
+
+.dock {
+  height: 100%;
+  /* La ventana llega al borde de la pantalla; los 12 px de margen quedan vacíos (MARGIN_PX). */
+  padding: 2px 14px 2px 2px;
+}
+
+.edge-pill-area {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.edge-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  height: 100%;
+  max-height: 28px;
+  padding: 0 3px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: var(--radius-round);
+  background: rgba(22, 25, 29, 0.88);
+  color: #fff;
+  animation: fade-in var(--duration-fast) var(--ease);
+}
+
+/* Escondida, toda la ventana (del tamaño de la barra) es una barra negra; mientras entra
+   deslizándose al tamaño de la píldora, una franja a la izquierda tan ancha como lo que asoma. */
+.edge-pill-bar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-right: none;
+  border-radius: 3px 0 0 3px;
+  background: #000;
+}
+
+.edge-pill.edge-pill-active,
+.edge-pill-bar.edge-pill-active {
+  border-color: var(--dock-recording);
+}
+
+.edge-pill-button {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: #16191d;
+  cursor: pointer;
+}
+
+.edge-pill-button:hover {
+  background: #fff;
+}
+
+.edge-pill-indicator {
+  cursor: default;
+}
+
+.edge-pill-indicator:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.edge-pill-wave {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.edge-pill-wave i {
+  width: 2px;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.edge-pill-active .edge-pill-wave i {
+  animation: edge-pill-bounce 900ms ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-pill-active .edge-pill-wave i {
+    animation: none;
+  }
+}
+
+.edge-pill-question {
+  flex: 1;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Menú del dock: pegado arriba a la derecha de su ventana (a la distancia que fija
+   `MENU_WINDOW_PADDING_PX`, para la sombra) y con el submenú siempre hacia la izquierda, hacia
+   dentro de la pantalla. */
+.dock-menu-anchor {
+  position: fixed;
+  width: 0;
+  height: 0;
+}
+
+.dock-menu-anchor .menu {
+  position-try-fallbacks: none;
+}
+
+.dock-menu-anchor .menu.menu-submenu {
+  left: auto;
+  right: anchor(left);
+  margin: 0 calc(2 * var(--space-1)) 0 0;
 }

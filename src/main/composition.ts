@@ -6,6 +6,8 @@ import { IpcChannel } from '@shared/ipc'
 import { createArgvHandler } from './application/argvHandler'
 import { BackendService } from './application/backendService'
 import { CudaService } from './application/cudaService'
+import { Dock } from './application/dock'
+import { DockMenu } from './application/dockMenu'
 import { ExportService } from './application/exportService'
 import { HistoryService } from './application/historyService'
 import { LiveControl } from './application/liveControl'
@@ -27,6 +29,8 @@ import { whisperBinaries } from './infrastructure/binaries/whisperBinaries'
 import { createFsRecordingFiles } from './infrastructure/capture/fsRecordingFiles'
 import { CAPTURE_BINARY, SidecarAudioCapture } from './infrastructure/capture/sidecarAudioCapture'
 import { zipCudaInstaller } from './infrastructure/downloads/zipCudaInstaller'
+import { ElectronDockMenuSurface } from './infrastructure/electron/dockMenuWindow'
+import { ElectronDockSurface } from './infrastructure/electron/dockWindow'
 import { electronDialogs } from './infrastructure/electron/electronDialogs'
 import { electronShell } from './infrastructure/electron/electronShell'
 import { createElectronUpdater } from './infrastructure/electron/electronUpdater'
@@ -61,6 +65,13 @@ export interface AppPaths {
   defaultRecordingsDir: string
 }
 
+/** Lo que solo sabe hacer `index.ts` (la ventana principal y el ciclo de vida de la app). */
+export interface AppControl {
+  showMainWindow: () => void
+  /** Cierra la app del todo (D9): cerrar la ventana la deja en segundo plano. */
+  quit: () => void
+}
+
 export interface Services extends IpcDeps {
   registry: MediaRegistry
   /** Encola los archivos o atiende la orden en vivo que lleguen por la línea de órdenes. */
@@ -71,7 +82,7 @@ export interface Services extends IpcDeps {
  * Raíz de composición: todas las instancias de main se crean aquí y solo aquí. Une los
  * casos de uso de `application/` con los adaptadores de `infrastructure/`.
  */
-export function createServices(paths: AppPaths): Services {
+export function createServices(paths: AppPaths, control: AppControl): Services {
   const { userData, bundledBinDir } = paths
   /** Backends descargados desde la app (CUDA, tarea 23.1): `userData/backends/<backend>`. */
   const downloadedBinDir = join(userData, 'backends')
@@ -213,6 +224,24 @@ export function createServices(paths: AppPaths): Services {
     log
   })
 
+  // --- Dock en el borde (tarea 30) ---
+  const dock = new Dock({
+    surface: new ElectronDockSurface(),
+    mic,
+    source: () => settings.get().recordingSource,
+    quit: control.quit,
+    log
+  })
+  mic.onStateChange(() => dock.refresh())
+  const dockMenu = new DockMenu({
+    surface: new ElectronDockMenuSurface(),
+    dock,
+    mic,
+    settings,
+    showMainWindow: control.showMainWindow,
+    log
+  })
+
   // --- Actualizaciones ---
   const updates = new UpdateService({
     updater: createElectronUpdater(),
@@ -240,6 +269,9 @@ export function createServices(paths: AppPaths): Services {
     mic,
     recordingsFolder,
     updates,
+    dock,
+    dockMenu,
+    showMainWindow: control.showMainWindow,
     registry,
     queueFromArgv: createArgvHandler({
       live,

@@ -129,6 +129,17 @@ const api: AppApi = {
     pickRecordingsDir: () => invoke(IpcChannel.MicPickRecordingsDir),
     openRecordingsDir: () => invoke(IpcChannel.MicOpenRecordingsDir)
   },
+  dock: {
+    get: () => invoke(IpcChannel.DockGet),
+    hover: () => invoke(IpcChannel.DockHover),
+    press: (button, recordingName) => invoke(IpcChannel.DockPress, button, recordingName),
+    onView: (listener) => on(IpcChannel.DockView, listener),
+    openMenu: () => invoke(IpcChannel.DockOpenMenu),
+    menuIsOpen: () => invoke(IpcChannel.DockMenuIsOpen),
+    onMenuOpen: (listener) => on(IpcChannel.DockMenuOpen, listener),
+    chooseMenu: (action) => invoke(IpcChannel.DockMenuAction, action),
+    setMenuSize: (size) => invoke(IpcChannel.DockMenuSize, size)
+  },
   transcribe: {
     start: (job) => invoke(IpcChannel.TranscribeStart, job),
     cancel: (jobId) => invoke(IpcChannel.TranscribeCancel, jobId),

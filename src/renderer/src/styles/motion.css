@@ -166,3 +166,10 @@
     opacity: 0;
   }
 }
+
+/* Onda de la píldora del dock mientras graba (tarea 30). */
+@keyframes edge-pill-bounce {
+  to {
+    transform: scaleY(0.35);
+  }
+}

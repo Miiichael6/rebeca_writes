@@ -49,8 +49,15 @@ export class MicRecording {
   /** Lo abierto solo para los medidores del menú (sin grabar). */
   private monitor: CaptureStream[] = []
   private last: Promise<unknown> = Promise.resolve()
+  private readonly listeners = new Set<(state: MicState) => void>()
 
   constructor(private readonly deps: MicRecordingDeps) {}
+
+  /** Avisa al empezar y al terminar cada grabación (el dock, tarea 30). Devuelve la baja. */
+  onStateChange(listener: (state: MicState) => void): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
+  }
 
   state(): MicState {
     const r = this.recording
@@ -238,5 +245,6 @@ export class MicRecording {
       IpcChannel.MicChanged,
       interrupted && !state.recording ? { ...state, interrupted } : state
     )
+    for (const listener of this.listeners) listener(state)
   }
 }

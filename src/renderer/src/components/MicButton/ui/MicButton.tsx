@@ -1,24 +1,11 @@
 import { useState } from 'react'
-import {
-  AudioLines,
-  ChevronDown,
-  Mic,
-  MicVocal,
-  Square,
-  Volume2,
-  type LucideIcon
-} from 'lucide-react'
+import { ChevronDown, Mic, MicVocal, Square } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { RECORDING_SOURCES, type RecordingSource } from '@shared/recording'
+import { RECORDING_SOURCES } from '@shared/recording'
 import { useMicAction, type MicAction } from '../application/useMicAction'
 import { Button, Menu, type MenuItem } from '../../ui'
 import { MicLevelMeters } from './MicLevelMeters'
-
-const SOURCE_ICONS: Record<RecordingSource, LucideIcon> = {
-  system: Volume2,
-  voice: Mic,
-  both: AudioLines
-}
+import { SOURCE_ICONS } from './sourceIcons'
 
 /**
  * Arriba, los niveles del sistema y del micrófono; luego las fuentes y, si la elegida usa el

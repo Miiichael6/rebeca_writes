@@ -35,6 +35,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 - [x] **D5** ¿El repo es público o los Releases van en otro repo? → afecta 25 — **Repo público** `Miiichael6/rebeca_writes` (2026-09-28)
 - [x] **D6** Al parar una grabación de micrófono, ¿en qué formato y carpeta se guarda? (propuesta: MP3 en `Documentos\RebeccaWrites\Grabaciones`, cambiable en Configuración) → afecta 29 — **MP3**; carpeta la propuesta, cambiable en Configuración (2026-09-30)
 - [x] **D7** ¿Se graba siempre del micrófono predeterminado de Windows o se añade un selector de entrada en Configuración? → afecta 29 — **Tres fuentes: Computadora, Mi voz y Ambos**, con los dispositivos predeterminados de Windows (2026-09-30)
+- [x] **D8** ¿Qué hacen los botones del dock? → afecta 30 — **Sin grabar: onda quieta + 🎤 (graba). Grabando (borde azul): ■ · onda · 🎤; ■ pregunta "¿Terminar?": ✓ para y guarda, ✕ sigue grabando.** Menú contextual propio con "Grabar ▸" Sistema / Micrófono / Ambos (2026-10-01)
+- [x] **D9** ¿Cómo se sale del todo de la app? → afecta 30 — **"Salir" en el menú del dock, con confirmación; no queda ningún proceso** (2026-10-01)
 
 ## Tablero
 
@@ -70,6 +72,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 27 | [Transcripción en vivo desde Rebecca Listen](done/27_transcripcion_en_vivo_desde_rebecca_listen.md) | 9 Pulido | 17, 18, 19 | ✅ Terminada |
 | 28 | [Hexagonal: lo que falta de main](done/28_hexagonal_main_restante.md) | 9 Pulido | — | ✅ Terminada |
 | 29 | [Grabar con el micrófono](done/29_grabar_con_microfono.md) | 9 Pulido | 27, 28 | ✅ Terminada |
+| 30 | [Dock en el borde de la pantalla](in_progress/30_dock_en_el_borde.md) | 9 Pulido | 29 | 🔄 En progreso |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -89,5 +92,5 @@ todas → 22 → 23 → 24
         22 → 25 (actualizaciones; primera versión con ellas: v1.1.0)
         22 → 26 (animaciones y Select propio)
 17 + 18 + 19 → 27 (vivo desde Listen) ┐
-                               28 ─┴→ 29 (grabar con micrófono)
+                               28 ─┴→ 29 (grabar con micrófono) → 30 (dock en el borde)
 ```
