@@ -1059,8 +1059,25 @@
 
 .dock {
   height: 100%;
-  /* La ventana llega al borde de la pantalla; los 12 px de margen quedan vacíos (MARGIN_PX). */
-  padding: 2px 14px 2px 2px;
+  padding: 2px;
+}
+
+/* La ventana llega al borde de la pantalla (tarea 33: el que elija el usuario); los 12 px de
+   margen hacia él quedan vacíos (MARGIN_PX). */
+.dock[data-edge='right'] {
+  padding-right: 14px;
+}
+
+.dock[data-edge='left'] {
+  padding-left: 14px;
+}
+
+.dock[data-edge='top'] {
+  padding-top: 14px;
+}
+
+.dock[data-edge='bottom'] {
+  padding-bottom: 14px;
 }
 
 .edge-pill-area {
@@ -1089,15 +1106,55 @@
 }
 
 /* Escondida, toda la ventana (del tamaño de la barra) es una barra negra; mientras entra
-   deslizándose al tamaño de la píldora, una franja a la izquierda tan ancha como lo que asoma. */
+   deslizándose al tamaño de la píldora, una franja del lado que asoma (el contrario al borde),
+   tan gruesa como lo que asoma (PEEK_PX) y tan larga como la barra (BAR_PX). */
 .edge-pill-bar {
   position: fixed;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #000;
+}
+
+.dock[data-edge='right'] .edge-pill-bar {
   inset: 0 auto 0 0;
   width: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
   border-right: none;
   border-radius: 3px 0 0 3px;
-  background: #000;
+}
+
+.dock[data-edge='left'] .edge-pill-bar {
+  inset: 0 0 0 auto;
+  width: 6px;
+  border-left: none;
+  border-radius: 0 3px 3px 0;
+}
+
+.dock[data-edge='top'] .edge-pill-bar {
+  bottom: 0;
+  width: 48px;
+  height: 6px;
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+}
+
+.dock[data-edge='bottom'] .edge-pill-bar {
+  top: 0;
+  width: 48px;
+  height: 6px;
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Arriba y abajo, la barra va en la esquina o al centro, como la barra escondida. */
+.dock[data-align='start'] .edge-pill-bar {
+  left: 0;
+}
+
+.dock[data-align='end'] .edge-pill-bar {
+  right: 0;
+}
+
+.dock:is([data-edge='top'], [data-edge='bottom'])[data-align='center'] .edge-pill-bar {
+  left: calc(50% - 24px);
 }
 
 .edge-pill.edge-pill-active,
@@ -1180,9 +1237,9 @@
   text-overflow: ellipsis;
 }
 
-/* Menú del dock: pegado arriba a la derecha de su ventana (a la distancia que fija
-   `MENU_WINDOW_PADDING_PX`, para la sombra) y con el submenú siempre hacia la izquierda, hacia
-   dentro de la pantalla. */
+/* Menú del dock: pegado arriba en su ventana (a la distancia que fija `MENU_WINDOW_PADDING_PX`,
+   para la sombra), del lado del cursor, y con el submenú siempre hacia dentro de la pantalla
+   (`data-opens`). */
 .dock-menu-anchor {
   position: fixed;
   width: 0;
@@ -1206,7 +1263,7 @@
   height: 14px;
 }
 
-.dock-menu-anchor .menu.menu-submenu {
+.dock-menu-anchor[data-opens='left'] .menu.menu-submenu {
   left: auto;
   right: anchor(left);
   margin: 0 calc(2 * var(--space-1)) 0 0;

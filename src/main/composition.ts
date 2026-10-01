@@ -229,9 +229,9 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     log
   })
 
-  // --- Dock en el borde (tarea 30) ---
+  // --- Dock en el borde (tareas 30 y 33) ---
   const dock = new Dock({
-    surface: new ElectronDockSurface(),
+    surface: new ElectronDockSurface(() => settings.get().dockPosition),
     mic,
     source: () => settings.get().recordingSource,
     // `dockMenu` se crea justo después; solo se consulta con el dock ya fuera.
@@ -240,8 +240,14 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     log
   })
   mic.onStateChange(() => dock.refresh())
+  let dockPosition = settings.get().dockPosition
+  settings.onChanged((next) => {
+    if (next.dockPosition === dockPosition) return
+    dockPosition = next.dockPosition
+    dock.refresh()
+  })
   const dockMenu = new DockMenu({
-    surface: new ElectronDockMenuSurface(),
+    surface: new ElectronDockMenuSurface(() => settings.get().dockPosition),
     dock,
     mic,
     settings,

@@ -277,7 +277,19 @@
       "twoKeys": "Use a single key besides the modifiers."
     },
     "suggestMeetings": "Suggest recording meetings",
-    "suggestMeetingsDescription": "When a call starts in Teams, Zoom, Webex, Slack, Discord or Skype, the dock asks whether to record it. It never records without your confirmation."
+    "suggestMeetingsDescription": "When a call starts in Teams, Zoom, Webex, Slack, Discord or Skype, the dock asks whether to record it. It never records without your confirmation.",
+    "dockPosition": "Dock position",
+    "dockPositionDescription": "Where the dock hides: on a side edge, or at the top or bottom in a corner or the center.",
+    "dockPositions": {
+      "right": "Right edge",
+      "left": "Left edge",
+      "topLeft": "Top left",
+      "topCenter": "Top center",
+      "topRight": "Top right",
+      "bottomLeft": "Bottom left",
+      "bottomCenter": "Bottom center",
+      "bottomRight": "Bottom right"
+    }
   },
   "models": {
     "title": "Whisper models",

@@ -1,3 +1,4 @@
+import { DEFAULT_DOCK_POSITION, type DockPosition } from './dock'
 import type { UiLanguageSetting } from './i18n'
 import { DEFAULT_RECORDING_SOURCE, type RecordingSource } from './recording'
 import { DEFAULT_RECORD_SHORTCUT } from './shortcut'
@@ -86,6 +87,8 @@ export interface Settings {
   recordShortcut: string | null
   /** El dock pregunta si grabar al empezar una llamada (tarea 32). */
   suggestMeetingRecording: boolean
+  /** Dónde vive el dock (tarea 33). */
+  dockPosition: DockPosition
 
   queue: QueueSettings
   window: WindowBounds
@@ -146,6 +149,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     recordingsDir: '',
     recordShortcut: DEFAULT_RECORD_SHORTCUT,
     suggestMeetingRecording: true,
+    dockPosition: DEFAULT_DOCK_POSITION,
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }
   }

@@ -78,6 +78,7 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 30 | [Dock en el borde de la pantalla](done/30_dock_en_el_borde.md) | 9 Pulido | 29 | ✅ Terminada |
 | 31 | [Atajo de teclado para grabar](done/31_atajo_grabar.md) | 9 Pulido | 30 | ✅ Terminada |
 | 32 | [Sugerir grabar una reunión](done/32_sugerir_grabar_reunion.md) | 9 Pulido | 30 | ✅ Terminada |
+| 33 | [Posición del dock](in_progress/33_posicion_del_dock.md) | 9 Pulido | 30 | 🔄 En progreso |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -99,4 +100,5 @@ todas → 22 → 23 → 24
 17 + 18 + 19 → 27 (vivo desde Listen) ┐
                                28 ─┴→ 29 (grabar con micrófono) → 30 (dock en el borde) → 31 (atajo para grabar)
                                                                         30 → 32 (sugerir grabar reuniones)
+                                                                        30 → 33 (posición del dock)
 ```

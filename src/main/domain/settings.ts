@@ -1,3 +1,4 @@
+import { DOCK_POSITIONS } from '@shared/dock'
 import { SUPPORTED_UI_LANGUAGES } from '@shared/i18n'
 import { RECORDING_SOURCES } from '@shared/recording'
 import {
@@ -79,7 +80,8 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     recordingMicId: text(1000),
     recordingsDir: text(1000),
     recordShortcut: shortcutOrNull,
-    suggestMeetingRecording: bool
+    suggestMeetingRecording: bool,
+    dockPosition: oneOf(DOCK_POSITIONS)
   }
 }
 

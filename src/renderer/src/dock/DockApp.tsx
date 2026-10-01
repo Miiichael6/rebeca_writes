@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { APP_NAME } from '@shared/app'
-import { dockShowsIndicator, type DockAction, type DockButton } from '@shared/dock'
+import {
+  dockAlign,
+  dockEdge,
+  dockShowsIndicator,
+  type DockAction,
+  type DockButton
+} from '@shared/dock'
 import {
   EDGE_PILL_BARS,
   EdgePill,
@@ -17,7 +23,8 @@ import { DOCK_ACTIONS, RECORDING_INDICATOR } from './dockButtons'
 
 /**
  * La ventana del dock en el borde (tarea 30): la `EdgePill` conectada al main. La ventana es
- * transparente, así que solo se ve la píldora. Clic derecho abre el menú del dock.
+ * transparente, así que solo se ve la píldora. Clic derecho abre el menú del dock. `data-edge` y
+ * `data-align` (tarea 33) dicen al CSS hacia qué borde va el margen y dónde va la barra.
  */
 export function DockApp(): React.JSX.Element {
   useThemeSync()
@@ -26,6 +33,7 @@ export function DockApp(): React.JSX.Element {
   const { t } = useTranslation()
   const { view, press, hover, openMenu } = useDock()
   const source = useSettingsStore((s) => s.settings.recordingSource)
+  const position = useSettingsStore((s) => s.settings.dockPosition)
   const wave = useWave(view.recording, onMicLevel, EDGE_PILL_BARS)
 
   const button = (side: DockButton, action: DockAction | null): EdgePillButton | null => {
@@ -47,6 +55,8 @@ export function DockApp(): React.JSX.Element {
   return (
     <div
       className="dock"
+      data-edge={dockEdge(position)}
+      data-align={dockAlign(position)}
       onContextMenu={(e) => {
         e.preventDefault()
         openMenu()

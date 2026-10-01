@@ -4,16 +4,18 @@ import { useEffect } from 'react'
 export const MENU_WINDOW_PADDING_PX = 16
 
 /**
- * Lo que ocupan el menú y su submenú abierto en la ventana. El menú está pegado arriba a la
- * derecha, así que lo que se sale por la izquierda (un submenú) cuenta como ancho de más.
+ * Lo que ocupan el menú y su submenú abierto en la ventana. El menú está pegado arriba, a la
+ * derecha si se abre hacia la izquierda (`opensLeft`) o a la izquierda si no; lo que se sale
+ * por el otro lado (un submenú) cuenta como ancho de más.
  */
-function measure(): { width: number; height: number } | null {
+function measure(opensLeft: boolean): { width: number; height: number } | null {
   const rects = [...document.querySelectorAll('.menu')].map((menu) => menu.getBoundingClientRect())
   if (rects.length === 0) return null
   const left = Math.min(...rects.map((rect) => rect.left))
+  const right = Math.max(...rects.map((rect) => rect.right))
   const bottom = Math.max(...rects.map((rect) => rect.bottom))
   return {
-    width: window.innerWidth - left + MENU_WINDOW_PADDING_PX,
+    width: (opensLeft ? window.innerWidth - left : right) + MENU_WINDOW_PADDING_PX,
     height: bottom + MENU_WINDOW_PADDING_PX
   }
 }
@@ -23,7 +25,7 @@ function measure(): { width: number; height: number } | null {
  * muestre); vuelve a medir cuando se abre el submenú. La ventana solo crece mientras el menú
  * está abierto: encogerla al cerrar el submenú la movía de sitio y el menú parpadeaba.
  */
-export function useReportMenuSize(open: boolean): void {
+export function useReportMenuSize(open: boolean, opensLeft: boolean): void {
   useEffect(() => {
     if (!open) return
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -32,7 +34,7 @@ export function useReportMenuSize(open: boolean): void {
     const report = (): void => {
       clearTimeout(timer)
       timer = setTimeout(() => {
-        const size = measure()
+        const size = measure(opensLeft)
         if (!size) return
         const next = {
           width: Math.max(max.width, size.width),
@@ -50,5 +52,5 @@ export function useReportMenuSize(open: boolean): void {
       observer.disconnect()
       clearTimeout(timer)
     }
-  }, [open])
+  }, [open, opensLeft])
 }

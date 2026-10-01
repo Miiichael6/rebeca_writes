@@ -5,6 +5,7 @@ import { useEscapeToLeave } from '../application/useEscapeToLeave'
 import { Button, SettingsSection } from '../../../ui'
 import AboutSection from '../../AboutSection'
 import BackendSetting from '../../BackendSetting'
+import DockSettings from '../../DockSettings'
 import InterfaceSettings from '../../InterfaceSettings'
 import MeetingSettings from '../../MeetingSettings'
 import ModelsSection from '../../ModelsSection'
@@ -38,6 +39,7 @@ export function SettingsPage(): React.JSX.Element {
         </SettingsSection>
         <SettingsSection title={t('settings.interface')}>
           <InterfaceSettings />
+          <DockSettings />
         </SettingsSection>
         <SettingsSection title={t('settings.recording')}>
           <ShortcutSettings />

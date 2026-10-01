@@ -1,6 +1,6 @@
 import { BrowserWindow, screen } from 'electron'
 import { IpcChannel } from '@shared/ipc'
-import type { DockMenuSize } from '@shared/dock'
+import { menuOpensLeft, type DockMenuSize, type DockPosition } from '@shared/dock'
 import type { DockMenuSurface } from '../../application/ports/dockSurface'
 import type { Point } from '../../domain/dock/edge'
 import { menuBounds } from '../../domain/dock/menuPlacement'
@@ -36,11 +36,16 @@ function createDockMenuWindow(): BrowserWindow {
   return window
 }
 
-/** Adaptador de `DockMenuSurface`: abre junto al cursor y se esconde al perder el foco. */
+/**
+ * Adaptador de `DockMenuSurface`: abre junto al cursor, hacia dentro de la pantalla según
+ * `position()` (tarea 33), y se esconde al perder el foco.
+ */
 export class ElectronDockMenuSurface implements DockMenuSurface {
   private window: BrowserWindow | null = null
   /** Dónde estaba el cursor al abrirlo; el menú se coloca respecto a él. */
   private cursor: Point | null = null
+
+  constructor(private readonly position: () => DockPosition) {}
 
   prepare(): void {
     this.ensureWindow()
@@ -61,7 +66,7 @@ export class ElectronDockMenuSurface implements DockMenuSurface {
     const window = this.window
     if (!window || window.isDestroyed() || !this.cursor) return
     const { workArea } = screen.getDisplayNearestPoint(this.cursor)
-    window.setBounds(menuBounds(this.cursor, size, workArea))
+    window.setBounds(menuBounds(this.cursor, size, workArea, menuOpensLeft(this.position())))
     if (window.isVisible()) return
     window.show()
     window.focus()

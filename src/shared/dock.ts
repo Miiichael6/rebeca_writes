@@ -1,7 +1,7 @@
 import type { RecordingSource } from './recording'
 
 /**
- * El dock en el borde de la pantalla (tarea 30): una píldora escondida en el borde derecho que
+ * El dock en el borde de la pantalla (tarea 30): una píldora escondida en un borde (tarea 33) que
  * sale con el ratón, graba y hace preguntas de sí/no. Sin imports de `electron`: lo usa el
  * renderer.
  */
@@ -38,6 +38,52 @@ export interface DockView {
 /** Grabando sin pregunta, el extremo derecho muestra el 🎤 de indicador, sin acción. */
 export function dockShowsIndicator(view: DockView): boolean {
   return view.right === null && view.recording
+}
+
+/** Dónde vive el dock (tarea 33): un borde lateral, o arriba o abajo en una esquina o al centro. */
+export const DOCK_POSITIONS = [
+  'right',
+  'left',
+  'topLeft',
+  'topCenter',
+  'topRight',
+  'bottomLeft',
+  'bottomCenter',
+  'bottomRight'
+] as const
+export type DockPosition = (typeof DOCK_POSITIONS)[number]
+export const DEFAULT_DOCK_POSITION: DockPosition = 'right'
+
+/** El borde de la pantalla en el que asoma el dock escondido. */
+export type DockEdge = 'left' | 'right' | 'top' | 'bottom'
+/** Dónde va a lo largo de su borde: al principio (izquierda o arriba), al centro o al final. */
+export type DockAlign = 'start' | 'center' | 'end'
+
+const PLACEMENTS: Record<DockPosition, { edge: DockEdge; align: DockAlign }> = {
+  right: { edge: 'right', align: 'center' },
+  left: { edge: 'left', align: 'center' },
+  topLeft: { edge: 'top', align: 'start' },
+  topCenter: { edge: 'top', align: 'center' },
+  topRight: { edge: 'top', align: 'end' },
+  bottomLeft: { edge: 'bottom', align: 'start' },
+  bottomCenter: { edge: 'bottom', align: 'center' },
+  bottomRight: { edge: 'bottom', align: 'end' }
+}
+
+export function dockEdge(position: DockPosition): DockEdge {
+  return PLACEMENTS[position].edge
+}
+
+export function dockAlign(position: DockPosition): DockAlign {
+  return PLACEMENTS[position].align
+}
+
+/**
+ * Si el menú del dock se abre a la izquierda del cursor (hacia dentro de la pantalla): sí,
+ * salvo con el dock en la mitad izquierda (borde izquierdo o esquinas de la izquierda).
+ */
+export function menuOpensLeft(position: DockPosition): boolean {
+  return dockEdge(position) !== 'left' && dockAlign(position) !== 'start'
 }
 
 /** Lo elegido en el menú contextual del dock. */

@@ -1,12 +1,12 @@
 import { BrowserWindow, screen } from 'electron'
 import { IpcChannel } from '@shared/ipc'
-import type { DockView } from '@shared/dock'
+import type { DockPosition, DockView } from '@shared/dock'
 import type { DockSurface } from '../../application/ports/dockSurface'
 import { dockWidth } from '../../domain/dock/dockWidth'
-import { contains, dockBounds, slidePath } from '../../domain/dock/edge'
+import { contains, dockBounds, tuckedBounds, type Area, type Point } from '../../domain/dock/edge'
+import { slidePoints } from '../../domain/dock/slide'
 import { loadRendererPage, secureWebPreferences } from './rendererPage'
 
-const SLIDE_FRAMES = 8
 const FRAME_MS = 16
 
 function workArea(): Electron.Rectangle {
@@ -17,9 +17,9 @@ function workArea(): Electron.Rectangle {
  * La ventana del dock: transparente, sin marco, siempre encima, fuera de la barra de tareas y
  * sin quitarle nunca el foco a la app que se está usando. Carga el renderer en `#/dock`.
  */
-export function createDockWindow(): BrowserWindow {
+function createDockWindow(bounds: Area): BrowserWindow {
   const window = new BrowserWindow({
-    ...dockBounds(workArea(), null),
+    ...bounds,
     show: false,
     frame: false,
     transparent: true,
@@ -42,46 +42,51 @@ export function createDockWindow(): BrowserWindow {
 }
 
 /**
- * Si el ratón está sobre el dock fuera. Se le pregunta al sistema y no a la página: mientras la
- * ventana se desliza bajo un ratón quieto, la página avisa de un "ratón fuera" falso y el dock
- * saldría y entraría sin parar.
+ * Desliza la ventana (del tamaño de `to`) de `from` a `to` y al acabar la deja en `final`.
+ * Devuelve cómo pararlo a medias.
  */
-export function cursorOnDock(view: DockView): boolean {
-  return contains(dockBounds(workArea(), dockWidth(view)), screen.getCursorScreenPoint())
-}
-
-/**
- * Desliza el dock fuera o al borde, a tamaño de píldora (del largo que pide `view`); al llegar
- * al borde toma la forma de barra.
- */
-export function slideDock(window: BrowserWindow, view: DockView, done: () => void): () => void {
-  const width = dockWidth(view)
-  const target = dockBounds(workArea(), view.out ? width : null)
-  const pill = dockBounds(workArea(), width)
-  const path = slidePath(window.getBounds().x, target.x, SLIDE_FRAMES)
+function slideWindow(
+  window: BrowserWindow,
+  from: Point,
+  to: Area,
+  final: Area,
+  done: () => void
+): () => void {
+  const path = slidePoints(from, to)
   const timer = setInterval(() => {
-    const x = path.shift()
-    if (window.isDestroyed() || x === undefined) {
+    const point = path.shift()
+    if (window.isDestroyed() || point === undefined) {
       clearInterval(timer)
-      if (!window.isDestroyed()) window.setBounds(target)
+      if (!window.isDestroyed()) window.setBounds(final)
       done()
       return
     }
-    window.setBounds({ ...pill, x })
+    window.setBounds({ ...to, ...point })
   }, FRAME_MS)
   return () => clearInterval(timer)
 }
 
-/** Adaptador de `DockSurface` sobre la ventana del dock. */
+/**
+ * Adaptador de `DockSurface` sobre la ventana del dock, en el borde que dice `position()`
+ * (tarea 33). Sale y entra deslizándose desde la barra; si la posición cambia, salta a la nueva.
+ */
 export class ElectronDockSurface implements DockSurface {
   private window: BrowserWindow | null = null
   private stopSlide: (() => void) | null = null
   /** La última vista: de ella sale el largo del dock fuera. */
   private view: DockView | null = null
+  /** Dónde se colocó la ventana por última vez. */
+  private placedAt: DockPosition | null = null
+  /** La ventana es la barra escondida (y no la píldora, quieta o a medio deslizar). */
+  private atEdge = true
+
+  constructor(private readonly position: () => DockPosition) {}
 
   open(): void {
     if (this.window && !this.window.isDestroyed()) return
-    const window = createDockWindow()
+    this.placedAt = this.position()
+    this.atEdge = true
+    const window = createDockWindow(dockBounds(workArea(), null, this.placedAt))
     window.on('closed', () => {
       if (this.window === window) this.window = null
     })
@@ -99,11 +104,38 @@ export class ElectronDockSurface implements DockSurface {
     if (!window || window.isDestroyed()) return
     this.view = view
     this.stopSlide?.()
-    this.stopSlide = slideDock(window, view, () => (this.stopSlide = null))
+    this.stopSlide = null
     window.webContents.send(IpcChannel.DockView, view)
+    const position = this.position()
+    if (position !== this.placedAt) return this.jump(window, view, position)
+    this.slide(window, view, position)
   }
 
   cursorInside(): boolean {
-    return this.view !== null && cursorOnDock(this.view)
+    if (!this.view || !this.placedAt) return false
+    const bounds = dockBounds(workArea(), dockWidth(this.view), this.placedAt)
+    return contains(bounds, screen.getCursorScreenPoint())
+  }
+
+  /** Fuera o a la barra según `view.out`: la píldora se desliza y en la barra toma su forma. */
+  private slide(window: BrowserWindow, view: DockView, position: DockPosition): void {
+    const area = workArea()
+    const width = dockWidth(view)
+    const tucked = tuckedBounds(area, width, position)
+    const from = this.atEdge ? tucked : window.getBounds()
+    const to = view.out ? dockBounds(area, width, position) : tucked
+    const final = view.out ? to : dockBounds(area, null, position)
+    this.atEdge = false
+    this.stopSlide = slideWindow(window, from, to, final, () => {
+      this.atEdge = !view.out
+      this.stopSlide = null
+    })
+  }
+
+  /** La posición cambió en Configuración: sin deslizar por media pantalla, aparece en la nueva. */
+  private jump(window: BrowserWindow, view: DockView, position: DockPosition): void {
+    this.placedAt = position
+    this.atEdge = !view.out
+    window.setBounds(dockBounds(workArea(), view.out ? dockWidth(view) : null, position))
   }
 }

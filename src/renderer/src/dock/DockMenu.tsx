@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppWindow, Mic, Power, Square } from 'lucide-react'
 import { APP_NAME } from '@shared/app'
-import type { DockMenuAction } from '@shared/dock'
+import { menuOpensLeft, type DockMenuAction } from '@shared/dock'
 import { RECORDING_SOURCES } from '@shared/recording'
 import { Menu, type MenuItem } from '@renderer/components/ui'
 import { SOURCE_ICONS } from '@renderer/components/MicButton/ui/sourceIcons'
@@ -25,9 +25,9 @@ function useMenuOpen(): [boolean, (open: boolean) => void] {
 }
 
 /**
- * La ventana del menú contextual del dock (tarea 30): el `Menu` de la app pegado arriba a la
- * derecha de una ventana transparente que el main ajusta a lo que ocupa. El submenú se abre
- * hacia la izquierda, hacia dentro de la pantalla.
+ * La ventana del menú contextual del dock (tarea 30): el `Menu` de la app pegado arriba en una
+ * ventana transparente que el main ajusta a lo que ocupa. Menú y submenú se abren hacia dentro
+ * de la pantalla: hacia la izquierda, salvo con el dock en la mitad izquierda (tarea 33).
  */
 export function DockMenu(): React.JSX.Element {
   useThemeSync()
@@ -37,7 +37,8 @@ export function DockMenu(): React.JSX.Element {
   const [open, setOpen] = useMenuOpen()
   const recording = useMicStore((s) => s.state.recording)
   const source = useSettingsStore((s) => s.settings.recordingSource)
-  useReportMenuSize(open)
+  const opensLeft = useSettingsStore((s) => menuOpensLeft(s.settings.dockPosition))
+  useReportMenuSize(open, opensLeft)
 
   const record: MenuItem = recording
     ? {
@@ -78,7 +79,11 @@ export function DockMenu(): React.JSX.Element {
   return (
     <div
       className="menu-anchor dock-menu-anchor"
-      style={{ top: MENU_WINDOW_PADDING_PX, right: MENU_WINDOW_PADDING_PX }}
+      data-opens={opensLeft ? 'left' : 'right'}
+      style={{
+        top: MENU_WINDOW_PADDING_PX,
+        [opensLeft ? 'right' : 'left']: MENU_WINDOW_PADDING_PX
+      }}
     >
       <Menu
         open={open}
@@ -86,7 +91,7 @@ export function DockMenu(): React.JSX.Element {
           setOpen(false)
           choose({ kind: 'close' })
         }}
-        placement="bottom-end"
+        placement={opensLeft ? 'bottom-end' : 'bottom-start'}
         aria-label={t('dock.menu.label', { app: APP_NAME })}
         items={items}
       />
