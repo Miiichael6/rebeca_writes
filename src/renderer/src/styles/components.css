@@ -1099,10 +1099,27 @@
   border-radius: var(--radius-round);
   background: rgba(22, 25, 29, 0.88);
   color: #fff;
-  animation: fade-in var(--duration-fast) var(--ease);
+  animation: dock-pill-in var(--duration-slow) var(--ease-spring);
   transition:
     border-color var(--duration) var(--ease),
     background var(--duration) var(--ease);
+}
+
+/* La píldora crece desde la barra: el origen es el lado del borde, o el centro arriba y abajo. */
+.dock[data-edge='right'] .edge-pill {
+  transform-origin: right center;
+}
+
+.dock[data-edge='left'] .edge-pill {
+  transform-origin: left center;
+}
+
+.dock[data-edge='top'] .edge-pill {
+  transform-origin: center top;
+}
+
+.dock[data-edge='bottom'] .edge-pill {
+  transform-origin: center bottom;
 }
 
 /* Escondida, toda la ventana (del tamaño de la barra) es una barra negra; mientras entra
@@ -1144,16 +1161,8 @@
   border-radius: 3px 3px 0 0;
 }
 
-/* Arriba y abajo, la barra va en la esquina o al centro, como la barra escondida. */
-.dock:is([data-edge='top'], [data-edge='bottom'])[data-align='start'] .edge-pill-bar {
-  left: 0;
-}
-
-.dock:is([data-edge='top'], [data-edge='bottom'])[data-align='end'] .edge-pill-bar {
-  right: 0;
-}
-
-.dock:is([data-edge='top'], [data-edge='bottom'])[data-align='center'] .edge-pill-bar {
+/* Arriba y abajo la píldora sale centrada sobre la barra, así que la barra va al centro. */
+.dock:is([data-edge='top'], [data-edge='bottom']) .edge-pill-bar {
   left: calc(50% - 24px);
 }
 

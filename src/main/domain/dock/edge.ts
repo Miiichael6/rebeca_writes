@@ -11,7 +11,7 @@ import { dockAlign, dockEdge, type DockAlign, type DockPosition } from '@shared/
  *   de Rebecca Listen (tarea 49).
  * - Arriba o abajo la píldora va tumbada a lo largo del borde: la ventana mide el ancho de
  *   `dockWidth` y `BAR_PX` de alto, y la barra escondida es horizontal, en una esquina (a
- *   `CORNER_GAP_PX`) o al centro.
+ *   `CORNER_GAP_PX`) o al centro. La píldora sale centrada sobre la barra.
  */
 
 /** Lo que asoma del dock escondido: lo justo para poner el ratón encima. */
@@ -86,8 +86,10 @@ function topOrBottomBounds(
 ): Area {
   const width = pill === null ? BAR_PX : pill
   const height = pill === null ? PEEK_PX : BAR_PX
+  // La píldora se centra sobre la barra, no sale a un lado de ella.
+  const barStart = alignedStart(area.x, area.width, BAR_PX, align, CORNER_GAP_PX)
   return {
-    x: alignedStart(area.x, area.width, width, align, CORNER_GAP_PX),
+    x: Math.round(barStart + (BAR_PX - width) / 2),
     y: edge === 'top' ? area.y : area.y + area.height - height,
     width,
     height

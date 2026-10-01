@@ -1,7 +1,7 @@
 import type { Point } from './edge'
 
 /** Fotogramas de un deslizamiento del dock. */
-export const SLIDE_FRAMES = 8
+export const SLIDE_FRAMES = 14
 
 /** Cada valor del deslizamiento de `from` a `to`, frenando al final y acabando en `to`. */
 export function slidePath(from: number, to: number, frames: number): number[] {

@@ -86,12 +86,21 @@ describe('dockBounds en otras posiciones', () => {
   })
 
   it('en las esquinas deja libre la esquina; al centro, centrado', () => {
-    expect(dockBounds(AREA, PILL, 'topLeft').x).toBe(CORNER_GAP_PX)
-    const right = dockBounds(AREA, PILL, 'bottomRight')
+    expect(dockBounds(AREA, null, 'topLeft').x).toBe(CORNER_GAP_PX)
+    const right = dockBounds(AREA, null, 'bottomRight')
     expect(right.x + right.width).toBe(1920 - CORNER_GAP_PX)
     const center = dockBounds(AREA, PILL, 'topCenter')
     expect(center.x + center.width / 2).toBe(960)
   })
+
+  it.each(['topLeft', 'topCenter', 'bottomRight'] as const)(
+    '%s: la píldora sale centrada sobre la barra',
+    (position) => {
+      const hidden = dockBounds(AREA, null, position)
+      const out = dockBounds(AREA, PILL, position)
+      expect(Math.abs(hidden.x + hidden.width / 2 - (out.x + out.width / 2))).toBeLessThanOrEqual(1)
+    }
+  )
 
   it.each(DOCK_POSITIONS)('%s: la barra escondida queda dentro del dock fuera', (position) => {
     const area = { x: -1280, y: 200, width: 1280, height: 984 }

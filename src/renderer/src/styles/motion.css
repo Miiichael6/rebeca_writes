@@ -102,6 +102,13 @@
 
 /* ---------- Concretos ---------- */
 /* Dock: un botón que aparece o cuyo icono cambia entra "de rebote" desde pequeño. */
+@keyframes dock-pill-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
 @keyframes pill-pop {
   from {
     opacity: 0;
