@@ -84,6 +84,8 @@ export interface Settings {
   recordingsDir: string
   /** Atajo global para grabar (tarea 31), como `Ctrl+Super`; `null` = desactivado. */
   recordShortcut: string | null
+  /** El dock pregunta si grabar al empezar una llamada (tarea 32). */
+  suggestMeetingRecording: boolean
 
   queue: QueueSettings
   window: WindowBounds
@@ -143,6 +145,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     recordingMicId: '',
     recordingsDir: '',
     recordShortcut: DEFAULT_RECORD_SHORTCUT,
+    suggestMeetingRecording: true,
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }
   }

@@ -17,6 +17,11 @@ export function recordingName(source: RecordingSource, date = new Date()): strin
   return entryName(source, recordingStamp(date))
 }
 
+/** Nombre de la entrada de una reunión que se empieza a grabar ahora (tarea 32). */
+export function meetingRecordingName(date = new Date()): string {
+  return i18n.t('mic.meetingName', { date: recordingStamp(date) })
+}
+
 /** Los nombres traducidos sin fecha, para que el main nombre las grabaciones del atajo. */
 export function recordingNameTemplates(): RecordingNameTemplates {
   return Object.fromEntries(

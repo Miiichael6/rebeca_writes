@@ -1,6 +1,7 @@
 import type { DockButton, DockQuestion, DockView } from '@shared/dock'
 import type { RecordingSource } from '@shared/recording'
 import { dockButtons, quitQuestion, visibleQuestion } from '../domain/dock/dockAction'
+import { MEETING_SOURCE } from '../domain/meeting/meetingSuggestion'
 import type { MicRecording } from './micRecording'
 import type { Logger } from './ports/eventPublisher'
 import type { DockSurface } from './ports/dockSurface'
@@ -32,6 +33,8 @@ export class Dock {
   /** Sale mientras dure la grabación que empezó el atajo de teclado (tarea 31). */
   private revealed = false
   private mouseWatch: ReturnType<typeof setInterval> | null = null
+  /** Quien sugirió grabar la reunión, para avisarle de la respuesta. */
+  private meetingAnswered: (() => void) | null = null
 
   constructor(private readonly deps: DockDeps) {}
 
@@ -94,6 +97,11 @@ export class Dock {
       case 'quit':
         this.ask(null)
         return this.deps.quit()
+      case 'recordMeeting':
+        this.answerMeeting()
+        return this.record(MEETING_SOURCE, recordingName)
+      case 'dismissMeeting':
+        return this.answerMeeting()
       case null:
         return
     }
@@ -108,6 +116,22 @@ export class Dock {
   async record(source: RecordingSource, name: string): Promise<void> {
     const result = await this.deps.mic.start(source, name)
     if (!result.ok) this.deps.log.warn(`Dock: no se pudo empezar a grabar (${result.error})`)
+  }
+
+  /**
+   * Sale preguntando si grabar la reunión que acaba de empezar (tarea 32). `answered` se llama
+   * si el usuario pulsa ✓ o ✕. No tapa otra pregunta que ya esté en pantalla.
+   */
+  suggestMeeting(answered: () => void): void {
+    if (this.question !== null) return
+    this.meetingAnswered = answered
+    this.ask('meeting')
+  }
+
+  /** Retira "¿Grabar la reunión?" si sigue en pantalla (sin respuesta o la llamada terminó). */
+  withdrawMeeting(): void {
+    this.meetingAnswered = null
+    if (this.question === 'meeting') this.ask(null)
   }
 
   /** Sale hasta que termine la grabación en curso (la empezó el atajo de teclado). */
@@ -126,6 +150,13 @@ export class Dock {
   private ask(question: DockQuestion | null): void {
     this.question = question
     this.refresh()
+  }
+
+  private answerMeeting(): void {
+    const answered = this.meetingAnswered
+    this.meetingAnswered = null
+    this.ask(null)
+    answered?.()
   }
 
   private stopWatching(): void {

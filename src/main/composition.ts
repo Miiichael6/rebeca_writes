@@ -12,6 +12,7 @@ import { ExportService } from './application/exportService'
 import { HistoryService } from './application/historyService'
 import { LiveControl } from './application/liveControl'
 import { MediaOpener } from './application/mediaOpener'
+import { MeetingSuggester } from './application/meetingSuggester'
 import { MicRecording } from './application/micRecording'
 import { ModelService } from './application/modelService'
 import { PipelineChunkTranscriber } from './application/pipelineChunkTranscriber'
@@ -41,6 +42,7 @@ import { ffmpegRecordingEncoder } from './infrastructure/ffmpeg/ffmpegRecordingE
 import { ffmpegPreviewEncoder } from './infrastructure/ffmpeg/ffmpegPreviewEncoder'
 import { ffmpegMediaTools } from './infrastructure/ffmpeg/ffmpegTools'
 import { HOTKEY_BINARY, HotkeySidecar } from './infrastructure/hotkey/hotkeySidecar'
+import { CALLS_BINARY, MicUsageSidecar } from './infrastructure/meeting/micUsageSidecar'
 import { fsPathExpander } from './infrastructure/fs/expandPaths'
 import { fsPreviewStore } from './infrastructure/fs/fsPreviewStore'
 import { nodeDisk } from './infrastructure/fs/nodeDisk'
@@ -76,6 +78,7 @@ export interface AppControl {
 
 export interface Services extends IpcDeps {
   registry: MediaRegistry
+  meetings: MeetingSuggester
   /** Encola los archivos o atiende la orden en vivo que lleguen por la línea de órdenes. */
   queueFromArgv: (argv: readonly string[], cwd: string) => Promise<QueueAddResult | null>
 }
@@ -257,6 +260,15 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
   })
   settings.onChanged((next) => hotkey.configure(next.recordShortcut))
 
+  // --- Sugerir grabar reuniones (tarea 32) ---
+  const meetings = new MeetingSuggester({
+    source: new MicUsageSidecar(join(bundledBinDir, CALLS_BINARY), log),
+    mic,
+    dock,
+    log
+  })
+  settings.onChanged((next) => meetings.configure(next.suggestMeetingRecording))
+
   // --- Actualizaciones ---
   const updates = new UpdateService({
     updater: createElectronUpdater(),
@@ -287,6 +299,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     dock,
     dockMenu,
     hotkey,
+    meetings,
     showMainWindow: control.showMainWindow,
     registry,
     queueFromArgv: createArgvHandler({

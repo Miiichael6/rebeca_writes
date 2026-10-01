@@ -284,7 +284,9 @@
       "repeated": "A combinação repete uma tecla.",
       "unknownKey": "Essa tecla não pode ser usada: escolha uma letra, um número, F1–F24 ou Espaço.",
       "twoKeys": "Use uma única tecla além dos modificadores."
-    }
+    },
+    "suggestMeetings": "Sugerir gravar as reuniões",
+    "suggestMeetingsDescription": "Ao começar uma chamada no Teams, Zoom, Webex, Slack, Discord ou Skype, o dock pergunta se deve gravá-la. Nunca grava sem a sua confirmação."
   },
   "models": {
     "title": "Modelos Whisper",
@@ -413,7 +415,8 @@
     "interrupted": "O dispositivo de áudio foi perdido. A gravação foi salva até esse momento.",
     "errorLiveBusy": "Já há uma gravação ao vivo em andamento (Rebecca Listen).",
     "errorNoDevice": "Nenhum dispositivo de áudio encontrado. Verifique o microfone ou a saída de som no Windows.",
-    "errorFailed": "Não foi possível começar a gravar. Consulte os registros para mais detalhes."
+    "errorFailed": "Não foi possível começar a gravar. Consulte os registros para mais detalhes.",
+    "meetingName": "Reunião {{date}}"
   },
   "dock": {
     "record": "Gravar",
@@ -423,15 +426,19 @@
     "keepRecording": "Continuar gravando",
     "quit": "Sair",
     "stay": "Não sair",
+    "recordMeeting": "Gravar a reunião",
+    "dismissMeeting": "Não gravar",
     "questions": {
       "end": "Encerrar?",
       "quit": "Sair?",
-      "quitRecording": "Sair?"
+      "quitRecording": "Sair?",
+      "meeting": "Gravar reunião?"
     },
     "questionTitles": {
       "end": "Encerrar a gravação e salvá-la?",
       "quit": "Sair do {{app}}?",
-      "quitRecording": "Sair do {{app}}? A gravação em andamento é salva antes."
+      "quitRecording": "Sair do {{app}}? A gravação em andamento é salva antes.",
+      "meeting": "Começou uma chamada. Gravar a reunião (sistema + microfone)?"
     },
     "menu": {
       "label": "Menu do {{app}}",

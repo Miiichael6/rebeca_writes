@@ -6,6 +6,7 @@ import { Button, SettingsSection } from '../../../ui'
 import AboutSection from '../../AboutSection'
 import BackendSetting from '../../BackendSetting'
 import InterfaceSettings from '../../InterfaceSettings'
+import MeetingSettings from '../../MeetingSettings'
 import ModelsSection from '../../ModelsSection'
 import ShortcutSettings from '../../ShortcutSettings'
 import StorageSettings from '../../StorageSettings'
@@ -40,6 +41,7 @@ export function SettingsPage(): React.JSX.Element {
         </SettingsSection>
         <SettingsSection title={t('settings.recording')}>
           <ShortcutSettings />
+          <MeetingSettings />
         </SettingsSection>
         <SettingsSection title={t('settings.storage')}>
           <StorageSettings />

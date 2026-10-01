@@ -166,6 +166,48 @@ describe('Dock', () => {
     expect(log.warn).toHaveBeenCalledWith(expect.stringContaining('noDevice'))
   })
 
+  it('"¿Grabar la reunión?" ✓ graba Ambos con el nombre que llega y avisa de la respuesta', async () => {
+    const { dock, surface, mic } = setup()
+    const answered = vi.fn()
+    dock.suggestMeeting(answered)
+    expect(surface.last).toMatchObject({
+      out: true,
+      question: 'meeting',
+      left: 'dismissMeeting',
+      right: 'recordMeeting'
+    })
+
+    await dock.press('right', 'Reunión 1 oct')
+    expect(answered).toHaveBeenCalledOnce()
+    expect(mic.start).toHaveBeenCalledWith('both', 'Reunión 1 oct')
+    expect(dock.view().question).toBeNull()
+  })
+
+  it('"¿Grabar la reunión?" ✕ esconde el dock sin grabar', async () => {
+    const { dock, mic } = setup()
+    const answered = vi.fn()
+    dock.suggestMeeting(answered)
+    await dock.press('left', 'Reunión')
+    expect(answered).toHaveBeenCalledOnce()
+    expect(mic.start).not.toHaveBeenCalled()
+    expect(dock.view()).toMatchObject({ out: false, question: null })
+  })
+
+  it('retirar la sugerencia no avisa de respuesta ni tapa otra pregunta', () => {
+    const { dock } = setup()
+    const answered = vi.fn()
+    dock.suggestMeeting(answered)
+    dock.withdrawMeeting()
+    expect(dock.view().question).toBeNull()
+
+    dock.askQuit()
+    dock.suggestMeeting(answered)
+    expect(dock.view().question).toBe('quit')
+    dock.withdrawMeeting()
+    expect(dock.view().question).toBe('quit')
+    expect(answered).not.toHaveBeenCalled()
+  })
+
   it('cerrarlo deja de vigilar el ratón y retira la pregunta', () => {
     const { dock, surface } = setup()
     dock.hover()

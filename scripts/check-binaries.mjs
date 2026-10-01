@@ -13,11 +13,11 @@ const REQUIRED = [
     file: join(CPU_DIR, name),
     fix: 'npm run fetch:bin -- --only=cpu'
   })),
-  // Sidecar de captura del micrófono y el sonido del equipo (tarea 29).
-  {
-    file: join(ROOT, 'resources', 'bin', 'rl-capture.exe'),
+  // Sidecars: captura de audio (tarea 29), atajo para grabar (31) y uso del micrófono (32).
+  ...['rl-capture.exe', 'rl-hotkey.exe', 'rl-calls.exe'].map((name) => ({
+    file: join(ROOT, 'resources', 'bin', name),
     fix: 'npm run build:native'
-  },
+  })),
   // ffmpeg-static lo descarga en su postinstall; puede faltar si se instaló con --ignore-scripts.
   {
     file: join(ROOT, 'node_modules', 'ffmpeg-static', 'ffmpeg.exe'),
@@ -36,4 +36,4 @@ if (missing.length > 0) {
   console.error('')
   process.exit(1)
 }
-console.log('Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, ffmpeg, ffprobe).')
+console.log('Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, rl-calls, ffmpeg, ffprobe).')

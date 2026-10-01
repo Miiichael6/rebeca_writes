@@ -18,12 +18,24 @@ describe('dockButtons', () => {
     expect(dockButtons('quit', false)).toEqual({ left: 'stay', right: 'quit' })
     expect(dockButtons('quitRecording', true)).toEqual({ left: 'stay', right: 'quit' })
   })
+
+  it('"¿Grabar la reunión?": ✕ la descarta y ✓ graba', () => {
+    expect(dockButtons('meeting', false)).toEqual({
+      left: 'dismissMeeting',
+      right: 'recordMeeting'
+    })
+  })
 })
 
 describe('visibleQuestion', () => {
   it('retira "¿Terminar?" si la grabación ya paró', () => {
     expect(visibleQuestion('end', false)).toBeNull()
     expect(visibleQuestion('end', true)).toBe('end')
+  })
+
+  it('retira "¿Grabar la reunión?" si ya se está grabando', () => {
+    expect(visibleQuestion('meeting', true)).toBeNull()
+    expect(visibleQuestion('meeting', false)).toBe('meeting')
   })
 
   it('deja las demás preguntas como están', () => {

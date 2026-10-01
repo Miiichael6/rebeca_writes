@@ -8,7 +8,9 @@ export const DOCK_ACTIONS = {
   stopAndSave: { icon: Check, title: 'dock.stopAndSave' },
   keepRecording: { icon: X, title: 'dock.keepRecording' },
   quit: { icon: Check, title: 'dock.quit' },
-  stay: { icon: X, title: 'dock.stay' }
+  stay: { icon: X, title: 'dock.stay' },
+  recordMeeting: { icon: Check, title: 'dock.recordMeeting' },
+  dismissMeeting: { icon: X, title: 'dock.dismissMeeting' }
 } as const satisfies Record<DockAction, { icon: LucideIcon; title: string }>
 
 /** Mientras graba, el 🎤 de la derecha queda de indicador, sin acción. */

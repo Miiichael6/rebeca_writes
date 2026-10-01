@@ -163,3 +163,30 @@ Si stdin se cierra, el sidecar termina. Arranca sin vigilar nada hasta el primer
 - Si la combinación lleva Win, al soltar Win tras completarla el sidecar descarta ese `keyup` y lo reenvía detrás de una pulsación de `VK 0xE8` (sin asignar), como la "mask key" de AutoHotkey: así Windows no abre el menú Inicio.
 - Si la combinación lleva una tecla normal (`key`), esa tecla no llega a la app enfocada mientras los modificadores coinciden.
 - Las pulsaciones inyectadas (`LLKHF_INJECTED`), incluidas las suyas, se ignoran.
+
+# Protocolo de `rl-calls`
+
+Tercer binario del crate (tarea 32): dice qué apps están usando el micrófono, leído del registro de privacidad de Windows (`HKCU\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone`, lo mismo que pinta el icono de micrófono de la barra de tareas). Qué apps son llamadas lo decide main (`src/main/domain/meeting/callApps.ts`).
+
+| Tubería | Dirección      | Contenido                                       |
+| ------- | -------------- | ----------------------------------------------- |
+| stdin   | main → sidecar | Sin comandos: solo lo mantiene vivo (se ignora) |
+| stderr  | sidecar → main | Eventos JSON, uno por línea                     |
+| stdout  | —              | Sin uso                                         |
+
+Si stdin se cierra, el sidecar termina. Para dejar de vigilar, main cierra stdin.
+
+## Eventos (stderr)
+
+```json
+{"type":"mic_users","apps":["MSTeams_8wekyb3d8bbwe","C:#Users#USER#AppData#Roaming#Zoom#bin#Zoom.exe"]}
+{"type":"error","code":"watch_failed","message":"..."}
+```
+
+| `type`      | Cuándo                                                                     |
+| ----------- | -------------------------------------------------------------------------- |
+| `mic_users` | Al arrancar y cada vez que cambia la lista (ordenada, sin repetidos)       |
+| `error`     | `watch_failed`: no se pudo abrir o vigilar la clave; el sidecar sale con 1 |
+
+- `apps`: el nombre de la clave de cada app con `LastUsedTimeStop = 0`: el nombre de familia del paquete en las empaquetadas y, en las de escritorio (bajo `NonPackaged`), la ruta del .exe con `#` en vez de `\`.
+- Sin sondeo: `RegNotifyChangeKeyValue` sobre la clave y sus subclaves despierta el hilo solo cuando Windows escribe en ella. Muchas apps (juegos, dictado) escriben ahí; si la lista no cambia, no se emite nada.

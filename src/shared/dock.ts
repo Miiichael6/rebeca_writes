@@ -7,10 +7,18 @@ import type { RecordingSource } from './recording'
  */
 
 /** Pregunta en la píldora; el texto lo traduce el renderer. */
-export type DockQuestion = 'end' | 'quit' | 'quitRecording'
+export type DockQuestion = 'end' | 'quit' | 'quitRecording' | 'meeting'
 
 /** Lo que hace un botón de la píldora. */
-export type DockAction = 'record' | 'askEnd' | 'stopAndSave' | 'keepRecording' | 'quit' | 'stay'
+export type DockAction =
+  | 'record'
+  | 'askEnd'
+  | 'stopAndSave'
+  | 'keepRecording'
+  | 'quit'
+  | 'stay'
+  | 'recordMeeting'
+  | 'dismissMeeting'
 
 export const DOCK_BUTTONS = ['left', 'right'] as const
 export type DockButton = (typeof DOCK_BUTTONS)[number]

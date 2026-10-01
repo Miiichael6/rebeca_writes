@@ -275,7 +275,9 @@
       "repeated": "The combination repeats a key.",
       "unknownKey": "That key can’t be used: pick a letter, a number, F1–F24 or Space.",
       "twoKeys": "Use a single key besides the modifiers."
-    }
+    },
+    "suggestMeetings": "Suggest recording meetings",
+    "suggestMeetingsDescription": "When a call starts in Teams, Zoom, Webex, Slack, Discord or Skype, the dock asks whether to record it. It never records without your confirmation."
   },
   "models": {
     "title": "Whisper models",
@@ -404,7 +406,8 @@
     "interrupted": "The audio device was lost. The recording was saved up to that point.",
     "errorLiveBusy": "A live recording is already in progress (Rebecca Listen).",
     "errorNoDevice": "No audio device was found. Check the microphone or sound output in Windows.",
-    "errorFailed": "Could not start recording. See the logs for details."
+    "errorFailed": "Could not start recording. See the logs for details.",
+    "meetingName": "Meeting {{date}}"
   },
   "dock": {
     "record": "Record",
@@ -414,15 +417,19 @@
     "keepRecording": "Keep recording",
     "quit": "Quit",
     "stay": "Don’t quit",
+    "recordMeeting": "Record the meeting",
+    "dismissMeeting": "Don’t record",
     "questions": {
       "end": "End?",
       "quit": "Quit?",
-      "quitRecording": "Quit?"
+      "quitRecording": "Quit?",
+      "meeting": "Record meeting?"
     },
     "questionTitles": {
       "end": "End the recording and save it?",
       "quit": "Quit {{app}}?",
-      "quitRecording": "Quit {{app}}? The current recording is saved first."
+      "quitRecording": "Quit {{app}}? The current recording is saved first.",
+      "meeting": "A call started. Record the meeting (system + microphone)?"
     },
     "menu": {
       "label": "{{app}} menu",

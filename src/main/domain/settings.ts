@@ -78,7 +78,8 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     recordingSource: oneOf(RECORDING_SOURCES),
     recordingMicId: text(1000),
     recordingsDir: text(1000),
-    recordShortcut: shortcutOrNull
+    recordShortcut: shortcutOrNull,
+    suggestMeetingRecording: bool
   }
 }
 

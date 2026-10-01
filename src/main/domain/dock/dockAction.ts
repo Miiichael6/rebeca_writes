@@ -16,17 +16,24 @@ export function dockButtons(question: DockQuestion | null, recording: boolean): 
     case 'quit':
     case 'quitRecording':
       return { left: 'stay', right: 'quit' }
+    case 'meeting':
+      return { left: 'dismissMeeting', right: 'recordMeeting' }
     case null:
       return recording ? { left: 'askEnd', right: null } : { left: null, right: 'record' }
   }
 }
 
-/** "¿Terminar?" solo tiene sentido mientras graba: si se paró por otro lado, se retira. */
+/**
+ * "¿Terminar?" solo tiene sentido mientras graba, y "¿Grabar la reunión?" solo sin grabar: si
+ * la grabación empezó o paró por otro lado, se retiran.
+ */
 export function visibleQuestion(
   question: DockQuestion | null,
   recording: boolean
 ): DockQuestion | null {
-  return question === 'end' && !recording ? null : question
+  if (question === 'end' && !recording) return null
+  if (question === 'meeting' && recording) return null
+  return question
 }
 
 /** "¿Salir?" avisa de que la grabación en curso se guardará antes de salir. */

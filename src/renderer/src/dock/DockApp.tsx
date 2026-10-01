@@ -7,7 +7,7 @@ import {
   type EdgePillButton
 } from '@renderer/components/EdgePill/EdgePill'
 import { useWave } from '@renderer/components/MicButton/application/useWave'
-import { recordingName } from '@renderer/lib/recordingName'
+import { meetingRecordingName, recordingName } from '@renderer/lib/recordingName'
 import { onMicLevel } from '@renderer/store/mic'
 import { useSettingsStore, useSettingsSync } from '@renderer/store/settings'
 import { useThemeSync } from '@renderer/store/ui'
@@ -31,7 +31,9 @@ export function DockApp(): React.JSX.Element {
   const button = (side: DockButton, action: DockAction | null): EdgePillButton | null => {
     if (action) {
       const { icon, title } = DOCK_ACTIONS[action]
-      return { icon, title: t(title), onClick: () => press(side, recordingName(source)) }
+      const name = (): string =>
+        action === 'recordMeeting' ? meetingRecordingName() : recordingName(source)
+      return { icon, title: t(title), onClick: () => press(side, name()) }
     }
     if (side === 'right' && dockShowsIndicator(view))
       return { icon: RECORDING_INDICATOR.icon, title: t(RECORDING_INDICATOR.title) }
