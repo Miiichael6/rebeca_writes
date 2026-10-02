@@ -71,9 +71,14 @@ export function MicButton(): React.JSX.Element {
         className="mic-recording"
         aria-label={t('mic.stop')}
         title={`${t('mic.stop')} · ${action.sourceLabel(button.source)}`}
-        icon={<Square size={14} strokeWidth={0} fill="currentColor" />}
+        icon={<Square className="mic-stop-icon" size={14} strokeWidth={0} fill="currentColor" />}
         onClick={action.toggle}
       >
+        <span
+          className="mic-dot"
+          aria-hidden="true"
+          style={{ ['--level' as string]: action.wave.at(-1) ?? 0 }}
+        />
         <span className="mic-elapsed">{action.elapsed}</span>
         <span className="mic-wave" aria-hidden="true">
           {action.wave.map((level, index) => (

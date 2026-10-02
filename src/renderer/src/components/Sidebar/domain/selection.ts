@@ -13,3 +13,11 @@ export function toggleChecked(prev: Checked, id: string): Checked {
 export function visibleChecked(checked: Checked, visibleIds: ReadonlySet<string>): string[] {
   return checked ? [...checked].filter((id) => visibleIds.has(id)) : []
 }
+
+/** Los ids de `order` entre `a` y `b`, ambos incluidos, vengan en el orden que vengan. */
+export function idRange(order: readonly string[], a: string, b: string): string[] {
+  const i = order.indexOf(a)
+  const j = order.indexOf(b)
+  if (i < 0 || j < 0) return [a]
+  return order.slice(Math.min(i, j), Math.max(i, j) + 1)
+}

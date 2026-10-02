@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { HistoryEntry } from '@shared/types'
-import { toggleChecked, visibleChecked, type Checked } from '../domain/selection'
+import { idRange, toggleChecked, visibleChecked, type Checked } from '../domain/selection'
 import { usePorts } from './ports'
 
 export interface MultiSelect {
@@ -30,6 +30,34 @@ export function useMultiSelect(
   const { history } = usePorts()
   const [checked, setChecked] = useState<Checked>(null)
   const [confirmingRemove, setConfirmingRemove] = useState(false)
+  const [dragAnchor, setDragAnchor] = useState<string | null>(null)
+
+  // Tras la pulsación larga, seguir con el botón presionado y deslizar marca todo lo que se cruza.
+  useEffect(() => {
+    if (!dragAnchor) return
+    const anchor = dragAnchor
+    document.body.classList.add('drag-selecting')
+    const onMove = (e: PointerEvent): void => {
+      const id = document
+        .elementFromPoint(e.clientX, e.clientY)
+        ?.closest<HTMLElement>('[data-entry-id]')?.dataset.entryId
+      if (!id) return
+      const order = [...document.querySelectorAll<HTMLElement>('[data-entry-id]')].map(
+        (el) => el.dataset.entryId as string
+      )
+      setChecked(new Set(idRange(order, anchor, id)))
+    }
+    const stop = (): void => setDragAnchor(null)
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('pointercancel', stop)
+    return () => {
+      document.body.classList.remove('drag-selecting')
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('pointercancel', stop)
+    }
+  }, [dragAnchor])
 
   // Esc sale del modo, salvo que haya un diálogo abierto (que ya usa Esc para cerrarse).
   useEffect(() => {
@@ -53,7 +81,10 @@ export function useMultiSelect(
     active: checked !== null,
     isChecked: (id) => checked?.has(id) ?? false,
     count: visibleChecked(checked, visibleIds).length,
-    begin: (id) => setChecked(new Set([id])),
+    begin: (id) => {
+      setChecked(new Set([id]))
+      setDragAnchor(id)
+    },
     toggle: (id) => setChecked((prev) => toggleChecked(prev, id)),
     end: () => setChecked(null),
     selectAll: () => setChecked(new Set(filtered.map((e) => e.id))),

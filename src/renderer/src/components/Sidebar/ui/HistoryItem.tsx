@@ -54,6 +54,7 @@ export function HistoryItem({
   return (
     <button
       className={`history-item${selected ? ' selected' : ''}${exiting ? ' exiting' : ''}${checked ? ' checked' : ''}`}
+      data-entry-id={entry.id}
       title={entry.filePath}
       aria-current={selected || undefined}
       aria-pressed={selecting ? checked : undefined}

@@ -66,11 +66,11 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 
 ### Paso 6 — Verificación
 
-- [ ] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).
-- [ ] Prueba real de salida: en un lateral (`rightCenter`) y arriba (`topCenter`) la píldora crece desde la barra, sin saltos ni parpadeo.
-- [ ] Prueba real de la gota: al sacar el ratón, la píldora se contrae hacia el borde, se desliza y la barra rebota al asentarse. Si se vuelve a entrar con el ratón a mitad de la contracción, la píldora vuelve a salir sin quedarse a medias.
-- [ ] Prueba real del ■: al empezar a grabar, el icono de parar se transforma de punto a cuadrado y sale la onda una sola vez
-- [ ] Prueba real con grabación y con la pregunta de la reunión: las animaciones no rompen la onda ni el texto, y el borde azul de grabando se mantiene en la gota y en la barra.
+- [x] Prueba real del centrado, arriba y abajo: en `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter` y `bottomRight`, al pasar el ratón por la barra la píldora sale centrada sobre ella y el ratón sigue dentro (no se esconde sola).
+- [x] Prueba real de salida: en un lateral (`rightCenter`) y arriba (`topCenter`) la píldora crece desde la barra, sin saltos ni parpadeo.
+- [x] Prueba real de la gota: al sacar el ratón, la píldora se contrae hacia el borde, se desliza y la barra rebota al asentarse. Si se vuelve a entrar con el ratón a mitad de la contracción, la píldora vuelve a salir sin quedarse a medias.
+- [x] Prueba real del ■: al empezar a grabar, el icono de parar se transforma de punto a cuadrado y sale la onda una sola vez
+- [x] Prueba real con grabación y con la pregunta de la reunión: las animaciones no rompen la onda ni el texto, y el borde azul de grabando se mantiene en la gota y en la barra.
 - [x] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan
 - [x] Commit: `feat(dock): animación al mostrarse y píldora centrada sobre la barra (tarea 34)`
 - [x] Commit: `feat(dock): la píldora se retrae como una gota (tarea 34)`

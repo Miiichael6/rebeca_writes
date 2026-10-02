@@ -34,8 +34,8 @@ export function useLongPress(onLongPress: () => void, disabled: boolean): LongPr
   return {
     handlers: {
       onPointerDown: (e) => {
-        if (e.button !== 0 || disabled) return
         longPressed.current = false
+        if (e.button !== 0 || disabled) return
         press.current = {
           x: e.clientX,
           y: e.clientY,
