@@ -10,7 +10,9 @@ import {
   type ExportFormat
 } from '@shared/exporters'
 import type { ExportSaved, SaveSrtBesideResult, Segment } from '@shared/types'
+import type { SpeakerNames } from '@shared/speakers'
 import { isValidHistoryId } from '../domain/history'
+import { isSpeakerNames } from '../domain/speakers/speakerNames'
 import { isSafeMediaPath } from '../domain/mediaRegistry'
 import type { DialogOwner, Dialogs } from './ports/dialogs'
 import type { Disk } from './ports/disk'
@@ -29,7 +31,14 @@ function toSegments(value: unknown): Segment[] {
         Number.isFinite(s.end) &&
         typeof s.text === 'string'
     )
-    .map(({ start, end, text }) => ({ start, end, text }))
+    .map(({ start, end, text, speaker }) =>
+      typeof speaker === 'string' ? { start, end, text, speaker } : { start, end, text }
+    )
+}
+
+/** Los nombres de hablante vienen del renderer: si no son un mapa de textos, no se usan. */
+function toSpeakerNames(value: unknown): SpeakerNames | undefined {
+  return isSpeakerNames(value) ? value : undefined
 }
 
 function isFormat(value: unknown): value is ExportFormat {
@@ -74,8 +83,13 @@ export class ExportService {
       extension
     })
     if (!path) return null
-    const joined = (options as { joined?: unknown } | null)?.joined === true
-    await this.deps.disk.writeTextAtomic(path, exportTranscript(format, list, { joined }))
+    const o = options as { joined?: unknown; speakerNames?: unknown } | null
+    const joined = o?.joined === true
+    const speakerNames = toSpeakerNames(o?.speakerNames)
+    await this.deps.disk.writeTextAtomic(
+      path,
+      exportTranscript(format, list, { joined, speakerNames })
+    )
     this.exported.add(path)
     return { path }
   }
@@ -88,13 +102,14 @@ export class ExportService {
     filePath: string,
     language: string,
     segments: readonly Segment[],
-    overwrite: boolean
+    overwrite: boolean,
+    speakerNames?: SpeakerNames
   ): Promise<SaveSrtBesideResult> {
     const { disk } = this.deps
     if (!(await disk.exists(filePath))) return { status: 'missing' }
     const path = join(dirname(filePath), srtFileName(basename(filePath), language))
     if (!overwrite && (await disk.exists(path))) return { status: 'exists', path }
-    await disk.writeTextAtomic(path, toSrt(segments))
+    await disk.writeTextAtomic(path, toSrt(segments, { speakerNames }))
     this.exported.add(path)
     return { status: 'saved', path }
   }
@@ -103,7 +118,8 @@ export class ExportService {
   async saveSrtBeside(
     entryId: unknown,
     segments: unknown,
-    overwrite: unknown
+    overwrite: unknown,
+    speakerNames: unknown
   ): Promise<SaveSrtBesideResult> {
     const list = toSegments(segments)
     if (!isValidHistoryId(entryId)) return { status: 'missing' }
@@ -113,7 +129,8 @@ export class ExportService {
       saved.entry.filePath,
       srtLanguage(saved.entry),
       list,
-      overwrite === true
+      overwrite === true,
+      toSpeakerNames(speakerNames)
     )
   }
 

@@ -62,6 +62,9 @@ const api: AppApi = {
     onProgress: (listener) => on(IpcChannel.ModelsProgress, listener),
     onChanged: (listener) => on(IpcChannel.ModelsChanged, () => listener())
   },
+  speakers: {
+    prepareModel: () => invoke(IpcChannel.SpeakersPrepareModel)
+  },
   media: {
     openFiles: (filterLabels) => invoke(IpcChannel.MediaOpenFiles, filterLabels),
     onPreview: (listener) => on(IpcChannel.MediaPreview, listener),
@@ -75,6 +78,8 @@ const api: AppApi = {
     get: (id) => invoke(IpcChannel.HistoryGet, id),
     search: (query) => invoke(IpcChannel.HistorySearch, query),
     rename: (id, displayName) => invoke(IpcChannel.HistoryRename, id, displayName),
+    renameSpeaker: (id, speakerId, name) =>
+      invoke(IpcChannel.HistoryRenameSpeaker, id, speakerId, name),
     remove: (id) => invoke(IpcChannel.HistoryRemove, id),
     clear: () => invoke(IpcChannel.HistoryClear),
     relocate: (id, filterLabels) => invoke(IpcChannel.HistoryRelocate, id, filterLabels),
@@ -85,8 +90,8 @@ const api: AppApi = {
   export: {
     save: (entryId, format, segments, options, filterLabel) =>
       invoke(IpcChannel.ExportSave, entryId, format, segments, options, filterLabel),
-    saveSrtBeside: (entryId, segments, overwrite) =>
-      invoke(IpcChannel.ExportSaveSrtBeside, entryId, segments, overwrite),
+    saveSrtBeside: (entryId, segments, overwrite, speakerNames) =>
+      invoke(IpcChannel.ExportSaveSrtBeside, entryId, segments, overwrite, speakerNames),
     showInFolder: (path) => invoke(IpcChannel.ExportShowInFolder, path)
   },
   queue: {

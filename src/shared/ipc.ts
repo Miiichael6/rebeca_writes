@@ -71,6 +71,7 @@ export const IpcChannel = {
   ModelsDelete: 'models:delete',
   ModelsPickCustomFile: 'models:pickCustomFile',
   ModelsAddCustom: 'models:addCustom',
+  SpeakersPrepareModel: 'speakers:prepareModel',
   ModelsProgress: 'models:progress',
   ModelsChanged: 'models:changed',
   MediaOpenFiles: 'media:openFiles',
@@ -83,6 +84,7 @@ export const IpcChannel = {
   HistoryGet: 'history:get',
   HistorySearch: 'history:search',
   HistoryRename: 'history:rename',
+  HistoryRenameSpeaker: 'history:renameSpeaker',
   HistoryRemove: 'history:remove',
   HistoryClear: 'history:clear',
   HistoryRelocate: 'history:relocate',
@@ -172,6 +174,7 @@ export interface IpcInvokeMap {
   [IpcChannel.ModelsDelete]: { args: [id: string]; result: ModelActionResult }
   [IpcChannel.ModelsPickCustomFile]: { args: []; result: string | null }
   [IpcChannel.ModelsAddCustom]: { args: [path: string, name: string]; result: ModelActionResult }
+  [IpcChannel.SpeakersPrepareModel]: { args: []; result: ModelDownloadResult }
   [IpcChannel.MediaOpenFiles]: {
     args: [filterLabels: Record<MediaFilterKey, string>]
     result: OpenFilesResult | null
@@ -188,6 +191,10 @@ export interface IpcInvokeMap {
   [IpcChannel.HistorySearch]: { args: [query: string]; result: string[] }
   [IpcChannel.HistoryRename]: {
     args: [id: string, displayName: string]
+    result: HistoryEntry | null
+  }
+  [IpcChannel.HistoryRenameSpeaker]: {
+    args: [id: string, speakerId: string, name: string]
     result: HistoryEntry | null
   }
   [IpcChannel.HistoryRemove]: { args: [id: string]; result: boolean }
@@ -209,7 +216,12 @@ export interface IpcInvokeMap {
     result: ExportSaved | null
   }
   [IpcChannel.ExportSaveSrtBeside]: {
-    args: [entryId: string, segments: Segment[], overwrite: boolean]
+    args: [
+      entryId: string,
+      segments: Segment[],
+      overwrite: boolean,
+      speakerNames: Record<string, string>
+    ]
     result: SaveSrtBesideResult
   }
   [IpcChannel.ExportShowInFolder]: { args: [path: string]; result: void }
@@ -358,6 +370,10 @@ export interface AppApi {
     /** Avisa cuando cambia la lista (empieza o termina una descarga, se borra o añade uno). */
     onChanged: (listener: () => void) => () => void
   }
+  speakers: {
+    /** Descarga el modelo de voces de "Detectar quién habla" si falta (tarea 35). */
+    prepareModel: () => Promise<ModelDownloadResult>
+  }
   media: {
     /**
      * "Abrir archivo": diálogo con selección múltiple. Un archivo se registra en la lista
@@ -386,6 +402,8 @@ export interface AppApi {
     search: (query: string) => Promise<string[]>
     /** Cambia solo el nombre mostrado; vacío lo restaura al nombre del archivo. */
     rename: (id: string, displayName: string) => Promise<HistoryEntry | null>
+    /** Nombre de un hablante (tarea 35); vacío vuelve al de por defecto. */
+    renameSpeaker: (id: string, speakerId: string, name: string) => Promise<HistoryEntry | null>
     /** Quita la entrada y su transcripción; el archivo original no se toca. */
     remove: (id: string) => Promise<boolean>
     /**
@@ -427,12 +445,14 @@ export interface AppApi {
     ) => Promise<ExportSaved | null>
     /**
      * `<archivo>.<idioma>.srt` junto al original (Jellyfin, Plex). Sin `overwrite` no pisa
-     * uno que ya exista: devuelve `exists` para que el renderer pregunte.
+     * uno que ya exista: devuelve `exists` para que el renderer pregunte. `speakerNames`: los
+     * nombres mostrados de los hablantes, para el prefijo de cada línea.
      */
     saveSrtBeside: (
       entryId: string,
       segments: Segment[],
-      overwrite: boolean
+      overwrite: boolean,
+      speakerNames: Record<string, string>
     ) => Promise<SaveSrtBesideResult>
     /** Abre el Explorador con un archivo exportado en esta sesión seleccionado. */
     showInFolder: (path: string) => Promise<void>

@@ -128,3 +128,25 @@ describe('transcriptText', () => {
     expect(transcriptText([], false)).toBe('')
   })
 })
+
+describe('hablantes en los párrafos (tarea 35)', () => {
+  const talk: Segment[] = [
+    { start: 0, end: 1, text: 'Hola', speaker: 'p1' },
+    { start: 1, end: 2, text: ' ' },
+    { start: 2, end: 3, text: 'sigo', speaker: 'p1' },
+    { start: 3, end: 4, text: 'yo no', speaker: 'p2' }
+  ]
+
+  it('un cambio de voz empieza párrafo; un segmento sin hablante no lo corta', () => {
+    expect(toParagraphs(talk).map((p) => [p.from, p.to])).toEqual([
+      [0, 3],
+      [3, 4]
+    ])
+  })
+
+  it('copiar pone el nombre delante de cada línea o párrafo', () => {
+    const names = { p1: 'Ana', p2: 'Luis' }
+    expect(transcriptText(talk, true, names)).toBe('Ana: Hola sigo\n\nLuis: yo no')
+    expect(transcriptText(talk.slice(3), false, names)).toBe('[00:03] Luis: yo no')
+  })
+})

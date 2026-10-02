@@ -190,3 +190,43 @@ Si stdin se cierra, el sidecar termina. Para dejar de vigilar, main cierra stdin
 
 - `apps`: el nombre de la clave de cada app con `LastUsedTimeStop = 0`: el nombre de familia del paquete en las empaquetadas y, en las de escritorio (bajo `NonPackaged`), la ruta del .exe con `#` en vez de `\`.
 - Sin sondeo: `RegNotifyChangeKeyValue` sobre la clave y sus subclaves despierta el hilo solo cuando Windows escribe en ella. Muchas apps (juegos, dictado) escriben ahí; si la lista no cambia, no se emite nada.
+
+# Protocolo de `rl-speaker`
+
+Cuarto binario del crate (tarea 35): calcula la huella de voz de un tramo de WAV con el modelo CAM++ de sherpa-onnx. Agrupar las huellas en personas lo hace main (`src/main/domain/speakers/clusterSpeakers.ts`). Carga en tiempo de ejecución `sherpa-onnx-c-api.dll`, `onnxruntime.dll` y `onnxruntime_providers_shared.dll`, que deben estar a su lado en `resources/bin/speaker/` (`npm run fetch:speaker`).
+
+| Tubería | Dirección      | Contenido                    |
+| ------- | -------------- | ---------------------------- |
+| stdin   | main → sidecar | Comandos JSON, uno por línea |
+| stderr  | sidecar → main | Eventos JSON, uno por línea  |
+| stdout  | —              | Sin uso                      |
+
+Si stdin se cierra, el sidecar termina.
+
+## Comandos (stdin)
+
+```json
+{"cmd":"load","model":"C:\...\models\speakers\campplus.onnx","threads":2}
+{"cmd":"embed","id":7,"wav":"C:\...\chunk.wav","start":12.5,"end":15.0}
+```
+
+- `load`: carga el modelo (reemplaza al anterior). Responde `loaded` o `load_failed`.
+- `embed`: huella de los segundos `start..end` de un WAV de 16 kHz mono 16 bits. `id` lo elige main para emparejar la respuesta. Responde `embedding` o `embed_failed` con el mismo `id`.
+
+## Eventos (stderr)
+
+```json
+{"type":"loaded","dim":192}
+{"type":"load_failed","message":"..."}
+{"type":"embedding","id":7,"vector":[0.012,-0.334,...]}
+{"type":"embed_failed","id":7,"message":"WAV must be 16 kHz mono 16-bit"}
+{"type":"error","code":"not_loaded","message":"..."}
+```
+
+| `type`         | Cuándo                                                                                    |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `loaded`       | El modelo está listo; `dim` es la longitud de sus huellas                                 |
+| `load_failed`  | Faltan las DLL o el modelo no se pudo abrir                                               |
+| `embedding`    | Huella del tramo pedido                                                                   |
+| `embed_failed` | El WAV no existe, no tiene el formato esperado o el tramo está vacío                      |
+| `error`        | `bad_command`: línea que no es JSON o `cmd` desconocido. `not_loaded`: `embed` sin `load` |

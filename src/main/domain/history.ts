@@ -1,5 +1,6 @@
 import type { HistoryEntry, Segment } from '@shared/types'
 import { isRecord } from './guards'
+import { isSpeakerNames } from './speakers/speakerNames'
 
 /** Los ids forman nombres de archivo: nada de separadores ni `..`. */
 const ID_RE = /^[\w-]{1,64}$/
@@ -46,6 +47,10 @@ export function restoreEntry(entry: HistoryEntry): HistoryEntry {
     restored.status = 'done'
   }
   if (restored.status === 'transcribing') restored.status = 'pending'
+  // Antes de la tarea 35 no había hablantes; un mapa dañado se descarta entero.
+  if (restored.speakers !== undefined && !isSpeakerNames(restored.speakers)) {
+    delete restored.speakers
+  }
   return restored
 }
 

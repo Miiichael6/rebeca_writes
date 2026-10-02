@@ -7,6 +7,7 @@ import { rowMatchRange } from '../domain/rows'
 import { editedProps } from './editedProps'
 import { renderHighlight } from './highlight'
 import { SegmentEditor } from './SegmentEditor'
+import { SpeakerTag } from './SpeakerTag'
 
 interface ParagraphRowProps {
   segments: readonly Segment[]
@@ -27,6 +28,9 @@ interface ParagraphRowProps {
   editIndex: number
   draft: string | null
   edit: EditHandlers
+  /** Quien habla en el párrafo si es otra voz que la del anterior (tarea 35), si no `null`. */
+  speaker: string | null
+  speakerName: string
 }
 
 /**
@@ -46,7 +50,9 @@ function sameParagraph(a: ParagraphRowProps, b: ParagraphRowProps): boolean {
     a.currentMatch !== b.currentMatch ||
     a.editIndex !== b.editIndex ||
     a.draft !== b.draft ||
-    a.edit !== b.edit
+    a.edit !== b.edit ||
+    a.speaker !== b.speaker ||
+    a.speakerName !== b.speakerName
   ) {
     return false
   }
@@ -71,10 +77,14 @@ export const ParagraphRow = memo(function ParagraphRow({
   currentMatch,
   editIndex,
   draft,
-  edit
+  edit,
+  speaker,
+  speakerName
 }: ParagraphRowProps): React.JSX.Element {
   const { t } = useTranslation()
   const parts: React.ReactNode[] = []
+  if (speaker !== null)
+    parts.push(<SpeakerTag key="speaker" speaker={speaker} name={speakerName} />)
   for (let i = from; i < to; i++) {
     const segment = segments[i]
     const { first, end } = rowMatchRange(matches, i, i + 1)

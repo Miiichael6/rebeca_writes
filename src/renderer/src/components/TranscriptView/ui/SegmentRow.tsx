@@ -7,6 +7,7 @@ import type { EditHandlers } from '../application/useSegmentEditing'
 import { editedProps } from './editedProps'
 import { renderHighlight } from './highlight'
 import { SegmentEditor } from './SegmentEditor'
+import { SpeakerTag } from './SpeakerTag'
 
 interface SegmentRowProps {
   segment: Segment
@@ -26,6 +27,9 @@ interface SegmentRowProps {
   /** Borrador si este segmento se está editando, si no `null`. */
   draft: string | null
   edit: EditHandlers
+  /** Quien empieza a hablar en este segmento, o `null` si sigue la misma voz (tarea 35). */
+  speaker: string | null
+  speakerName: string
 }
 
 /**
@@ -45,7 +49,9 @@ export const SegmentRow = memo(function SegmentRow({
   matchCount,
   currentMatch,
   draft,
-  edit
+  edit,
+  speaker,
+  speakerName
 }: SegmentRowProps): React.JSX.Element {
   const { t } = useTranslation()
   return (
@@ -66,6 +72,7 @@ export const SegmentRow = memo(function SegmentRow({
       onDoubleClick={() => edit.start(index)}
     >
       <time>[{formatTimestamp(segment.start)}]</time>
+      {speaker !== null && <SpeakerTag speaker={speaker} name={speakerName} />}
       {draft === null ? (
         <span {...editedProps(segment, t)}>
           {renderHighlight(segment.text, matches, firstMatch, matchCount, currentMatch)}

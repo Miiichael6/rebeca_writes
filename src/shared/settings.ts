@@ -89,6 +89,8 @@ export interface Settings {
   suggestMeetingRecording: boolean
   /** Dónde vive el dock (tarea 33). */
   dockPosition: DockPosition
+  /** Etiquetar quién habla al grabar (tarea 35); la primera vez descarga el modelo de voces. */
+  detectSpeakers: boolean
 
   queue: QueueSettings
   window: WindowBounds
@@ -150,6 +152,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     recordShortcut: DEFAULT_RECORD_SHORTCUT,
     suggestMeetingRecording: true,
     dockPosition: DEFAULT_DOCK_POSITION,
+    detectSpeakers: false,
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }
   }

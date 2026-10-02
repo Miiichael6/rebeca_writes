@@ -1,4 +1,5 @@
-import { paragraphText, toParagraphs } from './joinLines'
+import { paragraphSpeaker, paragraphText, toParagraphs } from './joinLines'
+import { speakerPrefix, type SpeakerNames } from './speakers'
 import type { Segment } from './types'
 import { AUTO_LANGUAGE } from './whisper'
 
@@ -24,6 +25,8 @@ export const EXPORT_EXTENSIONS: Record<ExportFormat, string> = {
 export interface ExportOptions {
   /** Solo `.txt`: párrafos como con "Unir líneas". */
   joined?: boolean
+  /** Nombres mostrados de los hablantes (tarea 35): cada línea lleva delante `Nombre: `. */
+  speakerNames?: SpeakerNames
 }
 
 const pad = (n: number, width = 2): string => String(n).padStart(width, '0')
@@ -82,17 +85,28 @@ function withText(segments: readonly Segment[]): Segment[] {
   return segments.filter((s) => s.text.trim())
 }
 
+/** Líneas del segmento; la primera con el nombre de quien habla delante. */
+function speakerLines(segment: Segment, names: SpeakerNames | undefined): string[] {
+  const [first, ...rest] = lines(segment.text)
+  return [speakerPrefix(segment.speaker, names) + first, ...rest]
+}
+
+/** El segmento en una línea, con el nombre de quien habla delante. */
+function speakerLine(segment: Segment, names: SpeakerNames | undefined): string {
+  return speakerPrefix(segment.speaker, names) + oneLine(segment.text)
+}
+
 /** Une los bloques; con al menos uno, el archivo termina en salto de línea. */
 function joinLinesOut(parts: string[], separator = '\n'): string {
   return parts.length > 0 ? parts.join(separator) + '\n' : ''
 }
 
 /** SubRip: índice, `inicio --> fin`, texto y línea en blanco. */
-export function toSrt(segments: readonly Segment[]): string {
+export function toSrt(segments: readonly Segment[], { speakerNames }: ExportOptions = {}): string {
   return joinLinesOut(
     withText(segments).map(
       (s, i) =>
-        `${i + 1}\n${srtTimestamp(s.start)} --> ${srtTimestamp(s.end)}\n${lines(s.text).join('\n')}`
+        `${i + 1}\n${srtTimestamp(s.start)} --> ${srtTimestamp(s.end)}\n${speakerLines(s, speakerNames).join('\n')}`
     ),
     '\n\n'
   )
@@ -104,23 +118,28 @@ function escapeVtt(text: string): string {
 }
 
 /** WebVTT: cabecera `WEBVTT` y cues `hh:mm:ss.mmm --> hh:mm:ss.mmm`. */
-export function toVtt(segments: readonly Segment[]): string {
+export function toVtt(segments: readonly Segment[], { speakerNames }: ExportOptions = {}): string {
   const cues = withText(segments).map(
     (s) =>
-      `${vttTimestamp(s.start)} --> ${vttTimestamp(s.end)}\n${lines(s.text).map(escapeVtt).join('\n')}`
+      `${vttTimestamp(s.start)} --> ${vttTimestamp(s.end)}\n${speakerLines(s, speakerNames).map(escapeVtt).join('\n')}`
   )
   return joinLinesOut(['WEBVTT', ...cues], '\n\n')
 }
 
 /** LRC: `[mm:ss.xx]texto`, una línea por segmento. */
-export function toLrc(segments: readonly Segment[]): string {
-  return joinLinesOut(withText(segments).map((s) => `[${lrcTimestamp(s.start)}]${oneLine(s.text)}`))
+export function toLrc(segments: readonly Segment[], { speakerNames }: ExportOptions = {}): string {
+  return joinLinesOut(
+    withText(segments).map((s) => `[${lrcTimestamp(s.start)}]${speakerLine(s, speakerNames)}`)
+  )
 }
 
 /** `[mm:ss] texto`, una línea por segmento. */
-export function toTxtTimestamps(segments: readonly Segment[]): string {
+export function toTxtTimestamps(
+  segments: readonly Segment[],
+  { speakerNames }: ExportOptions = {}
+): string {
   return joinLinesOut(
-    withText(segments).map((s) => `[${txtTimestamp(s.start)}] ${oneLine(s.text)}`)
+    withText(segments).map((s) => `[${txtTimestamp(s.start)}] ${speakerLine(s, speakerNames)}`)
   )
 }
 
@@ -130,15 +149,16 @@ export function toTxtTimestamps(segments: readonly Segment[]): string {
  */
 export function toTxt(
   segments: readonly Segment[],
-  { joined = false }: ExportOptions = {}
+  { joined = false, speakerNames }: ExportOptions = {}
 ): string {
   if (joined) {
-    const paragraphs = toParagraphs(segments)
-      .map((p) => oneLine(paragraphText(segments, p)))
-      .filter(Boolean)
+    const paragraphs = toParagraphs(segments).flatMap((p) => {
+      const text = oneLine(paragraphText(segments, p))
+      return text ? [speakerPrefix(paragraphSpeaker(segments, p), speakerNames) + text] : []
+    })
     return joinLinesOut(paragraphs, '\n\n')
   }
-  return joinLinesOut(withText(segments).map((s) => oneLine(s.text)))
+  return joinLinesOut(withText(segments).map((s) => speakerLine(s, speakerNames)))
 }
 
 export function exportTranscript(
@@ -148,15 +168,15 @@ export function exportTranscript(
 ): string {
   switch (format) {
     case 'txtTimestamps':
-      return toTxtTimestamps(segments)
+      return toTxtTimestamps(segments, options)
     case 'txt':
       return toTxt(segments, options)
     case 'vtt':
-      return toVtt(segments)
+      return toVtt(segments, options)
     case 'lrc':
-      return toLrc(segments)
+      return toLrc(segments, options)
     case 'srt':
-      return toSrt(segments)
+      return toSrt(segments, options)
   }
 }
 

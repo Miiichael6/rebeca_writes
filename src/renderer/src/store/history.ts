@@ -48,6 +48,8 @@ interface HistoryState {
   locateFile: (id: string) => Promise<void>
   /** Cambia solo el nombre mostrado; vacío vuelve al nombre del archivo. */
   rename: (id: string, displayName: string) => Promise<void>
+  /** Nombre de un hablante (tarea 35); vacío vuelve al de por defecto. */
+  renameSpeaker: (id: string, speakerId: string, name: string) => Promise<void>
   /** Quita una entrada del historial (el archivo original no se toca). */
   remove: (id: string) => Promise<void>
   /** Si la transcripción de la entrada tiene ediciones a mano (se perderían al rehacerla). */
@@ -199,6 +201,11 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
       if (!entry) return
       // Se pasa siempre la clave: con `undefined` el nombre vuelve al del archivo.
       get().patchEntry(id, { displayName: entry.displayName })
+    },
+    renameSpeaker: async (id, speakerId, name) => {
+      const entry = await window.api.history.renameSpeaker(id, speakerId, name)
+      // Igual que `rename`: con `undefined` todos vuelven a su nombre por defecto.
+      if (entry) get().patchEntry(id, { speakers: entry.speakers })
     },
     remove: async (id) => {
       if (!(await window.api.history.remove(id))) return

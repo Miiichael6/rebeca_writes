@@ -3,6 +3,7 @@ import i18n from '@renderer/i18n'
 import { useSettingsStore } from '@renderer/store/settings'
 import { toast } from '@renderer/store/toast'
 import { useTranscriptStore } from '@renderer/store/transcript'
+import { speakerNamesOf } from './speakerNames'
 
 /**
  * Menú Exportar (tarea 20). Se exportan los segmentos que se ven, con las ediciones; el main
@@ -43,7 +44,7 @@ export async function exportAs(format: ExportFormat): Promise<void> {
       entry.id,
       format,
       segments,
-      { joined },
+      { joined, speakerNames: speakerNamesOf(segments, entry.speakers) },
       i18n.t(FILTER_KEYS[format])
     )
     if (saved) announceSaved(saved.path)
@@ -60,7 +61,12 @@ export async function saveSrtNextToFile(overwrite = false): Promise<string | nul
   const { entry, segments } = useTranscriptStore.getState()
   if (!entry || segments.length === 0) return null
   try {
-    const result = await window.api.export.saveSrtBeside(entry.id, segments, overwrite)
+    const result = await window.api.export.saveSrtBeside(
+      entry.id,
+      segments,
+      overwrite,
+      speakerNamesOf(segments, entry.speakers)
+    )
     if (result.status === 'exists') return result.path
     if (result.status === 'missing') toast(i18n.t('bottomBar.srtMissing'), 4000)
     else announceSaved(result.path)

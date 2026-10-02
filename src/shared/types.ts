@@ -9,6 +9,8 @@ export interface Segment {
   edited?: boolean
   /** Texto de whisper antes de la primera edición, para "Restaurar original". */
   originalText?: string
+  /** Quién habla (tarea 35): `you` o `p1`, `p2`… Ver `@shared/speakers`. */
+  speaker?: string
 }
 
 export type MediaKind = 'video' | 'audio'
@@ -37,6 +39,8 @@ export interface HistoryEntry {
   progress?: number
   /** Grabación de Rebecca Listen que se transcribe mientras se graba (tarea 27). */
   live?: boolean
+  /** Nombres que el usuario dio a los hablantes (tarea 35): id → nombre. */
+  speakers?: Record<string, string>
 }
 
 /** Sesión en vivo en curso (tarea 27): su trabajo, su entrada y lo transcrito hasta ahora. */

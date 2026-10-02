@@ -5,6 +5,7 @@ import type { SearchMatch } from '@renderer/lib/search'
 import { usePorts } from '../application/ports'
 import { useSegmentList } from '../application/useSegmentList'
 import { currentInRange, indexInRange, rowMatchRange } from '../domain/rows'
+import { speakerTurnIn } from '../domain/speakers'
 import { Button, ContextMenu, type MenuItem } from '../../ui'
 import { ParagraphRow } from './ParagraphRow'
 import { SegmentRow } from './SegmentRow'
@@ -29,6 +30,12 @@ export function SegmentList({
   const { transcript } = usePorts()
   const { scrollRef, model: list } = useSegmentList(segments, t('transcript.editLocked'))
   const { virtualizer, paragraphs, activeIndex, activeEdit, edit, menu } = list
+  const speakerNames = transcript.useSpeakerNames()
+  /** Etiqueta de quien empieza a hablar en la fila `[from, to)`, si cambia la voz. */
+  const turnIn = (from: number, to: number): { speaker: string | null; speakerName: string } => {
+    const speaker = speakerTurnIn(segments, from, to)
+    return { speaker, speakerName: speaker ? transcript.speakerName(speaker, speakerNames) : '' }
+  }
 
   const menuSegment = menu ? segments[menu.index] : undefined
   const menuItems: MenuItem[] = []
@@ -76,6 +83,7 @@ export function SegmentList({
                   editIndex={editIndex}
                   draft={editIndex === -1 ? null : activeEdit!.draft}
                   edit={edit}
+                  {...turnIn(p.from, p.to)}
                 />
               )
             }
@@ -97,6 +105,7 @@ export function SegmentList({
                 currentMatch={currentInRange(currentMatch, first, end)}
                 draft={activeEdit?.index === item.index ? activeEdit.draft : null}
                 edit={edit}
+                {...turnIn(item.index, item.index + 1)}
               />
             )
           })}

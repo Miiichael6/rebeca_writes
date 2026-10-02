@@ -1122,6 +1122,65 @@
   background: none;
 }
 
+/* Quién habla (tarea 35): etiqueta al cambiar de voz; un clic la renombra. */
+.speaker-tag {
+  --speaker: var(--speaker-1);
+  flex-shrink: 0;
+  align-self: flex-start;
+  max-width: 14em;
+  padding: 0 6px;
+  border: 1px solid color-mix(in srgb, var(--speaker) 40%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--speaker) 12%, transparent);
+  color: var(--speaker);
+  font: inherit;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.speaker-tag:hover {
+  background: color-mix(in srgb, var(--speaker) 20%, transparent);
+}
+
+.speaker-tag.editing {
+  width: 12em;
+  outline: none;
+  border-bottom: 2px solid var(--speaker);
+  background: var(--bg-card);
+  cursor: text;
+}
+
+/* En un párrafo la etiqueta va en línea con el texto, no como columna. */
+.segment.paragraph .speaker-tag {
+  margin-right: 6px;
+  vertical-align: baseline;
+}
+
+.speaker-0 {
+  --speaker: var(--speaker-0);
+}
+.speaker-1 {
+  --speaker: var(--speaker-1);
+}
+.speaker-2 {
+  --speaker: var(--speaker-2);
+}
+.speaker-3 {
+  --speaker: var(--speaker-3);
+}
+.speaker-4 {
+  --speaker: var(--speaker-4);
+}
+.speaker-5 {
+  --speaker: var(--speaker-5);
+}
+.speaker-6 {
+  --speaker: var(--speaker-6);
+}
+
 /* Menú contextual de un segmento: ancla de tamaño cero en el puntero. */
 .menu-anchor.segment-menu {
   position: fixed;

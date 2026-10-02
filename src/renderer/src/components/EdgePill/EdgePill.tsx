@@ -106,7 +106,8 @@ export function EdgePill(props: EdgePillProps): React.JSX.Element {
   const { collapsed, active, levels, question, questionTitle, left, right, onHover } = props
   const activeClass = active ? ' edge-pill-active' : ''
   const contracting = useContractingAsDrop(collapsed)
-  if (collapsed && !contracting) return <div className={`edge-pill-bar${activeClass}`} onMouseEnter={onHover} />
+  if (collapsed && !contracting)
+    return <div className={`edge-pill-bar${activeClass}`} onMouseEnter={onHover} />
 
   const heights = levels?.map((level) => Math.max(MIN_LEVEL_PCT, level * 100)) ?? BARS
 

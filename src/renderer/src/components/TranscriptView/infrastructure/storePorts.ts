@@ -1,8 +1,10 @@
 import { copyTranscript } from '@renderer/lib/copyTranscript'
 import { editTranscriptSegment } from '@renderer/lib/editTranscript'
 import { findActiveSegment } from '@renderer/lib/segments'
+import { speakerName } from '@renderer/lib/speakerNames'
 import { registerTranscriptScroller, scrollToSegment } from '@renderer/lib/transcriptScroll'
 import { useRecentItems } from '@renderer/lib/useRecentItems'
+import { useHistoryStore } from '@renderer/store/history'
 import { usePlayerStore } from '@renderer/store/player'
 import { useSettingsStore } from '@renderer/store/settings'
 import { toast } from '@renderer/store/toast'
@@ -30,7 +32,13 @@ export const storePorts: TranscriptViewPorts = {
     canEditNow: () => canEdit(useTranscriptStore.getState()),
     getSegment: (index) => useTranscriptStore.getState().segments[index],
     editSegment: editTranscriptSegment,
-    copyAll: copyTranscript
+    copyAll: copyTranscript,
+    useSpeakerNames: () => useTranscriptStore((s) => s.entry?.speakers),
+    speakerName,
+    renameSpeaker: (speaker, name) => {
+      const entry = useTranscriptStore.getState().entry
+      if (entry) void useHistoryStore.getState().renameSpeaker(entry.id, speaker, name)
+    }
   },
   playback: {
     usePlaying: () => usePlayerStore((s) => s.playing),

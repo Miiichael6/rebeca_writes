@@ -3,6 +3,7 @@ import type { LiveSessionInfo } from '@shared/types'
 import type { LiveCommand } from '../domain/liveArgs'
 import { LiveSession, type LiveDeps } from './liveSession'
 import type { QueueIntake } from './queueIntake'
+import type { OwnVoice } from './speakerLabeler'
 
 function samePath(a: string, b: string): boolean {
   return resolve(a).toLowerCase() === resolve(b).toLowerCase()
@@ -37,15 +38,24 @@ export class LiveControl {
 
   /**
    * Atiende las órdenes de una en una. Así un fin que llega mientras se crea la sesión, o un
-   * segundo inicio, ven la sesión ya creada y no la dejan huérfana.
+   * segundo inicio, ven la sesión ya creada y no la dejan huérfana. `ownVoice`: cuándo habla
+   * quien graba, si el origen lo sabe (tarea 35).
    */
-  handle(command: LiveCommand, origin: LiveOrigin = 'listen'): Promise<void> {
-    const run = this.last.then(() => this.apply(command, origin))
+  handle(
+    command: LiveCommand,
+    origin: LiveOrigin = 'listen',
+    ownVoice: OwnVoice | null = null
+  ): Promise<void> {
+    const run = this.last.then(() => this.apply(command, origin, ownVoice))
     this.last = run.catch(() => {})
     return run
   }
 
-  private async apply(command: LiveCommand, origin: LiveOrigin): Promise<void> {
+  private async apply(
+    command: LiveCommand,
+    origin: LiveOrigin,
+    ownVoice: OwnVoice | null
+  ): Promise<void> {
     if (command.kind === 'start') {
       if (this.session && samePath(this.session.pcm, command.pcm)) return
       if (this.session?.recording && origin !== this.origin) {
@@ -53,8 +63,12 @@ export class LiveControl {
         throw new LiveBusyError(this.origin)
       }
       this.session?.end(null)
-      this.session = await LiveSession.start(this.deps, command.pcm, command.name, (finished) =>
-        this.forget(finished)
+      this.session = await LiveSession.start(
+        this.deps,
+        command.pcm,
+        command.name,
+        (finished) => this.forget(finished),
+        ownVoice
       )
       this.origin = origin
       return

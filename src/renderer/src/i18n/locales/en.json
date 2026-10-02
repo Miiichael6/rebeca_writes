@@ -99,6 +99,12 @@
     "previewFailed": "Couldn’t prepare a preview for this format.",
     "recording": "Recording in progress: the audio will be playable when it stops."
   },
+  "speakers": {
+    "you": "You",
+    "person": "Person {{n}}",
+    "rename": "Rename {{name}}",
+    "nameInput": "Speaker name"
+  },
   "transcript": {
     "title": "Transcription",
     "closeWindow": "Close transcript window",
@@ -278,6 +284,10 @@
     },
     "suggestMeetings": "Suggest recording meetings",
     "suggestMeetingsDescription": "When a call starts in Teams, Zoom, Webex, Slack, Discord or Skype, the dock asks whether to record it. It never records without your confirmation.",
+    "detectSpeakers": "Detect who is speaking",
+    "detectSpeakersDescription": "While recording, each sentence is tagged with who says it (You, Person 1, Person 2…). Click a tag to give it a name. Uses a 28 MB voice model that is downloaded once.",
+    "detectSpeakersDownloading": "Downloading the voice model (28 MB)…",
+    "detectSpeakersFailed": "The voice model could not be downloaded. Check your connection and turn the switch on again.",
     "dockPosition": "Dock position",
     "dockPositionDescription": "Where the dock hides: at the top or bottom of the screen, at a corner or in the middle.",
     "dockPositions": {

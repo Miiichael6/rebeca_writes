@@ -1,7 +1,7 @@
 import type { RecordingSource } from '@shared/recording'
 import { FormatAdapter } from '../domain/capture/formatAdapter'
 import { LOOPBACK_GAP_MS, LoopbackClock } from '../domain/capture/loopbackSilence'
-import { Mixer } from '../domain/capture/mixer'
+import { Mixer, type MixObserver } from '../domain/capture/mixer'
 import type { AudioCapture, CaptureStream } from './ports/audioCapture'
 
 /**
@@ -10,11 +10,13 @@ import type { AudioCapture, CaptureStream } from './ports/audioCapture'
  * los dos, con el loopback como reloj. Si se pierde la salida (p. ej. al desconectar los
  * audífonos) se sigue con la nueva predeterminada; perder el micrófono termina el stream.
  * `micId` es el micrófono elegido; sin él (o si ya no está), el predeterminado de Windows.
+ * `observeMix` ve en *Ambos* cada bloque del sistema y del micrófono antes de sumarlos.
  */
 export async function openRecordingSource(
   capture: AudioCapture,
   source: RecordingSource,
-  micId?: string
+  micId?: string,
+  observeMix?: MixObserver
 ): Promise<CaptureStream> {
   switch (source) {
     case 'system':
@@ -22,7 +24,7 @@ export async function openRecordingSource(
     case 'voice':
       return capture.open('capture', micId)
     case 'both':
-      return openMixed(capture, micId)
+      return openMixed(capture, micId, observeMix)
   }
 }
 
@@ -156,10 +158,14 @@ async function openBoth(
   }
 }
 
-async function openMixed(capture: AudioCapture, micId?: string): Promise<CaptureStream> {
+async function openMixed(
+  capture: AudioCapture,
+  micId?: string,
+  observeMix?: MixObserver
+): Promise<CaptureStream> {
   const [system, voice] = await openBoth(capture, micId)
   const master = withLoopbackSilence(system)
-  const mixer = new Mixer(master, voice)
+  const mixer = new Mixer(master, voice, observeMix)
   let data: (samples: Float32Array) => void = () => {}
   let error: (reason: string) => void = () => {}
   let ended = false

@@ -102,6 +102,12 @@
     "previewFailed": "Não foi possível preparar a pré-visualização deste formato.",
     "recording": "Gravação em andamento: o áudio poderá ser reproduzido ao terminar."
   },
+  "speakers": {
+    "you": "Você",
+    "person": "Pessoa {{n}}",
+    "rename": "Renomear {{name}}",
+    "nameInput": "Nome de quem fala"
+  },
   "transcript": {
     "title": "Transcrição",
     "closeWindow": "Fechar janela da transcrição",
@@ -287,6 +293,10 @@
     },
     "suggestMeetings": "Sugerir gravar as reuniões",
     "suggestMeetingsDescription": "Ao começar uma chamada no Teams, Zoom, Webex, Slack, Discord ou Skype, o dock pergunta se deve gravá-la. Nunca grava sem a sua confirmação.",
+    "detectSpeakers": "Detectar quem fala",
+    "detectSpeakersDescription": "Ao gravar, cada frase fica marcada com quem a diz (Você, Pessoa 1, Pessoa 2…). Clique em uma etiqueta para dar um nome. Usa um modelo de vozes de 28 MB baixado uma vez.",
+    "detectSpeakersDownloading": "Baixando o modelo de vozes (28 MB)…",
+    "detectSpeakersFailed": "Não foi possível baixar o modelo de vozes. Verifique a conexão e ative o interruptor de novo.",
     "dockPosition": "Posição do dock",
     "dockPositionDescription": "Onde o dock se esconde: no topo ou na base da tela, em um canto ou no meio.",
     "dockPositions": {

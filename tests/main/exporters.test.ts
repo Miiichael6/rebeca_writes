@@ -180,3 +180,33 @@ describe('hasSiblingSrt', () => {
     expect(hasSiblingSrt('clase.mp4', ['clase2.srt', 'clase.mp4', 'clase.es.txt'])).toBe(false)
   })
 })
+
+describe('hablantes (tarea 35)', () => {
+  const talk: Segment[] = [
+    { start: 0, end: 1, text: 'Hola.', speaker: 'p1' },
+    { start: 1, end: 2, text: '¿Qué tal?', speaker: 'p2' },
+    { start: 2, end: 3, text: 'Bien.', speaker: 'p2' }
+  ]
+  const speakerNames = { p1: 'Ana', p2: 'Persona 2' }
+
+  it('cada línea lleva el nombre de quien habla', () => {
+    expect(toTxt(talk, { speakerNames })).toBe(
+      'Ana: Hola.\nPersona 2: ¿Qué tal?\nPersona 2: Bien.\n'
+    )
+    expect(toTxtTimestamps(talk, { speakerNames })).toContain('[00:01] Persona 2: ¿Qué tal?')
+    expect(toSrt(talk, { speakerNames })).toContain('00:00:00,000 --> 00:00:01,000\nAna: Hola.')
+    expect(toVtt(talk, { speakerNames })).toContain('00:00:00.000 --> 00:00:01.000\nAna: Hola.')
+    expect(toLrc(talk, { speakerNames })).toContain('[00:00.00]Ana: Hola.')
+  })
+
+  it('con "Unir líneas" el párrafo se corta al cambiar de voz y lleva un solo prefijo', () => {
+    expect(toTxt(talk, { joined: true, speakerNames })).toBe(
+      'Ana: Hola.\n\nPersona 2: ¿Qué tal? Bien.\n'
+    )
+  })
+
+  it('sin nombres, o sin hablantes, sale igual que antes', () => {
+    expect(toSrt(talk)).toBe(toSrt(talk.map(({ start, end, text }) => ({ start, end, text }))))
+    expect(exportTranscript('srt', talk, { speakerNames })).toBe(toSrt(talk, { speakerNames }))
+  })
+})

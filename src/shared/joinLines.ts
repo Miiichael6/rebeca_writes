@@ -27,8 +27,8 @@ export function endsSentence(text: string): boolean {
 }
 
 /**
- * Agrupa los segmentos en párrafos. Corta cuando hay una pausa larga entre dos segmentos o
- * cuando el párrafo ya tiene `maxSentences` frases completas.
+ * Agrupa los segmentos en párrafos. Corta cuando hay una pausa larga entre dos segmentos,
+ * cuando el párrafo ya tiene `maxSentences` frases completas o cuando cambia quien habla.
  */
 export function toParagraphs(
   segments: readonly Segment[],
@@ -37,9 +37,12 @@ export function toParagraphs(
   const paragraphs: Paragraph[] = []
   let current: Paragraph | null = null
   let sentences = 0
+  let speaker: string | undefined
   segments.forEach((segment, i) => {
     const pause = current !== null && segment.start - current.end >= pauseSec
-    if (current === null || pause || sentences >= maxSentences) {
+    const turn =
+      segment.speaker !== undefined && speaker !== undefined && segment.speaker !== speaker
+    if (current === null || pause || turn || sentences >= maxSentences) {
       current = { start: segment.start, end: segment.end, from: i, to: i + 1 }
       paragraphs.push(current)
       sentences = 0
@@ -48,6 +51,7 @@ export function toParagraphs(
       current.to = i + 1
     }
     if (endsSentence(segment.text)) sentences++
+    speaker = segment.speaker ?? speaker
   })
   return paragraphs
 }
@@ -60,6 +64,17 @@ export function paragraphText(segments: readonly Segment[], paragraph: Paragraph
     if (text) parts.push(text)
   }
   return parts.join(' ')
+}
+
+/** Quién habla en el párrafo: el primer segmento con hablante. */
+export function paragraphSpeaker(
+  segments: readonly Segment[],
+  paragraph: Paragraph
+): string | undefined {
+  for (let i = paragraph.from; i < paragraph.to; i++) {
+    if (segments[i].speaker !== undefined) return segments[i].speaker
+  }
+  return undefined
 }
 
 /** Índice del párrafo que contiene el segmento `index` (búsqueda binaria), o -1. */

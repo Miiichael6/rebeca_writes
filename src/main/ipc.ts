@@ -11,6 +11,7 @@ import type { HistoryService } from './application/historyService'
 import type { LiveControl } from './application/liveControl'
 import type { MediaOpener } from './application/mediaOpener'
 import type { MicRecording } from './application/micRecording'
+import type { SpeakerModel } from './application/speakerModel'
 import type { ModelService } from './application/modelService'
 import type { SettingsRepository } from './application/ports/settingsRepository'
 import type { PreviewService } from './application/previewService'
@@ -37,6 +38,7 @@ export interface IpcDeps {
   backends: BackendService
   cuda: CudaService
   models: ModelService
+  speakerModel: SpeakerModel
   previews: PreviewService
   opener: MediaOpener
   history: HistoryService
@@ -73,6 +75,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     backends,
     cuda,
     models,
+    speakerModel,
     previews,
     history,
     exporter,
@@ -124,6 +127,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.ModelsAddCustom, (_event, path, name) =>
     models.addCustom(String(path), String(name))
   )
+  handle(IpcChannel.SpeakersPrepareModel, () => speakerModel.prepare())
 
   handle(IpcChannel.MediaOpenFiles, (event, filterLabels) =>
     intake.openFiles(ownerOf(event), filterLabels)
@@ -139,6 +143,9 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.HistoryGet, (_event, id) => history.get(id))
   handle(IpcChannel.HistorySearch, (_event, query) => history.search(query))
   handle(IpcChannel.HistoryRename, (_event, id, displayName) => history.rename(id, displayName))
+  handle(IpcChannel.HistoryRenameSpeaker, (_event, id, speakerId, name) =>
+    history.renameSpeaker(id, speakerId, name)
+  )
   handle(IpcChannel.HistoryRemove, (_event, id) => history.remove(id))
   handle(IpcChannel.HistoryClear, () => history.clear())
   handle(IpcChannel.HistoryRelocate, (event, id, filterLabels) =>
@@ -150,8 +157,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.ExportSave, (event, entryId, format, segments, options, filterLabel) =>
     exporter.save(ownerOf(event), entryId, format, segments, options, filterLabel)
   )
-  handle(IpcChannel.ExportSaveSrtBeside, (_event, entryId, segments, overwrite) =>
-    exporter.saveSrtBeside(entryId, segments, overwrite)
+  handle(IpcChannel.ExportSaveSrtBeside, (_event, entryId, segments, overwrite, speakerNames) =>
+    exporter.saveSrtBeside(entryId, segments, overwrite, speakerNames)
   )
   handle(IpcChannel.ExportShowInFolder, (_event, path) => exporter.showInFolder(path))
 

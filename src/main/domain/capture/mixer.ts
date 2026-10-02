@@ -25,6 +25,9 @@ export interface StreamFormat {
   channels: number
 }
 
+/** Ve cada bloque del loopback y el de micrófono que se le suma, antes de mezclarlos. */
+export type MixObserver = (master: Float32Array, slave: Float32Array) => void
+
 export class Mixer {
   private readonly resampler: Resampler
   private readonly fifo: SampleFifo
@@ -35,7 +38,8 @@ export class Mixer {
 
   constructor(
     private readonly master: StreamFormat,
-    private readonly slave: StreamFormat
+    private readonly slave: StreamFormat,
+    private readonly observe?: MixObserver
   ) {
     this.resampler = new Resampler({
       inRate: slave.sampleRate,
@@ -63,6 +67,7 @@ export class Mixer {
   /** Un bloque de loopback: vuelve mezclado con el mismo largo de micrófono. */
   pushMaster(samples: Float32Array): Float32Array {
     const voice = this.takeSlave(samples.length)
+    this.observe?.(samples, voice)
     const out = new Float32Array(samples.length)
     for (let i = 0; i < out.length; i++) out[i] = samples[i] + voice[i]
     softLimitInPlace(out)

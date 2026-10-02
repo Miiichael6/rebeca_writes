@@ -1,4 +1,5 @@
 import { basename } from 'path'
+import { SPEAKER_NAME_MAX } from '@shared/speakers'
 import type {
   HistoryEntry,
   HistoryEntryInput,
@@ -7,6 +8,7 @@ import type {
   Segment
 } from '@shared/types'
 import { isValidHistoryId } from '../domain/history'
+import { renamedSpeakers } from '../domain/speakers/speakerNames'
 import type { HistoryMedia } from './ports/historyMedia'
 import type { HistoryRepository } from './ports/historyRepository'
 
@@ -74,6 +76,21 @@ export class HistoryService {
     if (!isValidHistoryId(id) || typeof displayName !== 'string') return null
     const trimmed = displayName.trim()
     return this.repo.update(id, { displayName: trimmed || undefined })
+  }
+
+  /** Nombre de un hablante (tarea 35); vacío vuelve al de por defecto ("Persona 1"). */
+  async renameSpeaker(
+    id: unknown,
+    speakerId: unknown,
+    name: unknown
+  ): Promise<HistoryEntry | null> {
+    if (!isValidHistoryId(id) || typeof speakerId !== 'string' || typeof name !== 'string') {
+      return null
+    }
+    const saved = await this.repo.get(id)
+    if (!saved) return null
+    const speakers = renamedSpeakers(saved.entry.speakers, speakerId, name, SPEAKER_NAME_MAX)
+    return this.repo.update(id, { speakers })
   }
 
   /** Quita la entrada y saca su archivo de la lista blanca de `media://`. */

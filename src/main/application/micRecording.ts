@@ -10,6 +10,7 @@ import {
 import { LevelMeter } from '../domain/capture/levelMeter'
 import { Pcm16kConverter } from '../domain/capture/pcm16k'
 import { microphoneName } from '../domain/capture/sidecarProtocol'
+import { OwnVoiceTimeline } from '../domain/speakers/ownVoiceTimeline'
 import { LiveBusyError, type LiveControl } from './liveControl'
 import type { AudioCapture, CaptureStream } from './ports/audioCapture'
 import type { EventPublisher, Logger } from './ports/eventPublisher'
@@ -131,10 +132,15 @@ export class MicRecording {
     await this.closeMonitor()
     if (this.deps.live.recordingOrigin() === 'listen') return { ok: false, error: 'liveBusy' }
 
+    // En *Ambos* se sabe cuándo habla quien graba (tarea 35). Solo cuenta lo que llega al `.pcm`:
+    // la línea de tiempo nace en el mismo instante en que se empieza a escribir.
+    let ownVoice: OwnVoiceTimeline | null = null
     let stream: CaptureStream
     try {
       const micId = this.deps.micId() || undefined
-      stream = await openRecordingSource(this.deps.capture, source, micId)
+      stream = await openRecordingSource(this.deps.capture, source, micId, (system, voice) =>
+        ownVoice?.push(system, voice)
+      )
     } catch (err) {
       this.deps.log.warn(`Micrófono: no se pudo abrir la fuente ${source}: ${String(err)}`)
       return { ok: false, error: 'noDevice' }
@@ -145,6 +151,7 @@ export class MicRecording {
       const converter = new Pcm16kConverter(stream.sampleRate, stream.channels)
       const meter = new LevelMeter(stream.sampleRate, stream.channels)
       const recording = { source, name, startedAt: Date.now(), stream, pcm, writer, converter }
+      if (source === 'both') ownVoice = new OwnVoiceTimeline(stream.sampleRate, stream.channels)
       stream.onData((samples) => {
         writer.append(converter.convert(samples))
         if (this.recording !== recording) return
@@ -154,11 +161,13 @@ export class MicRecording {
       })
       stream.onError((reason) => this.interrupt(reason))
       this.recording = recording
-      await this.deps.live.handle({ kind: 'start', pcm, name }, 'mic').catch(async (err) => {
-        this.recording = null
-        await this.discard(recording)
-        throw err
-      })
+      await this.deps.live
+        .handle({ kind: 'start', pcm, name }, 'mic', ownVoice)
+        .catch(async (err) => {
+          this.recording = null
+          await this.discard(recording)
+          throw err
+        })
     } catch (err) {
       await stream.stop().catch(() => {})
       if (err instanceof LiveBusyError) return { ok: false, error: 'liveBusy' }

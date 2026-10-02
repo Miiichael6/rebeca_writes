@@ -24,7 +24,9 @@ import {
 import type { EventPublisher, Logger } from './ports/eventPublisher'
 import type { HistoryRepository } from './ports/historyRepository'
 import type { LivePcmFiles } from './ports/livePcmFiles'
+import type { SpeakerEmbedder } from './ports/speakerEmbedder'
 import type { ChunkTranscriber } from './ports/transcription'
+import { SpeakerLabeler, type OwnVoice } from './speakerLabeler'
 
 /**
  * Una grabación de Rebecca Listen que se transcribe mientras se graba (tarea 27): vigila el
@@ -50,6 +52,8 @@ export interface LiveDeps {
   /** Duración del medio final, o `null` si no se pudo leer. */
   mediaDuration: (path: string) => Promise<number | null>
   currentBackend: () => Promise<Backend>
+  /** Huellas de voz para "Detectar quién habla" (tarea 35). */
+  speakers: SpeakerEmbedder
 }
 
 export class LiveSession {
@@ -71,6 +75,8 @@ export class LiveSession {
   private readonly segments: Segment[] = []
   private readonly timer: NodeJS.Timeout
   private readonly release: () => void
+  /** Solo con "Detectar quién habla" activo al empezar. */
+  private readonly labeler: SpeakerLabeler | null
 
   private constructor(
     private readonly deps: LiveDeps,
@@ -79,19 +85,25 @@ export class LiveSession {
     private readonly settings: Settings,
     /** Idioma de las ventanas: el de ajustes, o el detectado en la primera si era `auto`. */
     private language: string,
-    private readonly onFinished: (session: LiveSession) => void
+    private readonly onFinished: (session: LiveSession) => void,
+    ownVoice: OwnVoice | null
   ) {
     this.release = deps.hold(this.jobId)
+    this.labeler = settings.detectSpeakers ? new SpeakerLabeler(deps.speakers, ownVoice) : null
     this.timer = setInterval(() => void this.tick(), POLL_MS)
     void this.tick()
   }
 
-  /** Crea la entrada "en vivo" del historial y empieza a vigilar el `.pcm`. */
+  /**
+   * Crea la entrada "en vivo" del historial y empieza a vigilar el `.pcm`. `ownVoice`: cuándo
+   * habla quien graba, si se sabe por el canal (*Ambos*).
+   */
   static async start(
     deps: LiveDeps,
     pcm: string,
     name: string,
-    onFinished: (session: LiveSession) => void
+    onFinished: (session: LiveSession) => void,
+    ownVoice: OwnVoice | null = null
   ): Promise<LiveSession> {
     const settings = deps.settings()
     const entry = await deps.history.create({
@@ -105,7 +117,15 @@ export class LiveSession {
       live: true
     })
     deps.log.info(`En vivo: empieza "${name}" (${pcm})`)
-    const session = new LiveSession(deps, pcm, entry, settings, settings.language, onFinished)
+    const session = new LiveSession(
+      deps,
+      pcm,
+      entry,
+      settings,
+      settings.language,
+      onFinished,
+      ownVoice
+    )
     deps.publisher.publish(IpcChannel.HistoryAdded, entry)
     deps.publisher.publish(IpcChannel.LiveStarted, session.info())
     return session
@@ -208,6 +228,8 @@ export class LiveSession {
     const id = `${this.jobId}-${++this.chunks}`
     const wav = await this.deps.files.writeWindow(this.jobId, id, pcm)
     this.currentChunk = id
+    // Los lotes se etiquetan en orden; la ventana se borra cuando ya no hace falta su audio.
+    let labeling = Promise.resolve()
     const result = await this.deps.chunks
       .transcribe(
         {
@@ -218,9 +240,14 @@ export class LiveSession {
           translate: this.settings.translate,
           options: transcribeOptionsFrom(this.settings)
         },
-        (segments) => this.add(shiftSegments(segments, offsetSec))
+        (segments) => {
+          labeling = labeling.then(async () =>
+            this.add(shiftSegments(await this.labeled(wav, segments, offsetSec), offsetSec))
+          )
+        }
       )
       .finally(() => (this.currentChunk = null))
+    await labeling
     await this.deps.files.remove(wav)
     if (!result.ok) {
       if (result.code !== 'cancelled') this.stop(result.code)
@@ -229,6 +256,17 @@ export class LiveSession {
     this.backend = result.backend
     // Cada ventana es corta: se fija el idioma de la primera para no saltar de uno a otro.
     this.language = result.language
+  }
+
+  /** Con "Detectar quién habla", los segmentos con su hablante; si falla, tal cual. */
+  private async labeled(wav: string, segments: Segment[], offsetSec: number): Promise<Segment[]> {
+    if (!this.labeler) return segments
+    try {
+      return await this.labeler.label(wav, segments, offsetSec)
+    } catch (err) {
+      this.deps.log.error('En vivo: no se pudo saber quién habla', err)
+      return segments
+    }
   }
 
   private add(segments: Segment[]): void {
@@ -251,6 +289,7 @@ export class LiveSession {
       await this.close()
     } finally {
       await this.deps.files.cleanup(this.jobId, this.pcm)
+      if (this.labeler) this.deps.speakers.release()
       this.release()
       this.onFinished(this)
     }

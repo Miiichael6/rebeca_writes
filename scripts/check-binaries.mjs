@@ -18,6 +18,17 @@ const REQUIRED = [
     file: join(ROOT, 'resources', 'bin', name),
     fix: 'npm run build:native'
   })),
+  // "Detectar quién habla" (tarea 35): el sidecar y las DLL de sherpa-onnx que carga.
+  {
+    file: join(ROOT, 'resources', 'bin', 'speaker', 'rl-speaker.exe'),
+    fix: 'npm run build:native'
+  },
+  ...['sherpa-onnx-c-api.dll', 'onnxruntime.dll', 'onnxruntime_providers_shared.dll'].map(
+    (name) => ({
+      file: join(ROOT, 'resources', 'bin', 'speaker', name),
+      fix: 'npm run fetch:speaker'
+    })
+  ),
   // ffmpeg-static lo descarga en su postinstall; puede faltar si se instaló con --ignore-scripts.
   {
     file: join(ROOT, 'node_modules', 'ffmpeg-static', 'ffmpeg.exe'),
@@ -36,4 +47,6 @@ if (missing.length > 0) {
   console.error('')
   process.exit(1)
 }
-console.log('Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, rl-calls, ffmpeg, ffprobe).')
+console.log(
+  'Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, rl-calls, rl-speaker + sherpa-onnx, ffmpeg, ffprobe).'
+)

@@ -23,6 +23,7 @@ import { QueueJobRunner } from './application/queueJobRunner'
 import { QueueService } from './application/queueService'
 import { RecordHotkey } from './application/recordHotkey'
 import { RecordingsFolder } from './application/recordingsFolder'
+import { SpeakerModel } from './application/speakerModel'
 import { TranscriptionManager } from './application/transcriptionManager'
 import { TranscriptionPipeline } from './application/transcriptionPipeline'
 import { UpdateService } from './application/updateService'
@@ -51,6 +52,7 @@ import { createFsPcmFiles } from './infrastructure/live/fsPcmFiles'
 import { createHistoryMedia } from './infrastructure/media/historyMediaAdapter'
 import { JsonHistoryRepository } from './infrastructure/persistence/jsonHistoryRepository'
 import { createJsonModelStore } from './infrastructure/persistence/jsonModelStore'
+import { SPEAKER_BINARY, SpeakerSidecar } from './infrastructure/speakers/speakerSidecar'
 import { JsonQueueRepository } from './infrastructure/persistence/jsonQueueRepository'
 import { JsonSettingsRepository } from './infrastructure/persistence/jsonSettingsRepository'
 import { whisperCli } from './infrastructure/whisper/whisperCli'
@@ -194,6 +196,14 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
   })
   const intake = new QueueIntake({ queue, settings, history, opener, expander: fsPathExpander })
 
+  // --- Quién habla (tarea 35) ---
+  const speakerModel = new SpeakerModel({
+    dir: join(userData, 'models', 'speakers'),
+    disk: nodeDisk,
+    downloader: netDownloader,
+    log
+  })
+
   // --- En vivo ---
   // Tiene su propio pipeline: sus eventos no llegan al renderer tal cual.
   const live = new LiveControl(
@@ -207,7 +217,8 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
       files: createFsPcmFiles(temp.dir),
       mediaDuration: async (path) =>
         (await ffmpegMediaTools.probe(path).catch(() => null))?.durationSec ?? null,
-      currentBackend: async () => (await backends.info()).backend
+      currentBackend: async () => (await backends.info()).backend,
+      speakers: new SpeakerSidecar(join(bundledBinDir, SPEAKER_BINARY), speakerModel, log)
     },
     intake
   )
@@ -291,6 +302,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     backends,
     cuda,
     models,
+    speakerModel,
     previews,
     opener,
     history: new HistoryService(history, historyMedia),

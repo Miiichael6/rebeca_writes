@@ -6,6 +6,7 @@ import type {
   TranscribePhase,
   TranscriptStatus
 } from '@shared/types'
+import type { SpeakerNames } from '@shared/speakers'
 import type { ScrollAlign } from '../domain/scrollGeometry'
 
 /** Avance de la transcripción del archivo abierto. */
@@ -35,6 +36,11 @@ export interface TranscriptPort {
   getSegment(index: number): Segment | undefined
   editSegment(index: number, text: string): void
   copyAll(): Promise<void>
+  /** Nombres que el usuario puso a los hablantes de la entrada abierta (tarea 35). */
+  useSpeakerNames(): SpeakerNames | undefined
+  /** Nombre mostrado de un hablante: el puesto o el de por defecto ("Persona 1"). */
+  speakerName(speaker: string, names: SpeakerNames | undefined): string
+  renameSpeaker(speaker: string, name: string): void
 }
 
 /** Puerto de salida: el reproductor, del que la lista solo lee la posición y al que pide saltos. */

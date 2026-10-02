@@ -10,6 +10,7 @@ import InterfaceSettings from '../../InterfaceSettings'
 import MeetingSettings from '../../MeetingSettings'
 import ModelsSection from '../../ModelsSection'
 import ShortcutSettings from '../../ShortcutSettings'
+import SpeakerSettings from '../../SpeakerSettings'
 import StorageSettings from '../../StorageSettings'
 import TranscriptionOptions from '../../TranscriptionOptions'
 
@@ -44,6 +45,7 @@ export function SettingsPage(): React.JSX.Element {
         <SettingsSection title={t('settings.recording')}>
           <ShortcutSettings />
           <MeetingSettings />
+          <SpeakerSettings />
         </SettingsSection>
         <SettingsSection title={t('settings.storage')}>
           <StorageSettings />

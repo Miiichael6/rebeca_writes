@@ -39,6 +39,15 @@
   --success: #6ccb5f;
   --critical: #ff99a4;
 
+  /* Etiquetas de quién habla (tarea 35): 0 es "Usted"; texto ≥4.5:1 sobre --bg-card. */
+  --speaker-0: #ff7a66;
+  --speaker-1: #6aa8ff;
+  --speaker-2: #5fd18a;
+  --speaker-3: #c99bff;
+  --speaker-4: #f0b45a;
+  --speaker-5: #5ccfdd;
+  --speaker-6: #ff8cc0;
+
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-flyout: 0 8px 16px rgba(0, 0, 0, 0.26);
   --shadow-dialog: 0 32px 64px rgba(0, 0, 0, 0.37), 0 2px 21px rgba(0, 0, 0, 0.37);

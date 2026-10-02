@@ -40,6 +40,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 - [x] **D10** ¿Cómo funciona el atajo para grabar? → afecta 31 — **Ctrl+Win, configurable en Configuración. Mantener = graba mientras se pulsa y al soltar guarda; doble pulsación (Ctrl+Win, Win) = manos libres; en manos libres, volver a pulsar el atajo la para** (2026-10-01)
 - [x] **D11** ¿Cuándo se considera que hay una reunión? → afecta 32 — **Cuando una app de llamadas conocida (Teams, Zoom, Webex, Slack, Discord, Skype) está usando el micrófono; sin navegadores** (2026-10-01)
 - [x] **D12** Al pulsar ✓, ¿qué se graba y cuántas veces se pregunta? → afecta 32 — **Ambos (sistema + micrófono); con ✕ o sin respuesta no se repite hasta la siguiente llamada; interruptor en Configuración** (2026-10-01)
+- [x] **D13** ¿Con qué motor se detecta la voz? → afecta 35 — **Embeddings sherpa-onnx como sidecar** (2026-10-02)
+- [x] **D14** ¿Alcance inicial y nombre del micrófono? → afecta 35 — **Tu propio micrófono se llama "Usted"; los demás, Persona 1, 2… por voz** (2026-10-02)
 
 ## Tablero
 
@@ -78,8 +80,9 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 30 | [Dock en el borde de la pantalla](done/30_dock_en_el_borde.md) | 9 Pulido | 29 | ✅ Terminada |
 | 31 | [Atajo de teclado para grabar](done/31_atajo_grabar.md) | 9 Pulido | 30 | ✅ Terminada |
 | 32 | [Sugerir grabar una reunión](done/32_sugerir_grabar_reunion.md) | 9 Pulido | 30 | ✅ Terminada |
-| 33 | [Posición del dock](in_progress/33_posicion_del_dock.md) | 9 Pulido | 30 | 🔄 En progreso |
-| 34 | [Animación y centrado del dock](in_progress/34_animacion_y_centrado_del_dock.md) | 9 Pulido | 33 | 🔄 En progreso |
+| 33 | [Posición del dock](done/33_posicion_del_dock.md) | 9 Pulido | 30 | ✅ Terminada |
+| 34 | [Animación y centrado del dock](done/34_animacion_y_centrado_del_dock.md) | 9 Pulido | 33 | ✅ Terminada |
+| 35 | [Detector de persona al grabar](done/35_detector_de_persona.md) | 9 Pulido | 29 | ✅ Terminada (prueba real con dos voces pendiente) |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -102,4 +105,5 @@ todas → 22 → 23 → 24
                                28 ─┴→ 29 (grabar con micrófono) → 30 (dock en el borde) → 31 (atajo para grabar)
                                                                         30 → 32 (sugerir grabar reuniones)
                                                                         30 → 33 (posición del dock) → 34 (animación y centrado)
+                               29 → 35 (detector de persona al grabar)
 ```
