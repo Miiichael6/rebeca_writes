@@ -61,6 +61,8 @@ export interface Settings {
   maxLen: number
   suppressNst: boolean
   normalize: boolean
+  /** Filtro de voz (`--vad`, tarea 36): whisper salta silencios y ruido. Si falta, el modelo se descarga al transcribir. */
+  vad: boolean
   /** `-t`; por defecto la mitad de los núcleos. */
   threads: number
 
@@ -109,7 +111,8 @@ export function transcribeOptionsFrom(s: Settings): TranscribeOptions {
     maxLen: s.maxLen,
     suppressNst: s.suppressNst,
     threads: s.threads,
-    normalize: s.normalize
+    normalize: s.normalize,
+    vad: s.vad
   }
 }
 
@@ -139,6 +142,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     maxLen: 0,
     suppressNst: false,
     normalize: true,
+    vad: true,
     threads: defaultThreads(cpuCount),
     showCaptions: true,
     videoHeight: 360,

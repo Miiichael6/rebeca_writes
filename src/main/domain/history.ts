@@ -60,3 +60,25 @@ export function persistedEntry(entry: HistoryEntry): HistoryEntry {
   delete stored.progress
   return stored
 }
+
+/** Caracteres que Windows no admite en un nombre de archivo. */
+// eslint-disable-next-line no-control-regex
+const INVALID_FILE_CHARS = /[<>:"/\\|?*\u0000-\u001f]/g
+/** Nombres de dispositivo reservados, con o sin extensión. */
+const RESERVED_NAME_RE = /^(con|prn|aux|nul|com\d|lpt\d)(\..*)?$/i
+
+/**
+ * Nombre nuevo para el archivo `current` a partir de lo que escribió el usuario. Conserva la
+ * extensión original (no se añade dos veces si ya la escribió), quita los caracteres que
+ * Windows no admite y los puntos o espacios finales. `null` si no queda un nombre válido.
+ */
+export function renamedFileName(current: string, wanted: string): string | null {
+  const dot = current.lastIndexOf('.')
+  const ext = dot > 0 ? current.slice(dot) : ''
+  let base = wanted.replace(INVALID_FILE_CHARS, '').trim()
+  if (ext && base.toLowerCase().endsWith(ext.toLowerCase())) base = base.slice(0, -ext.length)
+  base = base.replace(/[. ]+$/, '')
+  if (!base) return null
+  const name = base + ext
+  return RESERVED_NAME_RE.test(name) || name.length > 255 ? null : name
+}

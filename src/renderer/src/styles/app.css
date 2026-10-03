@@ -343,6 +343,14 @@
   background: var(--critical);
 }
 
+.unseen-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--unseen);
+}
+
 .progress-ring {
   transform: rotate(-90deg);
 }
@@ -441,6 +449,30 @@
 
 .toolbar-action {
   min-width: 96px;
+}
+
+.toolbar-action-icon {
+  display: none;
+}
+
+/* En ventanas angostas el botón principal se reduce a su icono para no saltar de línea. */
+@container main (max-width: 880px) {
+  .toolbar-action {
+    min-width: 0;
+    padding-inline: var(--space-3);
+  }
+
+  .toolbar-action-icon {
+    display: block;
+  }
+
+  .toolbar-action-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
 }
 
 /* Grabar (tarea 29), en el pie de la barra lateral: micrófono + flecha del menú de fuentes. */
@@ -617,6 +649,11 @@
 
 .player-resize:hover::after {
   opacity: 1;
+}
+
+/* Sobre el fondo claro del panel de audio el agarre blanco no se vería. */
+.player-stage.audio .player-resize::after {
+  background: var(--text-3);
 }
 
 .player-stage.audio {
@@ -1123,18 +1160,56 @@
 }
 
 /* Quién habla (tarea 35): etiqueta al cambiar de voz; un clic la renombra. */
+/* La etiqueta va en su propia línea y el texto de esa persona justo debajo. */
+.segment {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+/* El texto ocupa el resto de la fila y se parte ahí, en vez de saltar entero bajo la hora. */
+.segment:not(.paragraph) > span:not(.speaker-line) {
+  flex: 1;
+  min-width: 0;
+}
+
+.segment .speaker-line {
+  flex-basis: 100%;
+  display: block;
+  margin-top: 8px;
+  white-space: normal;
+}
+
+.segment.paragraph .speaker-line {
+  margin-bottom: 4px;
+}
+
+.segment.paragraph .speaker-line:hover,
+.segment.paragraph .speaker-line span:hover {
+  background: none;
+}
+
 .speaker-tag {
   --speaker: var(--speaker-1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   flex-shrink: 0;
-  align-self: flex-start;
-  max-width: 14em;
-  padding: 0 6px;
+  max-width: 16em;
+  padding: 1px 8px;
   border: 1px solid color-mix(in srgb, var(--speaker) 40%, transparent);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--speaker) 12%, transparent);
   color: var(--speaker);
   font: inherit;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.speaker-tag svg {
+  flex-shrink: 0;
+}
+
+.segment .speaker-tag .speaker-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1151,12 +1226,6 @@
   border-bottom: 2px solid var(--speaker);
   background: var(--bg-card);
   cursor: text;
-}
-
-/* En un párrafo la etiqueta va en línea con el texto, no como columna. */
-.segment.paragraph .speaker-tag {
-  margin-right: 6px;
-  vertical-align: baseline;
 }
 
 .speaker-0 {
@@ -1179,6 +1248,9 @@
 }
 .speaker-6 {
   --speaker: var(--speaker-6);
+}
+.speaker-ambient {
+  --speaker: var(--text-disabled);
 }
 
 /* Menú contextual de un segmento: ancla de tamaño cero en el puntero. */

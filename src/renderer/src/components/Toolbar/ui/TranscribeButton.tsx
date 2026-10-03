@@ -1,6 +1,17 @@
+import { Play, RotateCcw, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TranscribeAction } from '../application/useTranscribeAction'
 import { Button, ConfirmDialog } from '../../ui'
+
+/** Icono y texto: en ventanas angostas solo se ve el icono (el texto sigue en el tooltip). */
+function ActionLabel({ icon: Icon, text }: { icon: typeof X; text: string }): React.JSX.Element {
+  return (
+    <>
+      <Icon className="toolbar-action-icon" size={16} strokeWidth={1.75} aria-hidden />
+      <span className="toolbar-action-label">{text}</span>
+    </>
+  )
+}
 
 /** Transcribir, volver a transcribir o cancelar, según el estado; con su confirmación. */
 export function TranscribeButton({ action }: { action: TranscribeAction }): React.JSX.Element {
@@ -10,8 +21,13 @@ export function TranscribeButton({ action }: { action: TranscribeAction }): Reac
   return (
     <>
       {button?.kind === 'cancel' && (
-        <Button variant="primary" className="toolbar-action" onClick={action.cancel}>
-          {t('common.cancel')}
+        <Button
+          variant="primary"
+          className="toolbar-action"
+          title={t('common.cancel')}
+          onClick={action.cancel}
+        >
+          <ActionLabel icon={X} text={t('common.cancel')} />
         </Button>
       )}
       {button?.kind === 'transcribe' && (
@@ -24,11 +40,16 @@ export function TranscribeButton({ action }: { action: TranscribeAction }): Reac
               ? t('toolbar.transcribeNoMedia')
               : blocker === 'busy'
                 ? t('toolbar.transcribeBusy')
-                : undefined
+                : button.retranscribe
+                  ? t('toolbar.retranscribe')
+                  : t('toolbar.transcribe')
           }
           onClick={action.request}
         >
-          {button.retranscribe ? t('toolbar.retranscribe') : t('toolbar.transcribe')}
+          <ActionLabel
+            icon={button.retranscribe ? RotateCcw : Play}
+            text={button.retranscribe ? t('toolbar.retranscribe') : t('toolbar.transcribe')}
+          />
         </Button>
       )}
       <ConfirmDialog

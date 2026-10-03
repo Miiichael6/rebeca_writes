@@ -22,8 +22,18 @@ export interface PreviewPlan {
 /** Códecs que se pueden meter en un m4a tal cual. */
 const COPYABLE_AUDIO = ['aac', 'mp3']
 
+/**
+ * Un `.mp3` suelto suena en Chromium, pero salta mal: en VBR el índice Xing tiene 100 puntos
+ * y el salto cae varios segundos antes o después (±6 s en una grabación de 1 h). Copiado a
+ * m4a, la tabla de muestras del mp4 da saltos exactos y el texto queda sincronizado.
+ */
+function isLooseMp3(info: MediaInfo): boolean {
+  return info.videoCodec === null && info.container.toLowerCase().split(',').includes('mp3')
+}
+
 /** Qué hay que generar para `info`, o `null` si Chromium lo reproduce tal cual. */
 export function previewPlan(info: MediaInfo): PreviewPlan | null {
+  if (isLooseMp3(info)) return { audioOnly: true, audio: 'copy' }
   if (info.isChromiumPlayable) return null
   const audioCodec = info.audioTracks[0]?.codec.toLowerCase() ?? ''
   const containerOk = info.container

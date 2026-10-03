@@ -64,6 +64,11 @@ describe('previewPlan', () => {
     expect(previewPlan(info('asf', null, 'wmav2'))).toEqual({ audioOnly: true, audio: 'encode' })
     expect(previewPlan(info('aac', null, 'aac'))).toEqual({ audioOnly: true, audio: 'copy' })
   })
+
+  it('mp3 suelto: se copia a m4a para saltar exacto aunque Chromium lo lea', () => {
+    expect(previewPlan(info('mp3', null, 'mp3', true))).toEqual({ audioOnly: true, audio: 'copy' })
+    expect(previewPlan(info('mov,mp4,m4a,3gp,3g2,mj2', 'h264', 'mp3', true))).toBeNull()
+  })
 })
 
 describe('previewKey', () => {

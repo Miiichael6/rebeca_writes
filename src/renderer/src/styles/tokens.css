@@ -5,6 +5,8 @@
 :root {
   /* Acento de marca: indicadores (toggle, checkbox, radio, barra del ítem seleccionado, foco).
      Contra los fondos de ambos temas da ≥ 3:1, que es lo que pide AA para elementos no textuales. */
+  /* Punto de «transcripción terminada sin ver»: azul, para no confundirlo con el rojo de error o en vivo. */
+  --unseen: #3b9cff;
   --accent: #e8432d;
   --accent-hover: #f0553f;
   --accent-pressed: #d63a25;

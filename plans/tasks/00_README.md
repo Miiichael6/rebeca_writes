@@ -83,6 +83,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 33 | [Posición del dock](done/33_posicion_del_dock.md) | 9 Pulido | 30 | ✅ Terminada |
 | 34 | [Animación y centrado del dock](done/34_animacion_y_centrado_del_dock.md) | 9 Pulido | 33 | ✅ Terminada |
 | 35 | [Detector de persona al grabar](done/35_detector_de_persona.md) | 9 Pulido | 29 | ✅ Terminada (prueba real con dos voces pendiente) |
+| 36 | [Calidad de la transcripción](in_progress/36_calidad_de_transcripcion.md) | 9 Pulido | — | 🔄 En progreso |
+| 37 | [Transcripción por trozos de voz](pending/37_transcripcion_por_trozos.md) | 9 Pulido | 36 | ⬜ Pendiente |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -106,4 +108,6 @@ todas → 22 → 23 → 24
                                                                         30 → 32 (sugerir grabar reuniones)
                                                                         30 → 33 (posición del dock) → 34 (animación y centrado)
                                29 → 35 (detector de persona al grabar)
+36 (calidad de la transcripción: VAD, umbrales, flash attention, large-v3-turbo) — sin dependencias
+36 → 37 (transcripción por trozos de voz con whisper-server)
 ```

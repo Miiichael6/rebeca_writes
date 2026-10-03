@@ -750,6 +750,10 @@
   width: 100%;
 }
 
+.dialog-check {
+  margin-top: var(--space-3);
+}
+
 .dialog-hint {
   margin-top: var(--space-2);
   color: var(--text-2);

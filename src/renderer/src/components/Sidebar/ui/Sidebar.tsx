@@ -27,7 +27,8 @@ export function Sidebar({
   const select = useMultiSelect(list.filtered, list.visibleIds)
   const actions = useEntryActions({
     requeueMessage: (added, name) =>
-      t(added ? 'sidebar.retranscribeQueued' : 'sidebar.retranscribeFailed', { name })
+      t(added ? 'sidebar.retranscribeQueued' : 'sidebar.retranscribeFailed', { name }),
+    renameFileMessage: (reason, name) => t(`sidebar.renameFileFailed.${reason}`, { name })
   })
   const [confirmClear, setConfirmClear] = useState(false)
   useRenameShortcut(

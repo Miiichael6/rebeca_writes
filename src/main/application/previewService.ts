@@ -62,9 +62,10 @@ export class PreviewService {
     const known = this.statuses.get(mediaId)
     if (found && known?.state === 'pending') return known
 
+    // Si Chromium lee el original (p. ej. un mp3), suena mientras se genera la vista previa.
     const status: PreviewStatus = {
       state: 'pending',
-      audioId: plan.audio === 'original' ? mediaId : null,
+      audioId: plan.audio === 'original' || info.isChromiumPlayable ? mediaId : null,
       percent: 0
     }
     this.statuses.set(mediaId, status)

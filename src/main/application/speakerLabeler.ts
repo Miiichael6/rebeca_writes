@@ -1,3 +1,4 @@
+import { AMBIENT_SPEAKER_ID, isNonSpeechText } from '@shared/speakers'
 import type { Segment } from '@shared/types'
 import { dominantSpeaker, type SpeakerTurn } from '../domain/speakers/alignSpeakers'
 import { assignSpeaker, type SpeakerCluster } from '../domain/speakers/clusterSpeakers'
@@ -32,6 +33,11 @@ export class SpeakerLabeler {
   async label(wav: string, segments: readonly Segment[], offsetSec: number): Promise<Segment[]> {
     const labeled: Segment[] = []
     for (const segment of segments) {
+      if (segment.text.trim() && isNonSpeechText(segment.text)) {
+        // El ruido no cambia quién hablaba antes ni crea una persona nueva.
+        labeled.push({ ...segment, speaker: AMBIENT_SPEAKER_ID })
+        continue
+      }
       const speaker = await this.speakerOf(wav, segment, offsetSec)
       this.last = speaker ?? this.last
       labeled.push(speaker ? { ...segment, speaker } : segment)

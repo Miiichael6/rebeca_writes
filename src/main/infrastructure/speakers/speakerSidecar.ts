@@ -1,7 +1,7 @@
 import { join } from 'path'
 import type { Logger } from '../../application/ports/eventPublisher'
 import type { SpeakerEmbedder } from '../../application/ports/speakerEmbedder'
-import type { SpeakerModel } from '../../application/speakerModel'
+import type { SingleFileModel } from '../../application/singleFileModel'
 import {
   parseSpeakerEvent,
   type SpeakerCommand,
@@ -38,7 +38,7 @@ export class SpeakerSidecar implements SpeakerEmbedder {
 
   constructor(
     binaryPath: string,
-    private readonly model: Pick<SpeakerModel, 'readyPath' | 'prepare'>,
+    private readonly model: Pick<SingleFileModel, 'readyPath' | 'prepare'>,
     private readonly log: Logger
   ) {
     this.process = new RestartingSidecar(

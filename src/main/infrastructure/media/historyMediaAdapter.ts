@@ -1,3 +1,4 @@
+import { rename } from 'fs/promises'
 import type { MediaOpener } from '../../application/mediaOpener'
 import type { Disk } from '../../application/ports/disk'
 import type { HistoryMedia } from '../../application/ports/historyMedia'
@@ -24,6 +25,7 @@ export function createHistoryMedia({
   return {
     isSafePath: isSafeMediaPath,
     exists: (path) => disk.exists(path),
+    rename: (from, to) => rename(from, to),
     open: (path) => opener.open(path),
     unregister: (path) => registry.unregisterPath(path),
     clearPreviewCache: () => previews.clearCache(),

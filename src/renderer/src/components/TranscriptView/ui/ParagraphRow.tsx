@@ -84,7 +84,11 @@ export const ParagraphRow = memo(function ParagraphRow({
   const { t } = useTranslation()
   const parts: React.ReactNode[] = []
   if (speaker !== null)
-    parts.push(<SpeakerTag key="speaker" speaker={speaker} name={speakerName} />)
+    parts.push(
+      <span key="speaker" className="speaker-line">
+        <SpeakerTag speaker={speaker} name={speakerName} />
+      </span>
+    )
   for (let i = from; i < to; i++) {
     const segment = segments[i]
     const { first, end } = rowMatchRange(matches, i, i + 1)

@@ -1,12 +1,37 @@
 import { describe, expect, it } from 'vitest'
 import {
+  cleanSegmentText,
   LineSplitter,
   parseDetectedLanguage,
   parseProgress,
   parseSegmentLine
 } from '../../src/main/domain/parsers'
 
+describe('cleanSegmentText', () => {
+  it('quita las marcas >> de cambio de quien habla', () => {
+    expect(cleanSegmentText('>> Hola, ¿qué tal?')).toBe('Hola, ¿qué tal?')
+    expect(cleanSegmentText('Bien. >> > Y tú')).toBe('Bien. Y tú')
+  })
+
+  it('quita paréntesis y corchetes de cierre sueltos', () => {
+    expect(cleanSegmentText('vámonos ))')).toBe('vámonos')
+    expect(cleanSegmentText(']] listo')).toBe('listo')
+  })
+
+  it('respeta los que sí se abrieron', () => {
+    expect(cleanSegmentText('(risas) muy bien [MÚSICA]')).toBe('(risas) muy bien [MÚSICA]')
+  })
+
+  it('deja un solo > y el texto normal', () => {
+    expect(cleanSegmentText('5 > 3')).toBe('5 > 3')
+  })
+})
+
 describe('parseSegmentLine', () => {
+  it('descarta el segmento si solo traía marcas', () => {
+    expect(parseSegmentLine('[00:00:00.000 --> 00:00:01.000]  >> ))')).toBeNull()
+  })
+
   it('parsea una línea normal a segundos', () => {
     expect(parseSegmentLine('[00:00:00.000 --> 00:00:05.120]  Hola mundo')).toEqual({
       start: 0,

@@ -11,6 +11,7 @@
     "percent": "{{value}}%"
   },
   "sidebar": {
+    "unseen": "Transcrição concluída, ainda não vista",
     "selectedCount_one": "{{count}} selecionado",
     "selectedCount_many": "{{count}} selecionados",
     "selectedCount_other": "{{count}} selecionados",
@@ -50,6 +51,17 @@
     "renameLabel": "Nome no histórico",
     "renameHint": "Só altera o nome exibido; o arquivo não é renomeado.",
     "renameConfirm": "Renomear",
+    "renameFileOption": "Renomear também o arquivo original",
+    "renameFileHint": "O arquivo é renomeado na pasta dele e mantém a extensão {{ext}}.",
+    "renameFileHintNoExt": "O arquivo é renomeado na pasta dele.",
+    "renameFileBusy": "O arquivo não pode ser renomeado enquanto está na fila ou sendo transcrito.",
+    "renameFileFailed": {
+      "invalid": "Esse nome não é válido para um arquivo.",
+      "busy": "Não é possível renomear “{{name}}” enquanto está na fila ou sendo transcrito.",
+      "missing": "O arquivo original de “{{name}}” não foi encontrado.",
+      "exists": "Já existe um arquivo com esse nome na pasta.",
+      "failed": "Não foi possível renomear “{{name}}”. Talvez esteja aberto em outro programa."
+    },
     "removeTitle": "Remover do histórico?",
     "removeConfirm": "Remover",
     "removeBody": "A transcrição de “{{name}}” será removida. O arquivo original não é alterado.",
@@ -104,6 +116,7 @@
   },
   "speakers": {
     "you": "Você",
+    "ambient": "Ambiente",
     "person": "Pessoa {{n}}",
     "rename": "Renomear {{name}}",
     "nameInput": "Nome de quem fala"
@@ -244,6 +257,10 @@
     "maxLenDescription": "Define o comprimento máximo de cada segmento em caracteres. Digite 0 para sem limite.",
     "suppressNst": "Suprimir tokens sem fala",
     "suppressNstDescription": "Evita gerar textos que não são falados no áudio, p. ex. (música dramática), embora possa deixar o processamento mais lento.",
+    "vad": "Filtrar silêncios e ruído",
+    "vadDescription": "O Whisper só transcreve os trechos com voz: evita frases inventadas em silêncios, música ou ruído de fundo. Usa um modelo de 1 MB que é baixado uma vez.",
+    "vadDownloading": "Baixando o filtro de voz (1 MB)…",
+    "vadFailed": "Não foi possível baixar o filtro de voz. A transcrição funciona sem ele; verifique a conexão e ative o interruptor novamente.",
     "normalize": "Normalização de áudio",
     "normalizeDescription": "Se o arquivo tiver volume baixo, ele é normalizado antes da transcrição para melhorar a qualidade.",
     "threads": "Threads de CPU",

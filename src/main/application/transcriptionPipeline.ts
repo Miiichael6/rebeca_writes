@@ -19,6 +19,9 @@ import type { MediaTools } from './ports/mediaTools'
 import type { TempWorkspace } from './ports/tempWorkspace'
 import type { TranscriptionEngineEvents, TranscriptionEnginePort } from './ports/transcription'
 import type { WhisperProcess } from './ports/whisperProcess'
+import type { SingleFileModel } from './singleFileModel'
+import type { SpeakerEmbedder } from './ports/speakerEmbedder'
+import { SpeakerLabeler } from './speakerLabeler'
 
 /** Parte del porcentaje total que se lleva la preparación del audio (probe + WAV). */
 const PREPARING_SHARE = 5
@@ -30,7 +33,15 @@ export interface TranscriptionPipelineDeps {
   binaries: BackendBinaries
   backends: BackendService
   models: ModelService
+  /** Modelo del filtro de voz; si el trabajo lo pide y falta, se descarga (si falla, sin filtro). */
+  vadModel: Pick<SingleFileModel, 'readyPath' | 'prepare'>
   log: Logger
+  /**
+   * "Detectar quién habla" para archivos ya grabados (tarea 35): si se pasa, al terminar whisper
+   * cada segmento se etiqueta con su huella de voz. Las ventanas en vivo no lo reciben (las
+   * etiqueta la sesión).
+   */
+  speakers?: { embedder: SpeakerEmbedder; enabled: () => boolean }
 }
 
 /**
@@ -57,6 +68,18 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
     listener: (e: TranscriptionEngineEvents[K]) => void
   ): this {
     return super.off(event, listener)
+  }
+
+  /** Ruta del modelo del filtro de voz (lo descarga si falta), o `undefined` (con aviso) si no se pudo. */
+  private async vadModelPath(jobId: string): Promise<string | undefined> {
+    const { vadModel } = this.deps
+    const ready = await vadModel.readyPath().catch(() => null)
+    if (ready) return ready
+    const downloaded = await vadModel.prepare().catch(() => null)
+    const path = downloaded?.status === 'done' ? await vadModel.readyPath().catch(() => null) : null
+    if (path) return path
+    this.deps.log.warn(`Transcripción ${jobId}: falta el modelo del filtro de voz, sin VAD`)
+    return undefined
   }
 
   /** Ejecuta el pipeline completo del trabajo. Nunca rechaza: los fallos emiten `error`. */
@@ -86,6 +109,7 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
       if (signal.aborted) throw new TranscribeError('cancelled')
 
       const language = job.language || AUTO_LANGUAGE
+      const vadModel = job.options?.vad ? await this.vadModelPath(job.id) : undefined
       const backendInfo = await backends.info()
       const { result, backend } = await withBackendFallback(
         backendInfo.backend,
@@ -96,7 +120,8 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
             wav,
             language,
             translate: job.translate,
-            options: job.options
+            options: job.options,
+            vadModel
           })
           const cli = binaries.cliPath(b)
           log.info(`Transcripción ${job.id}: ${cli} ${args.join(' ')}`)
@@ -126,10 +151,21 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
         backends.notifyFallback
       )
 
+      let segments = result.segments
+      const speakers = this.deps.speakers
+      if (speakers?.enabled() && !signal.aborted) {
+        segments = await new SpeakerLabeler(speakers.embedder, null)
+          .label(wav, segments, 0)
+          .catch((err) => {
+            log.warn(`Transcripción ${job.id}: no se pudo detectar quién habla`, err)
+            return result.segments
+          })
+      }
+
       this.emitProgress(job.id, 'transcribing', 100)
       this.emitTyped('done', {
         jobId: job.id,
-        segments: result.segments,
+        segments,
         language: language === AUTO_LANGUAGE ? (result.detectedLanguage ?? language) : language,
         backend
       } satisfies TranscribeDoneEvent)

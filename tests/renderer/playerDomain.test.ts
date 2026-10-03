@@ -49,11 +49,10 @@ describe('alto del panel', () => {
     expect(isMaximized(498, 500)).toBe(false)
   })
 
-  it('isCovered exige medio, video, panel visible y poco espacio libre', () => {
-    const base = { hasMedia: true, hasVideo: true, videoVisible: true, height: 400, limit: 500 }
+  it('isCovered exige medio, panel visible y poco espacio libre', () => {
+    const base = { hasMedia: true, videoVisible: true, height: 400, limit: 500 }
     expect(isCovered(base)).toBe(true)
     expect(isCovered({ ...base, height: 300 })).toBe(false)
-    expect(isCovered({ ...base, hasVideo: false })).toBe(false)
     expect(isCovered({ ...base, videoVisible: false })).toBe(false)
     expect(isCovered({ ...base, hasMedia: false })).toBe(false)
   })

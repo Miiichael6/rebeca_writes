@@ -170,6 +170,19 @@ export interface OpenedMedia {
 }
 
 /**
+ * Por qué no se pudo renombrar el archivo original:
+ * - `invalid`: el nombre queda vacío o Windows no lo admite.
+ * - `busy`: la entrada está en la cola, transcribiéndose o grabándose.
+ * - `missing`: el archivo ya no está en su ruta.
+ * - `exists`: ya hay otro archivo con ese nombre en la carpeta.
+ * - `failed`: el sistema no dejó renombrarlo (permisos, archivo abierto en otro programa...).
+ */
+export type RenameFileFailure = 'invalid' | 'busy' | 'missing' | 'exists' | 'failed'
+
+export type RenameFileResult =
+  { ok: true; entry: HistoryEntry; media: OpenedMedia } | { ok: false; reason: RenameFileFailure }
+
+/**
  * Qué reproduce el `<video>` para un medio. Los `id` son de la lista blanca de `media://`.
  * - `none`: el original tal cual.
  * - `ready`: la vista previa ya generada.
@@ -259,6 +272,8 @@ export interface TranscribeOptions {
   threads?: number
   /** Filtro `loudnorm` al convertir a WAV. */
   normalize?: boolean
+  /** Filtro de voz (`--vad`): solo se transcriben los tramos con voz, si el modelo está. */
+  vad?: boolean
 }
 
 /** Trabajo que ejecuta el `TranscriptionEngine` (spec §2.3). */

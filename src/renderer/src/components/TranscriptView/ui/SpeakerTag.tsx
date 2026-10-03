@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { SPEAKER_NAME_MAX } from '@shared/speakers'
+import { AudioLines, User } from 'lucide-react'
+import { AMBIENT_SPEAKER_ID, SPEAKER_NAME_MAX } from '@shared/speakers'
 import { usePorts } from '../application/ports'
 import { speakerColor } from '../domain/speakers'
 
@@ -20,7 +21,10 @@ export function SpeakerTag({ speaker, name }: SpeakerTagProps): React.JSX.Elemen
   const { t } = useTranslation()
   const { transcript } = usePorts()
   const [draft, setDraft] = useState<string | null>(null)
-  const className = `speaker-tag speaker-${speakerColor(speaker)}`
+  const ambient = speaker === AMBIENT_SPEAKER_ID
+  const tone = ambient ? 'ambient' : speakerColor(speaker)
+  const Icon = ambient ? AudioLines : User
+  const className = `speaker-tag speaker-${tone}`
 
   const commit = (): void => {
     if (draft !== null && draft.trim() !== name) transcript.renameSpeaker(speaker, draft)
@@ -60,7 +64,8 @@ export function SpeakerTag({ speaker, name }: SpeakerTagProps): React.JSX.Elemen
       onDoubleClick={keepInside}
       onKeyDown={keepInside}
     >
-      {name}
+      <Icon size={13} aria-hidden="true" />
+      <span className="speaker-name">{name}</span>
     </button>
   )
 }

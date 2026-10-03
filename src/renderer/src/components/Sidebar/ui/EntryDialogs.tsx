@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { usePorts } from '../application/ports'
 import type { EntryActions } from '../application/useEntryActions'
 import type { MultiSelect } from '../application/useMultiSelect'
-import { shownName } from '../domain/entry'
-import { ConfirmDialog } from '../../ui'
+import { fileExtension, isFileBusy, shownName } from '../domain/entry'
+import { Checkbox, ConfirmDialog } from '../../ui'
 
 interface EntryDialogsProps {
   actions: EntryActions
@@ -24,6 +24,9 @@ export function EntryDialogs({
   const { history } = usePorts()
   const renameRef = useRef<HTMLInputElement>(null)
   const { dialog } = actions
+  const renaming = dialog?.kind === 'rename' ? dialog.entry : null
+  const fileBusy = renaming ? isFileBusy(renaming) : false
+  const ext = renaming ? fileExtension(renaming.fileName) : ''
 
   return (
     <>
@@ -77,7 +80,21 @@ export function EntryDialogs({
             }}
           />
         </label>
-        <div className="dialog-hint">{t('sidebar.renameHint')}</div>
+        <Checkbox
+          className="dialog-check"
+          checked={actions.renameFile && !fileBusy}
+          disabled={fileBusy}
+          onChange={actions.setRenameFile}
+        >
+          {t('sidebar.renameFileOption')}
+        </Checkbox>
+        <div className="dialog-hint">
+          {fileBusy
+            ? t('sidebar.renameFileBusy')
+            : actions.renameFile
+              ? t(ext ? 'sidebar.renameFileHint' : 'sidebar.renameFileHintNoExt', { ext })
+              : t('sidebar.renameHint')}
+        </div>
       </ConfirmDialog>
 
       <ConfirmDialog

@@ -20,7 +20,7 @@ import { SeekBar } from './SeekBar'
 export function Controls({ stage }: { stage: VideoStage }): React.JSX.Element {
   const { t } = useTranslation()
   const { playback, settings, view } = usePorts()
-  const { src, hasVideo, playing, volume, muted, rate } = playback.useTransport()
+  const { src, playing, volume, muted, rate } = playback.useTransport()
   const showCaptions = settings.useShowCaptions()
   const videoVisible = view.useVideoVisible()
   const rateOptions = useMemo(
@@ -76,7 +76,7 @@ export function Controls({ stage }: { stage: VideoStage }): React.JSX.Element {
         <CaptionsIcon size={18} strokeWidth={1.5} className="icon-on" />
         <CaptionsOff size={18} strokeWidth={1.5} className="icon-off" />
       </button>
-      {hasVideo && videoVisible && (
+      {videoVisible && (
         <button
           className="player-btn"
           aria-label={stage.maximized ? t('player.restoreSize') : t('player.maximize')}

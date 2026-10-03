@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import type { HistoryEntry } from '@shared/types'
+import type { HistoryEntry, RenameFileFailure } from '@shared/types'
 import { shownName, type EntryDialog } from '../domain/entry'
 import { menuAnchor } from '../domain/interaction'
 import { usePorts } from './ports'
@@ -13,6 +13,8 @@ export interface EntryMenuState {
 interface Options {
   /** Aviso ya traducido tras intentar volver a encolar el archivo. */
   requeueMessage: (added: boolean, name: string) => string
+  /** Aviso ya traducido cuando no se pudo renombrar el archivo original. */
+  renameFileMessage: (reason: RenameFileFailure, name: string) => string
 }
 
 export interface EntryActions {
@@ -26,6 +28,9 @@ export interface EntryActions {
   startRename: (entry: HistoryEntry) => void
   newName: string
   setNewName: (name: string) => void
+  /** Marcado en el diálogo: renombrar también el archivo original en disco. */
+  renameFile: boolean
+  setRenameFile: (on: boolean) => void
   confirmRename: () => void
   /** Vuelve a encolar; si tiene ediciones a mano (se perderían) pide confirmar antes. */
   retranscribe: (entry: HistoryEntry) => void
@@ -33,15 +38,18 @@ export interface EntryActions {
 }
 
 /** Acciones sobre una entrada del historial: menú contextual, renombrar, quitar y rehacer. */
-export function useEntryActions({ requeueMessage }: Options): EntryActions {
+export function useEntryActions({ requeueMessage, renameFileMessage }: Options): EntryActions {
   const { history, notifier } = usePorts()
   const [menu, setMenu] = useState<EntryMenuState | null>(null)
   const closeMenu = useCallback(() => setMenu(null), [])
   const [dialog, setDialog] = useState<EntryDialog | null>(null)
   const closeDialog = useCallback(() => setDialog(null), [])
   const [newName, setNewName] = useState('')
+  const [renameFile, setRenameFile] = useState(false)
   const startRename = useCallback((entry: HistoryEntry) => {
     setNewName(shownName(entry))
+    // Tocar el disco es más serio que cambiar el nombre mostrado: nunca viene marcado.
+    setRenameFile(false)
     setDialog({ kind: 'rename', entry })
   }, [])
 
@@ -67,9 +75,18 @@ export function useEntryActions({ requeueMessage }: Options): EntryActions {
     startRename,
     newName,
     setNewName,
+    renameFile,
+    setRenameFile,
     confirmRename: () => {
       if (dialog?.kind !== 'rename') return
-      void history.rename(dialog.entry.id, newName)
+      const { entry } = dialog
+      if (renameFile && newName.trim()) {
+        void history.renameFile(entry.id, newName).then((reason) => {
+          if (reason) notifier.notify(renameFileMessage(reason, shownName(entry)))
+        })
+      } else {
+        void history.rename(entry.id, newName)
+      }
       setDialog(null)
     },
     retranscribe: (entry) => {

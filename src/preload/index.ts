@@ -65,6 +65,9 @@ const api: AppApi = {
   speakers: {
     prepareModel: () => invoke(IpcChannel.SpeakersPrepareModel)
   },
+  vad: {
+    prepareModel: () => invoke(IpcChannel.VadPrepareModel)
+  },
   media: {
     openFiles: (filterLabels) => invoke(IpcChannel.MediaOpenFiles, filterLabels),
     onPreview: (listener) => on(IpcChannel.MediaPreview, listener),
@@ -78,6 +81,7 @@ const api: AppApi = {
     get: (id) => invoke(IpcChannel.HistoryGet, id),
     search: (query) => invoke(IpcChannel.HistorySearch, query),
     rename: (id, displayName) => invoke(IpcChannel.HistoryRename, id, displayName),
+    renameFile: (id, name) => invoke(IpcChannel.HistoryRenameFile, id, name),
     renameSpeaker: (id, speakerId, name) =>
       invoke(IpcChannel.HistoryRenameSpeaker, id, speakerId, name),
     remove: (id) => invoke(IpcChannel.HistoryRemove, id),

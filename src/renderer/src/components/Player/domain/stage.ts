@@ -44,17 +44,11 @@ export function isMaximized(height: number, limit: number): boolean {
 /** Con el video ocupando casi todo el espacio, la transcripción pasa a ser una ventanita. */
 export function isCovered(input: {
   hasMedia: boolean
-  hasVideo: boolean
   videoVisible: boolean
   height: number
   limit: number
 }): boolean {
-  return (
-    input.hasMedia &&
-    input.hasVideo &&
-    input.videoVisible &&
-    input.height >= input.limit - COVER_THRESHOLD
-  )
+  return input.hasMedia && input.videoVisible && input.height >= input.limit - COVER_THRESHOLD
 }
 
 /**

@@ -52,9 +52,7 @@ export function Stage({ entry, playback, stage }: StageProps): React.JSX.Element
         </div>
       )}
       <Captions visible={showCaptions} />
-      {hasVideo && (
-        <ResizeHandle height={stage.height} limit={stage.limit} onDrag={stage.setDragHeight} />
-      )}
+      <ResizeHandle height={stage.height} limit={stage.limit} onDrag={stage.setDragHeight} />
     </div>
   )
 }

@@ -5,6 +5,17 @@ export function shownName(entry: HistoryEntry): string {
   return entry.displayName ?? entry.fileName
 }
 
+/** Extensión del archivo con su punto (`.mp4`), o `''` si no tiene. */
+export function fileExtension(fileName: string): string {
+  const dot = fileName.lastIndexOf('.')
+  return dot > 0 ? fileName.slice(dot) : ''
+}
+
+/** Mientras está en la cola, transcribiéndose o grabándose, el archivo no se puede renombrar. */
+export function isFileBusy(entry: HistoryEntry): boolean {
+  return entry.live === true || entry.status === 'pending' || entry.status === 'transcribing'
+}
+
 /** Clave estable para `useListExit`; fuera de los componentes para no recrearla en cada render. */
 export const entryKey = (entry: HistoryEntry): string => entry.id
 

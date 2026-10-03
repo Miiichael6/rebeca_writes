@@ -7,6 +7,8 @@ import { usePorts } from './ports'
 export interface HistoryListModel {
   entries: HistoryEntry[]
   selectedId: string | null
+  /** Entradas terminadas que el usuario aún no ha abierto. */
+  unseen: ReadonlySet<string>
   filter: string
   /** Entradas que pasan el filtro. */
   filtered: HistoryEntry[]
@@ -22,6 +24,7 @@ export function useHistoryList(): HistoryListModel {
   const { history } = usePorts()
   const entries = history.useEntries()
   const selectedId = history.useSelectedId()
+  const unseen = history.useUnseen()
   const filter = history.useFilter()
   const textMatches = history.useTextMatches()
 
@@ -34,5 +37,14 @@ export function useHistoryList(): HistoryListModel {
   const groups = useMemo(() => groupHistory(shown.items), [shown.items])
   const visibleIds = useMemo(() => new Set(filtered.map((e) => e.id)), [filtered])
 
-  return { entries, selectedId, filter, filtered, visibleIds, groups, exiting: shown.exiting }
+  return {
+    entries,
+    selectedId,
+    unseen,
+    filter,
+    filtered,
+    visibleIds,
+    groups,
+    exiting: shown.exiting
+  }
 }

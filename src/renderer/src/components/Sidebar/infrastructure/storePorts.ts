@@ -20,6 +20,7 @@ export const storePorts: SidebarPorts = {
   history: {
     useEntries: () => useHistoryStore((s) => s.entries),
     useSelectedId: () => useHistoryStore((s) => s.selectedId),
+    useUnseen: () => useHistoryStore((s) => s.unseen),
     useFilter: () => useHistoryStore((s) => s.filter),
     useTextMatches: () => useHistoryStore((s) => s.textMatches),
     useExiting: (entries) => useListExit(entries, entryKey),
@@ -27,6 +28,7 @@ export const storePorts: SidebarPorts = {
     setFilter: (filter) => useHistoryStore.getState().setFilter(filter),
     openFile: () => useHistoryStore.getState().openFile(),
     rename: (id, name) => useHistoryStore.getState().rename(id, name),
+    renameFile: (id, name) => useHistoryStore.getState().renameFile(id, name),
     remove: (id) => useHistoryStore.getState().remove(id),
     clear: () => useHistoryStore.getState().clear(),
     hasEdits: (id) => useHistoryStore.getState().hasEdits(id),

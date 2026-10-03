@@ -69,6 +69,7 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     maxLen: int(0, 10_000),
     suppressNst: bool,
     normalize: bool,
+    vad: bool,
     threads: int(1, Math.max(1, cpuCount)),
     showCaptions: bool,
     videoHeight: int(VIDEO_HEIGHT_MIN, VIDEO_HEIGHT_MAX),

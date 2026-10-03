@@ -23,7 +23,7 @@ import { QueueJobRunner } from './application/queueJobRunner'
 import { QueueService } from './application/queueService'
 import { RecordHotkey } from './application/recordHotkey'
 import { RecordingsFolder } from './application/recordingsFolder'
-import { SpeakerModel } from './application/speakerModel'
+import { SingleFileModel, SPEAKER_MODEL, VAD_MODEL } from './application/singleFileModel'
 import { TranscriptionManager } from './application/transcriptionManager'
 import { TranscriptionPipeline } from './application/transcriptionPipeline'
 import { UpdateService } from './application/updateService'
@@ -146,7 +146,22 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
   const previews = new PreviewService(previewQueue, registry, publisher, log)
   const opener = new MediaOpener(registry, ffmpegMediaTools, previews, electronDialogs, log)
 
+  // --- Quién habla (tarea 35) ---
+  const speakerModel = new SingleFileModel(SPEAKER_MODEL, {
+    dir: join(userData, 'models', 'speakers'),
+    disk: nodeDisk,
+    downloader: netDownloader,
+    log
+  })
+  const speakerEmbedder = new SpeakerSidecar(join(bundledBinDir, SPEAKER_BINARY), speakerModel, log)
+
   // --- Transcripción ---
+  const vadModel = new SingleFileModel(VAD_MODEL, {
+    dir: join(userData, 'models', 'vad'),
+    disk: nodeDisk,
+    downloader: netDownloader,
+    log
+  })
   const pipelineDeps = {
     media: ffmpegMediaTools,
     temp,
@@ -154,10 +169,14 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     binaries,
     backends,
     models,
+    vadModel,
     log
   }
   const manager = new TranscriptionManager({
-    engine: new TranscriptionPipeline(pipelineDeps),
+    engine: new TranscriptionPipeline({
+      ...pipelineDeps,
+      speakers: { embedder: speakerEmbedder, enabled: () => settings.get().detectSpeakers }
+    }),
     history,
     publisher,
     log
@@ -196,14 +215,6 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
   })
   const intake = new QueueIntake({ queue, settings, history, opener, expander: fsPathExpander })
 
-  // --- Quién habla (tarea 35) ---
-  const speakerModel = new SpeakerModel({
-    dir: join(userData, 'models', 'speakers'),
-    disk: nodeDisk,
-    downloader: netDownloader,
-    log
-  })
-
   // --- En vivo ---
   // Tiene su propio pipeline: sus eventos no llegan al renderer tal cual.
   const live = new LiveControl(
@@ -218,7 +229,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
       mediaDuration: async (path) =>
         (await ffmpegMediaTools.probe(path).catch(() => null))?.durationSec ?? null,
       currentBackend: async () => (await backends.info()).backend,
-      speakers: new SpeakerSidecar(join(bundledBinDir, SPEAKER_BINARY), speakerModel, log)
+      speakers: speakerEmbedder
     },
     intake
   )
@@ -303,6 +314,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     cuda,
     models,
     speakerModel,
+    vadModel,
     previews,
     opener,
     history: new HistoryService(history, historyMedia),

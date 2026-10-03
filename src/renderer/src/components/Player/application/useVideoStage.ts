@@ -17,11 +17,10 @@ export interface VideoStage {
 interface Options {
   playerRef: RefObject<HTMLElement | null>
   hasMedia: boolean
-  hasVideo: boolean
 }
 
 /** Alto del panel de video: límite disponible, arrastre, maximizar y aviso de transcripción tapada. */
-export function useVideoStage({ playerRef, hasMedia, hasVideo }: Options): VideoStage {
+export function useVideoStage({ playerRef, hasMedia }: Options): VideoStage {
   const { settings, view, stage } = usePorts()
   const videoVisible = view.useVideoVisible()
   const savedHeight = settings.useVideoHeight()
@@ -45,7 +44,7 @@ export function useVideoStage({ playerRef, hasMedia, hasVideo }: Options): Video
     settings.setVideoHeight(next.height)
   }
 
-  const covered = isCovered({ hasMedia, hasVideo, videoVisible, height, limit })
+  const covered = isCovered({ hasMedia, videoVisible, height, limit })
   useEffect(() => {
     view.setTranscriptCovered(covered)
     return () => view.setTranscriptCovered(false)

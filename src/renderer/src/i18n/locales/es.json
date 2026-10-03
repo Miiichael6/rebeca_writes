@@ -11,6 +11,7 @@
     "percent": "{{value}} %"
   },
   "sidebar": {
+    "unseen": "Transcripción terminada, sin ver",
     "selectedCount_one": "{{count}} seleccionado",
     "selectedCount_many": "{{count}} seleccionados",
     "selectedCount_other": "{{count}} seleccionados",
@@ -50,6 +51,17 @@
     "renameLabel": "Nombre en el historial",
     "renameHint": "Solo cambia el nombre que se muestra; el archivo no se renombra.",
     "renameConfirm": "Renombrar",
+    "renameFileOption": "Renombrar también el archivo original",
+    "renameFileHint": "El archivo se renombra en su carpeta y conserva la extensión {{ext}}.",
+    "renameFileHintNoExt": "El archivo se renombra en su carpeta.",
+    "renameFileBusy": "El archivo no se puede renombrar mientras está en la cola o transcribiéndose.",
+    "renameFileFailed": {
+      "invalid": "Ese nombre no es válido para un archivo.",
+      "busy": "No se puede renombrar «{{name}}» mientras está en la cola o transcribiéndose.",
+      "missing": "No se encontró el archivo original de «{{name}}».",
+      "exists": "Ya hay un archivo con ese nombre en la carpeta.",
+      "failed": "No se pudo renombrar «{{name}}». Puede que esté abierto en otro programa."
+    },
     "removeTitle": "¿Eliminar del historial?",
     "removeConfirm": "Eliminar",
     "removeBody": "Se eliminará la transcripción de «{{name}}». El archivo original no se toca.",
@@ -104,6 +116,7 @@
   },
   "speakers": {
     "you": "Usted",
+    "ambient": "Ambiente",
     "person": "Persona {{n}}",
     "rename": "Cambiar el nombre de {{name}}",
     "nameInput": "Nombre de quien habla"
@@ -244,6 +257,10 @@
     "maxLenDescription": "Establece la longitud máxima de cada segmento en caracteres. Introduzca 0 para sin límite.",
     "suppressNst": "Suprimir tokens sin voz",
     "suppressNstDescription": "Evita generar textos que no se pronuncian en el audio, p. ej. (música dramática), aunque puede ralentizar el procesamiento.",
+    "vad": "Filtrar silencios y ruido",
+    "vadDescription": "Whisper solo transcribe los tramos con voz: evita frases inventadas en silencios, música o ruido de fondo. Usa un modelo de 1 MB que se descarga una vez.",
+    "vadDownloading": "Descargando el filtro de voz (1 MB)…",
+    "vadFailed": "No se pudo descargar el filtro de voz. Se transcribe sin él; comprueba la conexión y vuelve a activar el interruptor.",
     "normalize": "Normalización de audio",
     "normalizeDescription": "Si el archivo tiene un volumen bajo, se normaliza antes de transcribir para mejorar la calidad de la transcripción.",
     "threads": "Hilos de CPU",

@@ -71,8 +71,12 @@ export const SegmentRow = memo(function SegmentRow({
       }}
       onDoubleClick={() => edit.start(index)}
     >
+      {speaker !== null && (
+        <span className="speaker-line">
+          <SpeakerTag speaker={speaker} name={speakerName} />
+        </span>
+      )}
       <time>[{formatTimestamp(segment.start)}]</time>
-      {speaker !== null && <SpeakerTag speaker={speaker} name={speakerName} />}
       {draft === null ? (
         <span {...editedProps(segment, t)}>
           {renderHighlight(segment.text, matches, firstMatch, matchCount, currentMatch)}

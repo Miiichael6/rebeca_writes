@@ -1,13 +1,14 @@
-import { basename } from 'path'
+import { basename, dirname, join } from 'path'
 import { SPEAKER_NAME_MAX } from '@shared/speakers'
 import type {
   HistoryEntry,
   HistoryEntryInput,
   HistoryOpened,
   OpenedMedia,
+  RenameFileResult,
   Segment
 } from '@shared/types'
-import { isValidHistoryId } from '../domain/history'
+import { isValidHistoryId, renamedFileName } from '../domain/history'
 import { renamedSpeakers } from '../domain/speakers/speakerNames'
 import type { HistoryMedia } from './ports/historyMedia'
 import type { HistoryRepository } from './ports/historyRepository'
@@ -76,6 +77,46 @@ export class HistoryService {
     if (!isValidHistoryId(id) || typeof displayName !== 'string') return null
     const trimmed = displayName.trim()
     return this.repo.update(id, { displayName: trimmed || undefined })
+  }
+
+  /**
+   * Renombra el archivo original en su carpeta (conserva la extensión) y la entrada pasa a
+   * mostrar ese nombre. Las demás entradas del mismo archivo también apuntan a la ruta nueva.
+   * No se toca mientras está en la cola o grabándose: el trabajo usa la ruta vieja.
+   */
+  async renameFile(id: unknown, name: unknown): Promise<RenameFileResult> {
+    if (!isValidHistoryId(id) || typeof name !== 'string') return { ok: false, reason: 'invalid' }
+    const saved = await this.repo.get(id)
+    if (!saved) return { ok: false, reason: 'missing' }
+    const from = saved.entry.filePath
+    const fileName = renamedFileName(basename(from), name)
+    if (!fileName) return { ok: false, reason: 'invalid' }
+    const entries = await this.repo.list()
+    const sharing = entries.filter((e) => e.filePath === from)
+    if (sharing.some((e) => e.live || e.status === 'pending' || e.status === 'transcribing')) {
+      return { ok: false, reason: 'busy' }
+    }
+    if (!this.media.isSafePath(from) || !(await this.media.exists(from))) {
+      return { ok: false, reason: 'missing' }
+    }
+    const to = join(dirname(from), fileName)
+    // Windows no distingue mayúsculas: cambiar solo eso no choca consigo mismo.
+    const sameFile = to.toLowerCase() === from.toLowerCase()
+    if (!sameFile && (await this.media.exists(to))) return { ok: false, reason: 'exists' }
+    if (to !== from) {
+      try {
+        await this.media.rename(from, to)
+      } catch {
+        return { ok: false, reason: 'failed' }
+      }
+      this.media.unregister(from)
+    }
+    for (const other of sharing) {
+      if (other.id !== id) await this.repo.update(other.id, { filePath: to, fileName })
+    }
+    const entry = await this.repo.update(id, { filePath: to, fileName, displayName: undefined })
+    if (!entry) return { ok: false, reason: 'missing' }
+    return { ok: true, entry, media: await this.media.open(to) }
   }
 
   /** Nombre de un hablante (tarea 35); vacío vuelve al de por defecto ("Persona 1"). */

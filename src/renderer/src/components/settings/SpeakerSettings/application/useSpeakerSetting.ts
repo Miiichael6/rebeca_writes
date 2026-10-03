@@ -1,31 +1,11 @@
-import { useState } from 'react'
+import { useModelToggle, type ModelToggle } from '@renderer/lib/useModelToggle'
 import { usePorts } from './ports'
-
-/** En qué está el modelo de voces tras activar el ajuste. */
-export type SpeakerModelState = 'idle' | 'downloading' | 'failed'
 
 /**
  * El interruptor "Detectar quién habla". Al activarlo descarga el modelo de voces (si falta),
  * para que la primera grabación ya tenga hablantes.
  */
-export function useSpeakerSetting(): {
-  enabled: boolean
-  modelState: SpeakerModelState
-  setEnabled: (enabled: boolean) => void
-} {
+export function useSpeakerSetting(): ModelToggle {
   const { settings, model } = usePorts()
-  const enabled = settings.useDetectSpeakers()
-  const [modelState, setModelState] = useState<SpeakerModelState>('idle')
-
-  const setEnabled = (value: boolean): void => {
-    settings.setDetectSpeakers(value)
-    if (!value) return
-    setModelState('downloading')
-    void model
-      .prepare()
-      .then((result) => setModelState(result.status === 'done' ? 'idle' : 'failed'))
-      .catch(() => setModelState('failed'))
-  }
-
-  return { enabled, modelState, setEnabled }
+  return useModelToggle(settings.useDetectSpeakers(), settings.setDetectSpeakers, model.prepare)
 }

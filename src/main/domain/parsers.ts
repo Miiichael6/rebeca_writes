@@ -16,11 +16,43 @@ function timeToSeconds(timestamp: string): number {
   return Number(h) * 3600 + Number(m) * 60 + Number(s) + Number(ms) / 1000
 }
 
-/** `[hh:mm:ss.mmm --> hh:mm:ss.mmm]  texto` → tramo en segundos, o `null` si la línea no encaja. */
+/** Quita los cierres `)` y `]` que no abrió nadie antes. */
+function dropUnopened(text: string): string {
+  const open = { ')': 0, ']': 0 }
+  let out = ''
+  for (const char of text) {
+    if (char === '(') open[')']++
+    else if (char === '[') open[']']++
+    else if (char === ')' || char === ']') {
+      if (open[char] === 0) continue
+      open[char]--
+    }
+    out += char
+  }
+  return out
+}
+
+/**
+ * Limpia marcas que whisper copia de los subtítulos de TV: `>>` (cambio de quien habla) y
+ * paréntesis o corchetes de cierre sueltos (`))`).
+ */
+export function cleanSegmentText(text: string): string {
+  return dropUnopened(text.replace(/(?:>\s*){2,}/g, ' '))
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+/**
+ * `[hh:mm:ss.mmm --> hh:mm:ss.mmm]  texto` → tramo en segundos, o `null` si la línea no encaja
+ * o solo traía marcas sin texto.
+ */
 export function parseSegmentLine(line: string): Segment | null {
   const match = SEGMENT_RE.exec(line.trim())
   if (!match) return null
-  return { start: timeToSeconds(match[1]), end: timeToSeconds(match[2]), text: match[3].trim() }
+  const raw = match[3].trim()
+  const text = cleanSegmentText(raw)
+  if (raw && !text) return null
+  return { start: timeToSeconds(match[1]), end: timeToSeconds(match[2]), text }
 }
 
 /** `whisper_print_progress_callback: progress = 42%` → `42`, o `null` si la línea no la trae. */

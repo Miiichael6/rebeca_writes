@@ -1,4 +1,4 @@
-import { OWN_SPEAKER_ID, personNumber, type SpeakerNames } from '@shared/speakers'
+import { AMBIENT_SPEAKER_ID, OWN_SPEAKER_ID, personNumber, type SpeakerNames } from '@shared/speakers'
 import type { Segment } from '@shared/types'
 import i18n from '@renderer/i18n'
 
@@ -10,6 +10,7 @@ export function speakerName(id: string, custom: SpeakerNames | undefined): strin
   const named = custom?.[id]
   if (named) return named
   if (id === OWN_SPEAKER_ID) return i18n.t('speakers.you')
+  if (id === AMBIENT_SPEAKER_ID) return i18n.t('speakers.ambient')
   return i18n.t('speakers.person', { n: personNumber(id) ?? id })
 }
 

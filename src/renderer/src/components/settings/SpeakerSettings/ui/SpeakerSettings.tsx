@@ -1,13 +1,14 @@
 import { UserRoundSearch } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useSpeakerSetting, type SpeakerModelState } from '../application/useSpeakerSetting'
+import type { ModelToggleState } from '@renderer/lib/useModelToggle'
+import { useSpeakerSetting } from '../application/useSpeakerSetting'
 import { SettingRow, Toggle } from '../../../ui'
 
 const DESCRIPTION_KEYS = {
   idle: 'settings.detectSpeakersDescription',
   downloading: 'settings.detectSpeakersDownloading',
   failed: 'settings.detectSpeakersFailed'
-} as const satisfies Record<SpeakerModelState, string>
+} as const satisfies Record<ModelToggleState, string>
 
 /** Interruptor "Detectar quién habla" al grabar (tarea 35). */
 export function SpeakerSettings(): React.JSX.Element {

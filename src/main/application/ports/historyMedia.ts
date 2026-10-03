@@ -5,6 +5,8 @@ export interface HistoryMedia {
   /** ¿La ruta es un medio que se puede servir por `media://`? */
   isSafePath(path: string): boolean
   exists(path: string): Promise<boolean>
+  /** Mueve el archivo; falla si el sistema no deja (permisos, abierto en otro programa...). */
+  rename(from: string, to: string): Promise<void>
   /** Registra el archivo en `media://` y devuelve lo necesario para reproducirlo. */
   open(path: string): Promise<OpenedMedia>
   /** Saca el archivo de la lista blanca de `media://`. */

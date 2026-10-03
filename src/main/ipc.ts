@@ -11,7 +11,6 @@ import type { HistoryService } from './application/historyService'
 import type { LiveControl } from './application/liveControl'
 import type { MediaOpener } from './application/mediaOpener'
 import type { MicRecording } from './application/micRecording'
-import type { SpeakerModel } from './application/speakerModel'
 import type { ModelService } from './application/modelService'
 import type { SettingsRepository } from './application/ports/settingsRepository'
 import type { PreviewService } from './application/previewService'
@@ -19,6 +18,7 @@ import type { QueueIntake } from './application/queueIntake'
 import type { QueueService } from './application/queueService'
 import type { RecordHotkey } from './application/recordHotkey'
 import type { RecordingsFolder } from './application/recordingsFolder'
+import type { SingleFileModel } from './application/singleFileModel'
 import type { TranscriptionManager } from './application/transcriptionManager'
 import type { UpdateService } from './application/updateService'
 import { toDockMenuAction } from './domain/dock/menuActionInput'
@@ -38,7 +38,8 @@ export interface IpcDeps {
   backends: BackendService
   cuda: CudaService
   models: ModelService
-  speakerModel: SpeakerModel
+  speakerModel: SingleFileModel
+  vadModel: SingleFileModel
   previews: PreviewService
   opener: MediaOpener
   history: HistoryService
@@ -76,6 +77,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     cuda,
     models,
     speakerModel,
+    vadModel,
     previews,
     history,
     exporter,
@@ -128,6 +130,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     models.addCustom(String(path), String(name))
   )
   handle(IpcChannel.SpeakersPrepareModel, () => speakerModel.prepare())
+  handle(IpcChannel.VadPrepareModel, () => vadModel.prepare())
 
   handle(IpcChannel.MediaOpenFiles, (event, filterLabels) =>
     intake.openFiles(ownerOf(event), filterLabels)
@@ -143,6 +146,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.HistoryGet, (_event, id) => history.get(id))
   handle(IpcChannel.HistorySearch, (_event, query) => history.search(query))
   handle(IpcChannel.HistoryRename, (_event, id, displayName) => history.rename(id, displayName))
+  handle(IpcChannel.HistoryRenameFile, (_event, id, name) => history.renameFile(id, name))
   handle(IpcChannel.HistoryRenameSpeaker, (_event, id, speakerId, name) =>
     history.renameSpeaker(id, speakerId, name)
   )

@@ -11,6 +11,7 @@
     "percent": "{{value}}%"
   },
   "sidebar": {
+    "unseen": "Transcription finished, not viewed yet",
     "selectedCount_one": "{{count}} selected",
     "selectedCount_other": "{{count}} selected",
     "selectAll": "Select all",
@@ -47,6 +48,17 @@
     "renameLabel": "Name in history",
     "renameHint": "Only changes the displayed name; the file isn't renamed.",
     "renameConfirm": "Rename",
+    "renameFileOption": "Also rename the original file",
+    "renameFileHint": "The file is renamed in its folder and keeps the {{ext}} extension.",
+    "renameFileHintNoExt": "The file is renamed in its folder.",
+    "renameFileBusy": "The file can't be renamed while it's queued or being transcribed.",
+    "renameFileFailed": {
+      "invalid": "That name isn't valid for a file.",
+      "busy": "Can't rename “{{name}}” while it's queued or being transcribed.",
+      "missing": "The original file of “{{name}}” wasn't found.",
+      "exists": "There is already a file with that name in the folder.",
+      "failed": "Couldn't rename “{{name}}”. It may be open in another program."
+    },
     "removeTitle": "Remove from history?",
     "removeConfirm": "Remove",
     "removeBody": "The transcription of “{{name}}” will be removed. The original file isn't touched.",
@@ -101,6 +113,7 @@
   },
   "speakers": {
     "you": "You",
+    "ambient": "Ambient",
     "person": "Person {{n}}",
     "rename": "Rename {{name}}",
     "nameInput": "Speaker name"
@@ -235,6 +248,10 @@
     "maxLenDescription": "Sets the maximum length of each segment in characters. Enter 0 for no limit.",
     "suppressNst": "Suppress non-speech tokens",
     "suppressNstDescription": "Avoids text that is not spoken in the audio, e.g. (dramatic music), although it may slow down processing.",
+    "vad": "Filter silence and noise",
+    "vadDescription": "Whisper only transcribes the parts with speech: avoids made-up sentences during silence, music or background noise. Uses a 1 MB model that is downloaded once.",
+    "vadDownloading": "Downloading the voice filter (1 MB)…",
+    "vadFailed": "Could not download the voice filter. Transcription runs without it; check your connection and turn the switch on again.",
     "normalize": "Audio normalization",
     "normalizeDescription": "If the file has a low volume, it is normalized before transcribing to improve the transcription quality.",
     "threads": "CPU threads",

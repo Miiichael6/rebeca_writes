@@ -30,6 +30,7 @@ export function HistoryList({ list, select, actions }: HistoryListProps): React.
               key={entry.id}
               entry={entry}
               selected={entry.id === list.selectedId}
+              unseen={list.unseen.has(entry.id)}
               exiting={list.exiting.has(entry.id)}
               selecting={select.active}
               checked={select.isChecked(entry.id)}

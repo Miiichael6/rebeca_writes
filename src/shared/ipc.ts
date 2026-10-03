@@ -12,6 +12,7 @@ import type {
   ExportSaved,
   HistoryEntry,
   HistoryOpened,
+  RenameFileResult,
   LiveEndedEvent,
   LiveSessionInfo,
   MediaPreviewEvent,
@@ -72,6 +73,7 @@ export const IpcChannel = {
   ModelsPickCustomFile: 'models:pickCustomFile',
   ModelsAddCustom: 'models:addCustom',
   SpeakersPrepareModel: 'speakers:prepareModel',
+  VadPrepareModel: 'vad:prepareModel',
   ModelsProgress: 'models:progress',
   ModelsChanged: 'models:changed',
   MediaOpenFiles: 'media:openFiles',
@@ -84,6 +86,7 @@ export const IpcChannel = {
   HistoryGet: 'history:get',
   HistorySearch: 'history:search',
   HistoryRename: 'history:rename',
+  HistoryRenameFile: 'history:renameFile',
   HistoryRenameSpeaker: 'history:renameSpeaker',
   HistoryRemove: 'history:remove',
   HistoryClear: 'history:clear',
@@ -175,6 +178,7 @@ export interface IpcInvokeMap {
   [IpcChannel.ModelsPickCustomFile]: { args: []; result: string | null }
   [IpcChannel.ModelsAddCustom]: { args: [path: string, name: string]; result: ModelActionResult }
   [IpcChannel.SpeakersPrepareModel]: { args: []; result: ModelDownloadResult }
+  [IpcChannel.VadPrepareModel]: { args: []; result: ModelDownloadResult }
   [IpcChannel.MediaOpenFiles]: {
     args: [filterLabels: Record<MediaFilterKey, string>]
     result: OpenFilesResult | null
@@ -192,6 +196,10 @@ export interface IpcInvokeMap {
   [IpcChannel.HistoryRename]: {
     args: [id: string, displayName: string]
     result: HistoryEntry | null
+  }
+  [IpcChannel.HistoryRenameFile]: {
+    args: [id: string, name: string]
+    result: RenameFileResult
   }
   [IpcChannel.HistoryRenameSpeaker]: {
     args: [id: string, speakerId: string, name: string]
@@ -374,6 +382,10 @@ export interface AppApi {
     /** Descarga el modelo de voces de "Detectar quién habla" si falta (tarea 35). */
     prepareModel: () => Promise<ModelDownloadResult>
   }
+  vad: {
+    /** Descarga el modelo de "Filtrar silencios y ruido" si falta (tarea 36). */
+    prepareModel: () => Promise<ModelDownloadResult>
+  }
   media: {
     /**
      * "Abrir archivo": diálogo con selección múltiple. Un archivo se registra en la lista
@@ -402,6 +414,11 @@ export interface AppApi {
     search: (query: string) => Promise<string[]>
     /** Cambia solo el nombre mostrado; vacío lo restaura al nombre del archivo. */
     rename: (id: string, displayName: string) => Promise<HistoryEntry | null>
+    /**
+     * Renombra el archivo original en disco (conserva la extensión) y quita el nombre
+     * mostrado, que pasa a ser el del archivo.
+     */
+    renameFile: (id: string, name: string) => Promise<RenameFileResult>
     /** Nombre de un hablante (tarea 35); vacío vuelve al de por defecto. */
     renameSpeaker: (id: string, speakerId: string, name: string) => Promise<HistoryEntry | null>
     /** Quita la entrada y su transcripción; el archivo original no se toca. */

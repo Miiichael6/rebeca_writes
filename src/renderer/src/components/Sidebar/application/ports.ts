@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
-import type { HistoryEntry } from '@shared/types'
+import type { HistoryEntry, RenameFileFailure } from '@shared/types'
 import type { ExitingList } from '@renderer/lib/listExit'
 
 /** Puerto de salida: el historial de transcripciones. */
 export interface HistoryPort {
   useEntries(): HistoryEntry[]
   useSelectedId(): string | null
+  /** Ids que terminaron de transcribirse sin que el usuario los haya abierto aún. */
+  useUnseen(): ReadonlySet<string>
   useFilter(): string
   /** Ids cuya transcripción contiene el filtro, o `null` mientras no hay filtro. */
   useTextMatches(): ReadonlySet<string> | null
@@ -15,6 +17,8 @@ export interface HistoryPort {
   setFilter(filter: string): void
   openFile(): Promise<void>
   rename(id: string, displayName: string): Promise<void>
+  /** Renombra el archivo original; `null` si salió bien. */
+  renameFile(id: string, name: string): Promise<RenameFileFailure | null>
   remove(id: string): Promise<void>
   clear(): Promise<void>
   hasEdits(id: string): Promise<boolean>

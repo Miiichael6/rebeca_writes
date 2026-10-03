@@ -5,8 +5,9 @@ import { usePorts } from '../application/ports'
 import { MAX_LEN_MAX, MAX_LEN_MIN } from '../domain/options'
 import { NumberInput, SettingRow, Toggle } from '../../../ui'
 import { PromptSetting } from './PromptSetting'
+import { VadSetting } from './VadSetting'
 
-/** Modelos › opciones de transcripción: prompt, longitud, ruido, normalizado e hilos. */
+/** Modelos › opciones de transcripción: prompt, longitud, ruido, filtro de voz, normalizado e hilos. */
 export function TranscriptionOptions(): React.JSX.Element {
   const { t } = useTranslation()
   const { options, hardware } = usePorts()
@@ -42,6 +43,8 @@ export function TranscriptionOptions(): React.JSX.Element {
           onChange={(value) => options.update({ suppressNst: value })}
         />
       </SettingRow>
+
+      <VadSetting />
 
       <SettingRow
         icon={<AudioLines size={20} strokeWidth={1.5} />}

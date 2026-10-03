@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import { MEDIA_FILTER_KEYS, type MediaFilterKey } from '@shared/formats'
-import type { HistoryEntry, OpenedMedia } from '@shared/types'
+import type { HistoryEntry, OpenedMedia, RenameFileFailure } from '@shared/types'
 import i18n from '@renderer/i18n'
 import { announceQueued } from './queue'
 import { useSettingsStore } from './settings'
@@ -13,6 +13,11 @@ const SEARCH_DEBOUNCE_MS = 200
 interface HistoryState {
   entries: HistoryEntry[]
   selectedId: string | null
+  /**
+   * Entradas que terminaron de transcribirse mientras había otra abierta y aún no se han
+   * visto: llevan un punto en el historial hasta que se abren.
+   */
+  unseen: Set<string>
   /** Texto del campo "Filtrar por...". */
   filter: string
   /**
@@ -48,6 +53,8 @@ interface HistoryState {
   locateFile: (id: string) => Promise<void>
   /** Cambia solo el nombre mostrado; vacío vuelve al nombre del archivo. */
   rename: (id: string, displayName: string) => Promise<void>
+  /** Renombra el archivo original en disco; `null` si salió bien, o el motivo del fallo. */
+  renameFile: (id: string, name: string) => Promise<RenameFileFailure | null>
   /** Nombre de un hablante (tarea 35); vacío vuelve al de por defecto. */
   renameSpeaker: (id: string, speakerId: string, name: string) => Promise<void>
   /** Quita una entrada del historial (el archivo original no se toca). */
@@ -70,6 +77,13 @@ export function filterLabels(): Record<MediaFilterKey, string> {
   return Object.fromEntries(
     MEDIA_FILTER_KEYS.map((key) => [key, i18n.t(`fileFilters.${key}`)])
   ) as Record<MediaFilterKey, string>
+}
+
+/** Copia del conjunto sin `id`. */
+function without(ids: Set<string>, id: string): Set<string> {
+  const rest = new Set(ids)
+  rest.delete(id)
+  return rest
 }
 
 let searchTimer: ReturnType<typeof setTimeout> | undefined
@@ -124,11 +138,12 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
   return {
     entries: [],
     selectedId: null,
+    unseen: new Set(),
     filter: '',
     textMatches: null,
     media: {},
     select: (id) => {
-      set({ selectedId: id })
+      set((s) => ({ selectedId: id, unseen: without(s.unseen, id) }))
       void loadEntry(id)
     },
     setFilter: (filter) => {
@@ -182,8 +197,12 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
       return true
     },
     patchEntry: (id, patch) => {
+      const wasTranscribing = get().entries.find((e) => e.id === id)?.status === 'transcribing'
       const entries = get().entries.map((e) => (e.id === id ? { ...e, ...patch } : e))
       set({ entries })
+      if (wasTranscribing && patch.status === 'done' && get().selectedId !== id) {
+        set((s) => ({ unseen: new Set(s.unseen).add(id) }))
+      }
       const updated = entries.find((e) => e.id === id)
       if (updated && useTranscriptStore.getState().entry?.id === id) {
         useTranscriptStore.setState({ entry: updated })
@@ -202,6 +221,31 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
       // Se pasa siempre la clave: con `undefined` el nombre vuelve al del archivo.
       get().patchEntry(id, { displayName: entry.displayName })
     },
+    renameFile: async (id, name) => {
+      const result = await window.api.history.renameFile(id, name).catch(() => null)
+      if (!result) return 'failed'
+      if (!result.ok) return result.reason
+      const { entry, media } = result
+      const oldPath = get().entries.find((e) => e.id === id)?.filePath
+      // Otras entradas del mismo archivo también se movieron en el main.
+      const sharing = get().entries.filter((e) => e.id !== id && e.filePath === oldPath)
+      set((s) => ({
+        media: {
+          ...s.media,
+          [id]: media,
+          ...Object.fromEntries(sharing.map((e) => [e.id, media]))
+        }
+      }))
+      for (const other of sharing) {
+        get().patchEntry(other.id, { filePath: entry.filePath, fileName: entry.fileName })
+      }
+      get().patchEntry(id, {
+        filePath: entry.filePath,
+        fileName: entry.fileName,
+        displayName: undefined
+      })
+      return null
+    },
     renameSpeaker: async (id, speakerId, name) => {
       const entry = await window.api.history.renameSpeaker(id, speakerId, name)
       // Igual que `rename`: con `undefined` todos vuelven a su nombre por defecto.
@@ -215,6 +259,7 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
       delete media[id]
       set((s) => ({
         entries: s.entries.filter((e) => e.id !== id),
+        unseen: without(s.unseen, id),
         media,
         selectedId: selectedId === id ? null : selectedId
       }))
@@ -233,7 +278,7 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
     clear: async () => {
       await window.api.history.clear()
       forgetResults()
-      set({ entries: [], selectedId: null, media: {}, textMatches: null })
+      set({ entries: [], selectedId: null, unseen: new Set(), media: {}, textMatches: null })
       useTranscriptStore.getState().open(null)
       // El main ya vació la caché de vistas previas; el renderer se entera por `media:preview`.
     }

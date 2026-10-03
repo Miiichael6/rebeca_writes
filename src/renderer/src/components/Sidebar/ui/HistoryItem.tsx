@@ -27,6 +27,8 @@ function ProgressRing({ value }: { value: number }): React.JSX.Element {
 interface HistoryItemProps {
   entry: HistoryEntry
   selected: boolean
+  /** Terminó de transcribirse y aún no se ha abierto: lleva un punto. */
+  unseen: boolean
   /** Ya no está en el historial (o no pasa el filtro): se pinta su salida antes de quitarla. */
   exiting: boolean
   /** Modo de selección múltiple: el clic marca o desmarca en vez de abrir. */
@@ -40,6 +42,7 @@ interface HistoryItemProps {
 export function HistoryItem({
   entry,
   selected,
+  unseen,
   exiting,
   selecting,
   checked,
@@ -82,6 +85,11 @@ export function HistoryItem({
           title={t('sidebar.transcribing', { value: entry.progress ?? 0 })}
         >
           <ProgressRing value={entry.progress ?? 0} />
+        </span>
+      )}
+      {unseen && (
+        <span className="history-item-status" title={t('sidebar.unseen')}>
+          <span className="unseen-dot" />
         </span>
       )}
       {entry.status === 'error' && (

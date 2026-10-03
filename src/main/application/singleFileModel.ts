@@ -5,21 +5,38 @@ import type { Disk } from './ports/disk'
 import type { Logger } from './ports/eventPublisher'
 import type { FileDownloader } from './ports/fileDownloader'
 
+/** Un modelo de un solo archivo que se descarga de una URL fija. */
+export interface SingleFileModelSpec {
+  file: string
+  url: string
+  sizeBytes: number
+  /** Nombre en los logs ("modelo de voces"). */
+  label: string
+}
+
 /**
  * El modelo de huellas de voz (tarea 35, D13): CAM++ de 3D-Speaker para sherpa-onnx, entrenado
- * con chino e inglés pero independiente del idioma. Se descarga la primera vez que hace falta,
- * igual que los modelos de whisper (con reanudación), a `userData/models/speakers`.
+ * con chino e inglés pero independiente del idioma.
  */
-export const SPEAKER_MODEL = {
+export const SPEAKER_MODEL: SingleFileModelSpec = {
   file: '3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx',
   url: 'https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx',
-  sizeBytes: 28_281_164
-} as const
+  sizeBytes: 28_281_164,
+  label: 'modelo de voces'
+}
+
+/** El filtro de voz de whisper (tarea 36): Silero VAD convertido a ggml. */
+export const VAD_MODEL: SingleFileModelSpec = {
+  file: 'ggml-silero-v6.2.0.bin',
+  url: 'https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v6.2.0.bin',
+  sizeBytes: 885_098,
+  label: 'filtro de voz'
+}
 
 /** Margen libre que se deja en el disco además del modelo. */
 const DISK_MARGIN_BYTES = 50 * 1024 * 1024
 
-export interface SpeakerModelDeps {
+export interface SingleFileModelDeps {
   /** Carpeta del modelo. */
   dir: string
   disk: Disk
@@ -27,20 +44,27 @@ export interface SpeakerModelDeps {
   log: Logger
 }
 
-export class SpeakerModel {
+/**
+ * Un modelo auxiliar (voces, filtro de voz) que se descarga la primera vez que hace falta,
+ * igual que los modelos de whisper (con reanudación), a su carpeta de `userData/models`.
+ */
+export class SingleFileModel {
   private download: Promise<ModelDownloadResult> | null = null
 
-  constructor(private readonly deps: SpeakerModelDeps) {}
+  constructor(
+    private readonly spec: SingleFileModelSpec,
+    private readonly deps: SingleFileModelDeps
+  ) {}
 
   private get path(): string {
-    return join(this.deps.dir, SPEAKER_MODEL.file)
+    return join(this.deps.dir, this.spec.file)
   }
 
   /** Ruta del modelo si ya está entero en disco; si no, `null`. */
   async readyPath(): Promise<string | null> {
     if (this.download) return null
     const size = await this.deps.disk.fileSize(this.path)
-    return size === SPEAKER_MODEL.sizeBytes ? this.path : null
+    return size === this.spec.sizeBytes ? this.path : null
   }
 
   /** Lo descarga si falta. Dos llamadas a la vez comparten la misma descarga. */
@@ -51,26 +75,27 @@ export class SpeakerModel {
 
   private async run(): Promise<ModelDownloadResult> {
     const { dir, disk, downloader, log } = this.deps
+    const { url, sizeBytes, label } = this.spec
     const dest = this.path
-    if ((await disk.fileSize(dest)) === SPEAKER_MODEL.sizeBytes) return { status: 'done' }
+    if ((await disk.fileSize(dest)) === sizeBytes) return { status: 'done' }
     try {
       await disk.ensureDir(dir)
-      const remaining = SPEAKER_MODEL.sizeBytes - (await disk.fileSize(partPath(dest)))
+      const remaining = sizeBytes - (await disk.fileSize(partPath(dest)))
       if ((await disk.freeSpace(dir)) < remaining + DISK_MARGIN_BYTES) {
         return { status: 'error', code: 'noDiskSpace' }
       }
-      log.info(`Hablantes: descargando el modelo de voces → ${dest}`)
+      log.info(`Descargando el ${label} → ${dest}`)
       await downloader.download({
-        url: SPEAKER_MODEL.url,
+        url,
         dest,
-        expectedSize: SPEAKER_MODEL.sizeBytes,
+        expectedSize: sizeBytes,
         signal: new AbortController().signal,
         onProgress: () => {}
       })
-      log.info('Hablantes: modelo de voces descargado')
+      log.info(`${label}: descargado`)
       return { status: 'done' }
     } catch (err) {
-      log.error('Hablantes: falló la descarga del modelo de voces', err)
+      log.error(`Falló la descarga del ${label}`, err)
       if (err instanceof DownloadError) return { status: 'error', code: err.code }
       return { status: 'error', code: 'downloadFailed' }
     }

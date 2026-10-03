@@ -5,7 +5,20 @@
  */
 
 export const OWN_SPEAKER_ID = 'you'
+/** Sonidos que no son voz (música, ruido, una puerta…): no cuentan como una persona. */
+export const AMBIENT_SPEAKER_ID = 'ambient'
 const PERSON_PREFIX = 'p'
+/**
+ * Texto sin palabras: solo marcas entre corchetes, paréntesis o asteriscos (`[MÚSICA]`,
+ * `(puerta)`, `*aplausos*`, `[BLANK_AUDIO]`) o símbolos musicales. Es lo que whisper escribe
+ * cuando oye algo que no es habla.
+ */
+const NON_SPEECH_RE = /^(?:\s*(?:\[[^\]]*\]|\([^)]*\)|\*[^*]*\*|[♪♫♬🎵🎶]+))+\s*$/u
+
+export function isNonSpeechText(text: string): boolean {
+  const trimmed = text.trim()
+  return NON_SPEECH_RE.test(trimmed) || !/[\p{L}\p{N}]/u.test(trimmed)
+}
 const PERSON_ID_RE = new RegExp(`^${PERSON_PREFIX}(\\d+)$`)
 /** Largo máximo de un nombre de hablante. */
 export const SPEAKER_NAME_MAX = 60
