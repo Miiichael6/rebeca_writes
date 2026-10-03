@@ -1,6 +1,6 @@
 # 33 · Posición del dock
 
-**Estado:** 🔄 En progreso
+**Estado:** ✅ Terminada
 **Fase:** 9 — Pulido · **Depende de:** 30 · **Doc:** petición del usuario (2026-10-01)
 
 ## Objetivo
@@ -34,8 +34,8 @@ Posiciones: `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `b
 
 ### Paso 4 — Verificación
 
-- [ ] Prueba real: cada posición recoloca el dock al momento; escondido asoma en su borde, sale con el ratón y se esconde al irse
-- [ ] Prueba real: la pregunta de la reunión y la grabación se ven bien arriba y abajo; el menú del clic derecho se abre hacia dentro
+- [x] Prueba real: cada posición recoloca el dock al momento; escondido asoma en su borde, sale con el ratón y se esconde al irse
+- [x] Prueba real: la pregunta de la reunión y la grabación se ven bien arriba y abajo; el menú del clic derecho se abre hacia dentro
 - [x] Código organizado: una responsabilidad por archivo, lógica pura separada de la integración, sin duplicación ni código muerto
 - [x] Tests (`npm run test`), `npm run typecheck` y `npm run lint` pasan
 - [x] `npm run dev` arranca
@@ -43,9 +43,9 @@ Posiciones: `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `b
 
 ## Criterios de aceptación
 
-- [ ] En Configuración se elige entre las 6 posiciones (arriba o abajo: izquierda, centro, derecha); por defecto, abajo al centro
-- [ ] En cada posición el dock escondido asoma en su borde, sale hacia dentro con el ratón y no parpadea
-- [ ] El menú contextual nunca se sale de la pantalla y su submenú se abre hacia dentro
+- [x] En Configuración se elige entre las 6 posiciones (arriba o abajo: izquierda, centro, derecha); por defecto, abajo al centro
+- [x] En cada posición el dock escondido asoma en su borde, sale hacia dentro con el ratón y no parpadea
+- [x] El menú contextual nunca se sale de la pantalla y su submenú se abre hacia dentro
 
 ## Bitácora
 

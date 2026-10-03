@@ -83,30 +83,30 @@ Windows y no se puede animar ni tematizar.
       (los cambios siguen siendo instantáneos y la app queda usable)
 - [x] Animar solo `transform` y `opacity` donde se pueda (las únicas excepciones son los plegados
       `collapse-*` y `row-out`, que necesitan el alto)
-- [ ] Comprobar con un archivo largo (≥ 1 h, miles de segmentos) que el scroll del transcript
+- [x] Comprobar con un archivo largo (≥ 1 h, miles de segmentos) que el scroll del transcript
       sigue fluido — prueba manual, va con el paso 7
 - [x] Ninguna animación bloquea una acción: cerrar un panel y volver a abrirlo enseguida no deja
       nodos huérfanos ni estados a medias
 
 ### Paso 7 — Verificación
-- [ ] Prueba real con `npm run dev`: abrir/cerrar el panel de video, añadir archivos, abrir y
+- [x] Prueba real con `npm run dev`: abrir/cerrar el panel de video, añadir archivos, abrir y
       cerrar la cola, ver aparecer la transcripción en vivo, eliminar un archivo de la cola y del
       historial, abrir el Select de modelo/idioma y un menú contextual — todo entra y sale con
       animación, en tema claro y oscuro
-- [ ] Código organizado: movimiento en `motion.css`, lógica de montaje en su hook con test, Select
+- [x] Código organizado: movimiento en `motion.css`, lógica de montaje en su hook con test, Select
       en su propio componente; sin duplicación ni `setTimeout` repartidos
-- [ ] `npm run test`, `npm run typecheck` y `npm run lint` pasan
-- [ ] Commit: `feat(ui): animaciones de la interfaz y Select propio`
+- [x] `npm run test`, `npm run typecheck` y `npm run lint` pasan
+- [x] Commit: `feat(ui): animaciones de la interfaz y Select propio`
 
 ## Criterios de aceptación
-- [ ] Panel de video, cola, diálogos, Configuración, overlay de arrastre y menús tienen animación
+- [x] Panel de video, cola, diálogos, Configuración, overlay de arrastre y menús tienen animación
       de entrada **y** de salida; nada desaparece de golpe
-- [ ] Los segmentos de la transcripción en vivo y las filas de cola/historial aparecen animados, y
+- [x] Los segmentos de la transcripción en vivo y las filas de cola/historial aparecen animados, y
       al eliminar una fila se ve su salida antes de que desaparezca
-- [ ] El desplegable de `Select` lo pinta la app (no Windows), sigue el estilo de `Menu` en ambos
+- [x] El desplegable de `Select` lo pinta la app (no Windows), sigue el estilo de `Menu` en ambos
       temas y funciona solo con teclado con los roles ARIA correctos
-- [ ] Con `prefers-reduced-motion: reduce` la app no anima nada y sigue siendo plenamente usable
-- [ ] `npm run test`, `npm run typecheck` y `npm run lint` pasan
+- [x] Con `prefers-reduced-motion: reduce` la app no anima nada y sigue siendo plenamente usable
+- [x] `npm run test`, `npm run typecheck` y `npm run lint` pasan
 
 ## Bitácora
 - 2026-09-29 — Toda la animación se apoya en un mismo mecanismo: núcleo puro (`mountTransition`,

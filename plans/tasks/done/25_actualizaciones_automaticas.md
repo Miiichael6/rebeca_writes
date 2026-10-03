@@ -85,22 +85,22 @@ Publicar cada versión en GitHub Releases con un solo comando. La app instalada 
 ### Paso 7 — Verificación
 - [x] Tests (`updatePolicy`), typecheck y lint pasan
 - [x] `npm run dev`: no hay errores del actualizador en el log y "Buscar actualizaciones" responde sin romper
-- [ ] **Prueba local sin publicar** (provider `generic`):
+- [x] **Prueba local sin publicar** (provider `generic`):
   1. build `1.1.0` instalado;
   2. build `1.1.1` en `dist/`, servido con `npx http-server dist -p 8080`;
   3. en la copia instalada, editar `resources/app-update.yml` → `provider: generic`, `url: http://localhost:8080`;
   4. abrir 1.1.0 → aparece el aviso → Actualizar → progreso → Reiniciar → abre 1.1.1 (Configuración › Acerca de muestra la versión nueva)
-- [ ] En esa prueba, modelos, historial, settings y `backends/cuda` siguen intactos después de actualizar
-- [ ] Con una transcripción en curso, "Reiniciar" no cierra la app y avisa. Al cerrar la app, la actualización se instala sola
-- [ ] Sin red: "Buscar actualizaciones" muestra el error `offline` traducido, sin toasts repetidos
-- [ ] **Prueba real:** `npm run release` de `v1.1.0` → publicar el borrador → luego `v1.1.1` → la `1.1.0` instalada se actualiza desde GitHub con un clic
-- [ ] Commit: `feat(updates): publicación en GitHub Releases y actualización con un clic`
+- [x] En esa prueba, modelos, historial, settings y `backends/cuda` siguen intactos después de actualizar
+- [x] Con una transcripción en curso, "Reiniciar" no cierra la app y avisa. Al cerrar la app, la actualización se instala sola
+- [x] Sin red: "Buscar actualizaciones" muestra el error `offline` traducido, sin toasts repetidos
+- [x] **Prueba real:** `npm run release` de `v1.1.0` → publicar el borrador → luego `v1.1.1` → la `1.1.0` instalada se actualiza desde GitHub con un clic
+- [x] Commit: `feat(updates): publicación en GitHub Releases y actualización con un clic`
 
 ## Criterios de aceptación
-- [ ] `npm run release` deja en GitHub un Release borrador con el `.exe`, el `.blockmap` y `latest.yml`, sin pasos manuales aparte de publicarlo
-- [ ] Una app instalada con versión anterior avisa de la nueva y se actualiza con un clic en "Actualizar" y otro en "Reiniciar", sin UAC ni reinstalar a mano
-- [ ] La actualización no borra ni toca modelos, historial, settings ni el paquete CUDA descargado
-- [ ] Nunca se reinicia a mitad de una transcripción ni de la descarga de CUDA
+- [x] `npm run release` deja en GitHub un Release borrador con el `.exe`, el `.blockmap` y `latest.yml`, sin pasos manuales aparte de publicarlo
+- [x] Una app instalada con versión anterior avisa de la nueva y se actualiza con un clic en "Actualizar" y otro en "Reiniciar", sin UAC ni reinstalar a mano
+- [x] La actualización no borra ni toca modelos, historial, settings ni el paquete CUDA descargado
+- [x] Nunca se reinicia a mitad de una transcripción ni de la descarga de CUDA
 
 ## Bitácora
 - 2026-09-28 — Creada a pedido del usuario, que quiere publicar versiones y que la app se actualice con un clic. Se elige `electron-updater` + GitHub Releases porque ya se usan electron-builder y NSIS y no requiere servidor propio. Bloqueada por **D5**: si el repo es privado, la app no puede leer los Releases sin un token, y meter un token en la app no es seguro. La `v1.0.0` (tag ya publicado) no trae el actualizador; la primera versión pública con él será la `v1.1.0`.

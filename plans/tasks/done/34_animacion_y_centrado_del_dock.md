@@ -1,6 +1,6 @@
 # 34 · Animación y centrado del dock
 
-**Estado:** 🔄 En progreso
+**Estado:** ✅ Terminada
 **Fase:** 9 — Pulido · **Depende de:** 33 · **Doc:** petición del usuario (2026-10-01)
 
 ## Objetivo
@@ -77,11 +77,11 @@ Si el ratón vuelve durante la contracción, el main cancela la espera y el desl
 
 ## Criterios de aceptación
 
-- [ ] Al pasar el ratón por la barra, la píldora queda centrada sobre ella (arriba y abajo, en las esquinas y al centro)
-- [ ] La aparición se anima (deslizamiento + crecimiento desde la barra) y no parpadea
-- [ ] Al esconderse, el micrófono se come la onda y la gota que queda se derrama hacia el borde y se asienta como barra con un pequeño rebote
-- [ ] Al empezar a grabar, el ■ de parar aparece con una transformación moderna (punto → cuadrado + onda)
-- [ ] Volver a entrar con el ratón durante cualquier fase de la retracción saca la píldora de nuevo sin estados a medias
+- [x] Al pasar el ratón por la barra, la píldora queda centrada sobre ella (arriba y abajo, en las esquinas y al centro)
+- [x] La aparición se anima (deslizamiento + crecimiento desde la barra) y no parpadea
+- [x] Al esconderse, el micrófono se come la onda y la gota que queda se derrama hacia el borde y se asienta como barra con un pequeño rebote
+- [x] Al empezar a grabar, el ■ de parar aparece con una transformación moderna (punto → cuadrado + onda)
+- [x] Volver a entrar con el ratón durante cualquier fase de la retracción saca la píldora de nuevo sin estados a medias
 
 ## Bitácora
 
