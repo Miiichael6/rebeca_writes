@@ -54,3 +54,10 @@ export function useLanguageChoice(uiLanguage: string, autoLabel: string): Choice
   )
   return { value: language, options, onChange: settings.setLanguage }
 }
+
+/** Filtro de voz: whisper solo transcribe los tramos con voz. */
+export function useVadChoice(): { value: boolean; toggle: () => void } {
+  const { settings } = usePorts()
+  const { vad } = settings.useChoice()
+  return { value: vad, toggle: () => settings.setVad(!vad) }
+}

@@ -1,11 +1,12 @@
-import { FolderOpen, HardDrive, Mic, Trash2 } from 'lucide-react'
+import { FileAudio, FolderOpen, HardDrive, Mic, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatBytes } from '@renderer/lib/format'
+import { RECORDING_FORMATS, type RecordingFormat } from '@shared/recording'
 import { usePorts } from '../application/ports'
 import { useModelsDir } from '../application/useModelsDir'
 import { usePreviewCache } from '../application/usePreviewCache'
 import { useRecordingsDir } from '../application/useRecordingsDir'
-import { Button, NumberInput, SettingRow } from '../../../ui'
+import { Button, NumberInput, Select, SettingRow } from '../../../ui'
 
 /** Almacenamiento: carpetas de modelos y de grabaciones, y caché de vistas previas (H.264 para códecs no nativos). */
 export function StorageSettings(): React.JSX.Element {
@@ -14,6 +15,7 @@ export function StorageSettings(): React.JSX.Element {
   const limitGB = settings.useCacheLimitGB()
   const modelsDir = useModelsDir()
   const recordingsDir = useRecordingsDir()
+  const recordingFormat = settings.useRecordingFormat()
   const cache = usePreviewCache(() => notify.notify(t('settings.previewCacheCleared')))
 
   return (
@@ -32,6 +34,21 @@ export function StorageSettings(): React.JSX.Element {
       >
         <Button onClick={recordingsDir.pick}>{t('settings.changeFolder')}</Button>
         <Button onClick={recordingsDir.open}>{t('settings.openFolder')}</Button>
+      </SettingRow>
+      <SettingRow
+        icon={<FileAudio size={20} strokeWidth={1.5} />}
+        title={t('settings.recordingFormat')}
+        description={t('settings.recordingFormatDescription')}
+      >
+        <Select<RecordingFormat>
+          aria-label={t('settings.recordingFormat')}
+          value={recordingFormat}
+          onChange={settings.setRecordingFormat}
+          options={RECORDING_FORMATS.map((value) => ({
+            value,
+            label: t(`settings.recordingFormats.${value}`)
+          }))}
+        />
       </SettingRow>
       <SettingRow
         icon={<HardDrive size={20} strokeWidth={1.5} />}

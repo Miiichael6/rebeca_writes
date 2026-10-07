@@ -1,6 +1,6 @@
 import { DOCK_POSITIONS } from '@shared/dock'
 import { SUPPORTED_UI_LANGUAGES } from '@shared/i18n'
-import { RECORDING_SOURCES } from '@shared/recording'
+import { RECORDING_FORMATS, RECORDING_SOURCES } from '@shared/recording'
 import {
   SETTINGS_VERSION,
   VIDEO_HEIGHT_MAX,
@@ -11,7 +11,7 @@ import {
 } from '@shared/settings'
 import { normalizeShortcut } from '@shared/shortcut'
 import type { Backend } from '@shared/types'
-import { BACKEND_ORDER } from '@shared/whisper'
+import { BACKEND_ORDER, WHISPER_LANGUAGES } from '@shared/whisper'
 import { isRecord } from './guards'
 
 /** Reglas de `settings.json`: validación, mezcla de cambios parciales y migración de versiones. */
@@ -51,6 +51,12 @@ const shortcutOrNull: Validator<string | null> = (v) =>
 const backendList: Validator<Backend[]> = (v) =>
   Array.isArray(v) ? BACKEND_ORDER.filter((b) => v.includes(b)) : undefined
 
+/** Códigos de idioma de whisper sin repetidos, en el orden dado; lo desconocido se descarta. */
+const languageList: Validator<string[]> = (v) =>
+  Array.isArray(v)
+    ? [...new Set(v)].filter((l): l is string => WHISPER_LANGUAGES.includes(l as string))
+    : undefined
+
 type FlatKey = Exclude<keyof Settings, 'version' | 'queue' | 'window'>
 
 function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> } {
@@ -61,7 +67,9 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     cudaOffered: bool,
     model: text(200),
     language: text(20),
-    translate: bool,
+    favoriteLanguages: languageList,
+    // Ya no se ofrece traducir al inglés: un `true` guardado de antes se lee como `false`.
+    translate: () => false,
     joinLines: bool,
     autoScroll: bool,
     promptEnabled: bool,
@@ -80,6 +88,7 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     recordingSource: oneOf(RECORDING_SOURCES),
     recordingMicId: text(1000),
     recordingsDir: text(1000),
+    recordingFormat: oneOf(RECORDING_FORMATS),
     recordShortcut: shortcutOrNull,
     suggestMeetingRecording: bool,
     detectSpeakers: bool,

@@ -19,6 +19,15 @@ describe('createDefaultSettings', () => {
 })
 
 describe('mergeSettings', () => {
+  it('favoritos: solo idiomas de whisper, sin repetidos y en su orden', () => {
+    const next = mergeSettings(defaults, { favoriteLanguages: ['fr', 'xx', 'es', 'fr', 3] }, CPUS)
+    expect(next.favoriteLanguages).toEqual(['fr', 'es'])
+  })
+
+  it('traducir al inglés ya no se ofrece: un true guardado se lee como false', () => {
+    expect(mergeSettings(defaults, { translate: true }, CPUS).translate).toBe(false)
+  })
+
   it('aplica los valores válidos', () => {
     const next = mergeSettings(defaults, { theme: 'dark', model: 'large-v3', maxLen: 42 }, CPUS)
     expect(next).toMatchObject({ theme: 'dark', model: 'large-v3', maxLen: 42 })
@@ -125,8 +134,8 @@ describe('JsonSettingsRepository', () => {
 
   it('updates simultáneos no se pisan', async () => {
     const store = new JsonSettingsRepository({ path, cpuCount: CPUS })
-    await Promise.all([store.update({ theme: 'dark' }), store.update({ translate: true })])
-    expect(store.get()).toMatchObject({ theme: 'dark', translate: true })
+    await Promise.all([store.update({ theme: 'dark' }), store.update({ joinLines: false })])
+    expect(store.get()).toMatchObject({ theme: 'dark', joinLines: false })
   })
 
   it('un settings.json corrupto se respalda y arranca con defaults', async () => {

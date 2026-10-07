@@ -23,12 +23,14 @@ export const storePorts: ToolbarPorts = {
         useShallow((s) => ({
           model: s.settings.model,
           language: s.settings.language,
-          translate: s.settings.translate
+          favoriteLanguages: s.settings.favoriteLanguages,
+          vad: s.settings.vad
         }))
       ),
     setModel: (model) => updateSettings({ model }),
     setLanguage: (language) => updateSettings({ language }),
-    setTranslate: (translate) => updateSettings({ translate })
+    setFavoriteLanguages: (favoriteLanguages) => updateSettings({ favoriteLanguages }),
+    setVad: (vad) => updateSettings({ vad })
   },
   models: {
     useDownloaded: () => useModelsStore(useShallow(selectDownloaded)),

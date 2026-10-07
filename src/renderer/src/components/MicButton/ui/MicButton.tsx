@@ -39,7 +39,6 @@ function menuItems(
     ...item,
     key: `mic:${item.key}`,
     checked: item.key === action.micId,
-    keepOpen: true,
     onSelect: () => action.chooseMic(item.key)
   }))
   const microphone: MenuItem = {

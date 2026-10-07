@@ -1,11 +1,11 @@
 /**
  * El archivo final de una grabación (tarea 29): nombre válido en Windows a partir del nombre de
- * la entrada, sin pisar uno que ya exista, y la conversión del `.pcm` en vivo a MP3.
+ * la entrada, sin pisar uno que ya exista, y la conversión del `.pcm` en vivo a MP3 o WAV.
  */
 
+import type { RecordingFormat } from '@shared/recording'
 import { BYTES_PER_SAMPLE, SAMPLE_RATE } from '../liveWindows'
 
-export const RECORDING_EXTENSION = '.mp3'
 /** Calidad VBR de LAME: ~165 kb/s, de sobra para voz y lo que suena en el equipo. */
 const MP3_QUALITY = '4'
 const FALLBACK_NAME = 'recording'
@@ -23,14 +23,22 @@ export function recordingFileName(name: string): string {
 }
 
 /** `nombre.mp3`, y si ya existe `nombre (2).mp3`, `nombre (3).mp3`... */
-export function numberedFileName(base: string, attempt: number): string {
-  return attempt <= 1
-    ? `${base}${RECORDING_EXTENSION}`
-    : `${base} (${attempt})${RECORDING_EXTENSION}`
+export function numberedFileName(base: string, attempt: number, format: RecordingFormat): string {
+  return attempt <= 1 ? `${base}.${format}` : `${base} (${attempt}).${format}`
 }
 
-/** Argumentos de ffmpeg para pasar el `.pcm` (s16le, 16 kHz, mono, sin cabecera) a MP3. */
-export function mp3Args(pcm: string, out: string): string[] {
+/** Códec de salida: LAME para MP3; para WAV, las mismas muestras del `.pcm` con cabecera. */
+function codecArgs(format: RecordingFormat): string[] {
+  switch (format) {
+    case 'mp3':
+      return ['-c:a', 'libmp3lame', '-q:a', MP3_QUALITY]
+    case 'wav':
+      return ['-c:a', `pcm_s${BYTES_PER_SAMPLE * 8}le`]
+  }
+}
+
+/** Argumentos de ffmpeg para pasar el `.pcm` (s16le, 16 kHz, mono, sin cabecera) a `format`. */
+export function encodeArgs(pcm: string, out: string, format: RecordingFormat): string[] {
   return [
     '-y',
     '-hide_banner',
@@ -42,10 +50,7 @@ export function mp3Args(pcm: string, out: string): string[] {
     '1',
     '-i',
     pcm,
-    '-c:a',
-    'libmp3lame',
-    '-q:a',
-    MP3_QUALITY,
+    ...codecArgs(format),
     out
   ]
 }

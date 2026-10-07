@@ -8,6 +8,12 @@ export type RecordingSource = (typeof RECORDING_SOURCES)[number]
 
 export const DEFAULT_RECORDING_SOURCE: RecordingSource = 'voice'
 
+/** Formato del archivo final: MP3 (pequeño) o WAV (sin pérdida, 16 kHz mono como el `.pcm`). */
+export const RECORDING_FORMATS = ['mp3', 'wav'] as const
+export type RecordingFormat = (typeof RECORDING_FORMATS)[number]
+
+export const DEFAULT_RECORDING_FORMAT: RecordingFormat = 'mp3'
+
 /**
  * Estado de la grabación para el renderer. `startedAt` es la hora del main en ms;
  * `interrupted` dice que la última grabación se cortó sola (dispositivo perdido).
@@ -49,7 +55,7 @@ export function sourceDevices(source: RecordingSource): MonitorLevel['device'][]
 
 const pad = (n: number): string => String(n).padStart(2, '0')
 
-/** `AAAA-MM-DD HH-mm` en hora local: va en el nombre de la entrada y del MP3 (sin `:`). */
+/** `AAAA-MM-DD HH-mm` en hora local: va en el nombre de la entrada y del archivo (sin `:`). */
 export function recordingStamp(date: Date): string {
   const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
   return `${day} ${pad(date.getHours())}-${pad(date.getMinutes())}`

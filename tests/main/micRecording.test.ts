@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { IpcChannel } from '@shared/ipc'
+import type { RecordingFormat } from '@shared/recording'
 import { LiveBusyError, type LiveOrigin } from '../../src/main/application/liveControl'
 import { MicRecording, type MicRecordingDeps } from '../../src/main/application/micRecording'
 import type { CaptureStream } from '../../src/main/application/ports/audioCapture'
@@ -35,7 +36,12 @@ const USB_MIC: AudioDevice = {
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- el tipo inferido conserva los `vi.fn`
 function setup(
-  options: { recordingOrigin?: LiveOrigin | null; liveBusy?: boolean; micId?: string } = {}
+  options: {
+    recordingOrigin?: LiveOrigin | null
+    liveBusy?: boolean
+    micId?: string
+    format?: RecordingFormat
+  } = {}
 ) {
   const stream = new FakeStream()
   const written: Buffer[] = []
@@ -51,10 +57,12 @@ function setup(
         path: 'C:\\tmp\\rec.pcm',
         writer: { append: (chunk: Buffer) => written.push(chunk), close: vi.fn(async () => {}) }
       })),
-      freeRecordingPath: vi.fn(async (dir: string, name: string) => `${dir}\\${name}.mp3`),
+      freeRecordingPath: vi.fn(
+        async (dir: string, name: string, format: RecordingFormat) => `${dir}\\${name}.${format}`
+      ),
       remove: vi.fn(async () => {})
     },
-    encoder: { pcmToMp3: vi.fn(async () => {}) },
+    encoder: { encode: vi.fn(async () => {}) },
     live: {
       handle: vi.fn(async (command: LiveCommand) => {
         if (options.liveBusy && command.kind === 'start') throw new LiveBusyError('listen')
@@ -63,6 +71,7 @@ function setup(
       recordingOrigin: () => options.recordingOrigin ?? null
     },
     recordingsDir: () => 'D:\\Grabaciones',
+    format: () => options.format ?? 'mp3',
     micId: () => options.micId ?? '',
     publisher: { publish: vi.fn() },
     log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
@@ -82,9 +91,10 @@ describe('MicRecording', () => {
 
     expect(written.reduce((sum, chunk) => sum + chunk.length, 0)).toBe(3200)
     expect(stream.stopped).toBe(true)
-    expect(deps.encoder.pcmToMp3).toHaveBeenCalledWith(
+    expect(deps.encoder.encode).toHaveBeenCalledWith(
       'C:\\tmp\\rec.pcm',
-      'D:\\Grabaciones\\Grabación 1.mp3'
+      'D:\\Grabaciones\\Grabación 1.mp3',
+      'mp3'
     )
     expect(commands[1]).toEqual({
       kind: 'end',
@@ -92,6 +102,18 @@ describe('MicRecording', () => {
       media: 'D:\\Grabaciones\\Grabación 1.mp3'
     })
     expect(mic.state()).toEqual({ recording: false })
+  })
+
+  it('en WAV guarda la grabación como .wav', async () => {
+    const { mic, deps, commands } = setup({ format: 'wav' })
+    await mic.start('voice', 'Nota')
+    await mic.stop()
+    expect(deps.encoder.encode).toHaveBeenCalledWith(
+      'C:\\tmp\\rec.pcm',
+      'D:\\Grabaciones\\Nota.wav',
+      'wav'
+    )
+    expect(commands.at(-1)).toMatchObject({ kind: 'end', media: 'D:\\Grabaciones\\Nota.wav' })
   })
 
   it('no empieza mientras graba Listen, y no llega a abrir el dispositivo', async () => {
@@ -140,9 +162,9 @@ describe('MicRecording', () => {
     })
   })
 
-  it('si falla el MP3, la sesión se cierra sin medio', async () => {
+  it('si falla la conversión, la sesión se cierra sin medio', async () => {
     const { mic, deps, commands } = setup()
-    deps.encoder.pcmToMp3.mockRejectedValueOnce(new Error('ffmpeg'))
+    deps.encoder.encode.mockRejectedValueOnce(new Error('ffmpeg'))
     await mic.start('voice', 'x')
     await mic.stop()
     expect(commands.at(-1)).toEqual({ kind: 'end', pcm: 'C:\\tmp\\rec.pcm', media: null })

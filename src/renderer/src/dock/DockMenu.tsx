@@ -56,6 +56,8 @@ export function DockMenu(): React.JSX.Element {
           label: t(`mic.sources.${option}`),
           icon: SOURCE_ICONS[option],
           checked: option === source,
+          // Empieza a grabar y el main oculta la ventana del menú: no tiene sentido dejarlo abierto.
+          keepOpen: false,
           onSelect: () => choose({ kind: 'record', source: option, name: recordingName(option) })
         }))
       }

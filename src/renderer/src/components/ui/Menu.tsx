@@ -19,7 +19,10 @@ export interface MenuItem {
   key?: string
   /** Sin efecto en un ítem con `submenu`. */
   onSelect?: () => void
-  /** Elegirlo no cierra el menú (p. ej. opciones que se ven cambiar en el propio menú). */
+  /**
+   * Elegirlo no cierra el menú (p. ej. opciones que se ven cambiar en el propio menú). Por defecto
+   * `true` dentro de un submenú (elegir ahí nunca cierra nada) y `false` en el primer nivel.
+   */
   keepOpen?: boolean
   /** Dibuja una línea separadora encima del ítem. */
   separator?: boolean
@@ -29,12 +32,34 @@ export interface MenuItem {
   checked?: boolean
   /** Icono a la izquierda del texto. */
   icon?: LucideIcon
+  /** Interruptor al final de la fila: el ítem se activa y desactiva (p. ej. el filtro de voz). */
+  toggled?: boolean
   /** Texto atenuado a la derecha (p. ej. lo elegido en el submenú). */
   hint?: string
+  /** Aclaración en letra pequeña debajo del texto. */
+  description?: string
   /** Fila informativa en vez de un botón (p. ej. un medidor); no se puede elegir con el teclado. */
   content?: React.ReactNode
   /** Ítems de un flyout lateral; se abre al pasar el puntero, con clic o con →. */
   submenu?: MenuItem[]
+  /**
+   * Fila que entra o sale con animación de alto (empuja suave a las de abajo); `idle` la deja
+   * quieta pero en el mismo envoltorio, para que al pasar de un estado a otro no se remonte.
+   */
+  motion?: MenuItemMotion
+  /** Botón de icono al final de la fila (p. ej. la estrella de favorito); no cierra el menú. */
+  action?: MenuItemAction
+}
+
+export type MenuItemMotion = 'idle' | 'enter' | 'exit'
+
+export interface MenuItemAction {
+  icon: LucideIcon
+  /** Nombre accesible y tooltip. */
+  label: string
+  /** Activado: el icono se ve siempre y relleno; si no, solo al pasar el puntero. */
+  active: boolean
+  onToggle: () => void
 }
 
 export interface MenuProps {
@@ -63,7 +88,9 @@ const SUBMENU_FOLD_MS = 300
 
 /** Los botones de este nivel del menú, sin los de un submenú abierto. */
 function levelButtons(menu: HTMLElement | null): HTMLButtonElement[] {
-  const selector = ':scope > button, :scope > .menu-sub > button'
+  const row = ':scope > .menu-row > .menu-item'
+  const animated = ':scope > .menu-motion:not(.menu-motion-exit) > .menu-row > .menu-item'
+  const selector = `:scope > button, :scope > .menu-sub > button, ${row}, ${animated}`
   return [...(menu?.querySelectorAll<HTMLButtonElement>(selector) ?? [])]
 }
 
@@ -94,8 +121,16 @@ function ItemContent({
       ) : (
         withIcons && <span className="menu-item-icon" />
       )}
-      <span className="menu-item-label">{item.label}</span>
+      {item.description ? (
+        <span className="menu-item-label menu-item-text">
+          <span>{item.label}</span>
+          <span className="menu-item-description">{item.description}</span>
+        </span>
+      ) : (
+        <span className="menu-item-label">{item.label}</span>
+      )}
       {item.hint && <span className="menu-item-hint">{item.hint}</span>}
+      {item.toggled !== undefined && <span className="menu-item-switch" aria-hidden="true" />}
     </>
   )
 }
@@ -108,6 +143,8 @@ interface ItemsProps {
   setOpenSub?: (key: string | null) => void
   /** Como `setOpenSub`, pero al pasar el puntero: plegar espera un poco por si vuelve. */
   hoverSub?: (key: string | null) => void
+  /** Ítems de un flyout: elegir uno no cierra el menú salvo `keepOpen: false`. */
+  inSubmenu?: boolean
 }
 
 function MenuItems({
@@ -115,47 +152,126 @@ function MenuItems({
   onClose,
   openSub,
   setOpenSub,
-  hoverSub
+  hoverSub,
+  inSubmenu = false
 }: ItemsProps): React.JSX.Element {
   const withIcons = items.some((item) => item.icon)
   return (
     <>
-      {items.map((item) => (
-        <Fragment key={itemKey(item)}>
-          {item.separator && <div className="menu-separator" role="separator" />}
-          {item.heading && <div className="menu-heading">{item.heading}</div>}
-          {item.content ? (
-            <div className="menu-content" aria-label={item.label}>
-              {item.content}
-            </div>
-          ) : item.submenu && setOpenSub ? (
-            <SubmenuItem
-              item={item}
-              submenu={item.submenu}
-              open={openSub === itemKey(item)}
-              setOpen={(open) => setOpenSub(open ? itemKey(item) : null)}
-              onHover={() => hoverSub?.(itemKey(item))}
-              onClose={onClose}
-              withIcons={withIcons}
-            />
-          ) : (
-            <button
-              type="button"
-              role={item.checked === undefined ? 'menuitem' : 'menuitemradio'}
-              aria-checked={item.checked}
-              className={item.checked ? 'menu-item menu-item-checked' : 'menu-item'}
-              onMouseEnter={() => hoverSub?.(null)}
-              onClick={() => {
-                if (!item.keepOpen) onClose()
-                item.onSelect?.()
-              }}
-            >
-              <ItemContent item={item} withIcons={withIcons} />
-            </button>
-          )}
-        </Fragment>
-      ))}
+      {items.map((item) => {
+        const body = (
+          <>
+            {item.separator && <div className="menu-separator" role="separator" />}
+            {item.heading && <div className="menu-heading">{item.heading}</div>}
+            {item.content ? (
+              <div className="menu-content" aria-label={item.label}>
+                {item.content}
+              </div>
+            ) : item.submenu && setOpenSub ? (
+              <SubmenuItem
+                item={item}
+                submenu={item.submenu}
+                open={openSub === itemKey(item)}
+                setOpen={(open) => setOpenSub(open ? itemKey(item) : null)}
+                onHover={() => hoverSub?.(itemKey(item))}
+                onClose={onClose}
+                withIcons={withIcons}
+              />
+            ) : item.action ? (
+              <div className="menu-row" onMouseEnter={() => hoverSub?.(null)}>
+                <PlainItem
+                  item={item}
+                  onClose={onClose}
+                  withIcons={withIcons}
+                  inSubmenu={inSubmenu}
+                />
+                <ActionButton action={item.action} />
+              </div>
+            ) : (
+              <PlainItem
+                item={item}
+                onClose={onClose}
+                withIcons={withIcons}
+                inSubmenu={inSubmenu}
+                onMouseEnter={() => hoverSub?.(null)}
+              />
+            )}
+          </>
+        )
+        return item.motion ? (
+          <div key={itemKey(item)} className={`menu-motion menu-motion-${item.motion}`}>
+            {body}
+          </div>
+        ) : (
+          <Fragment key={itemKey(item)}>{body}</Fragment>
+        )
+      })}
     </>
+  )
+}
+
+function PlainItem({
+  item,
+  onClose,
+  withIcons,
+  inSubmenu,
+  onMouseEnter
+}: {
+  item: MenuItem
+  onClose: () => void
+  withIcons: boolean
+  inSubmenu: boolean
+  onMouseEnter?: () => void
+}): React.JSX.Element {
+  const classes = [
+    'menu-item',
+    item.checked && 'menu-item-checked',
+    item.description && 'menu-item-described'
+  ]
+  const role =
+    item.toggled !== undefined
+      ? 'menuitemcheckbox'
+      : item.checked === undefined
+        ? 'menuitem'
+        : 'menuitemradio'
+  return (
+    <button
+      type="button"
+      role={role}
+      aria-checked={item.toggled ?? item.checked}
+      className={classes.filter(Boolean).join(' ')}
+      onMouseEnter={onMouseEnter}
+      onClick={() => {
+        if (!(item.keepOpen ?? inSubmenu)) onClose()
+        item.onSelect?.()
+      }}
+      // `*` alterna la acción de la fila (la estrella) sin dejar el teclado.
+      onKeyDown={(e) => {
+        if (e.key !== '*' || !item.action) return
+        e.preventDefault()
+        item.action.onToggle()
+      }}
+    >
+      <ItemContent item={item} withIcons={withIcons} />
+    </button>
+  )
+}
+
+/** Icono al final de la fila. Fuera del recorrido con ↑ ↓: desde el ítem se alterna con `*`. */
+function ActionButton({ action }: { action: MenuItemAction }): React.JSX.Element {
+  const Icon = action.icon
+  return (
+    <button
+      type="button"
+      tabIndex={-1}
+      className={action.active ? 'menu-row-action active' : 'menu-row-action'}
+      aria-label={action.label}
+      aria-pressed={action.active}
+      title={action.label}
+      onClick={action.onToggle}
+    >
+      <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
+    </button>
   )
 }
 
@@ -186,13 +302,18 @@ function SubmenuItem({
   const trigger = useRef<HTMLButtonElement>(null)
   // Abierto con el teclado: al montarse el flyout, el foco entra en él.
   const focusInside = useRef(false)
-  useShowPopover(ref, open)
+  const { mounted, state } = useMountTransition(open, MOTION_FAST)
+  useShowPopover(ref, mounted)
 
   useEffect(() => {
-    if (!open || !focusInside.current) return
-    focusInside.current = false
+    if (!open) return
     const buttons = levelButtons(ref.current)
-    ;(buttons.find((b) => b.getAttribute('aria-checked') === 'true') ?? buttons[0])?.focus()
+    const checked = buttons.find((b) => b.getAttribute('aria-checked') === 'true')
+    // Un submenú largo (p. ej. los idiomas) se abre mostrando la opción elegida.
+    checked?.scrollIntoView({ block: 'center' })
+    if (!focusInside.current) return
+    focusInside.current = false
+    ;(checked ?? buttons[0])?.focus({ preventScroll: true })
   }, [open])
 
   const openWithFocus = (): void => {
@@ -230,16 +351,16 @@ function SubmenuItem({
         <ItemContent item={item} withIcons={withIcons} />
         <ChevronRight size={14} strokeWidth={1.5} className="menu-item-chevron" />
       </button>
-      {open && (
+      {mounted && (
         <div
           ref={ref}
-          className="menu menu-submenu"
+          className={`menu menu-submenu ${state}`}
           popover="manual"
           role="menu"
           aria-label={item.label}
           onKeyDown={onKeyDown}
         >
-          <MenuItems items={submenu} onClose={onClose} />
+          <MenuItems items={submenu} onClose={onClose} inSubmenu />
         </div>
       )}
     </div>

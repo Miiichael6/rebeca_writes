@@ -74,11 +74,17 @@
     "older": "Older"
   },
   "toolbar": {
+    "addFavorite": "Add to favorites (*)",
+    "removeFavorite": "Remove from favorites (*)",
+    "modelItem": "Whisper model",
+    "languageItem": "Language",
+    "choiceMenu": "Model and language",
+    "detectVoice": "Detect voice",
+    "detectVoiceHint": "May make transcription take a bit longer",
     "model": "Whisper model:",
     "moreModels": "Download more models...",
     "language": "Language:",
     "autoDetect": "Detect automatically",
-    "translate": "Translate to English",
     "hideVideo": "Hide video panel",
     "showVideo": "Show video panel",
     "showTranscript": "Show transcript window",
@@ -285,6 +291,12 @@
     "showLicense": "View license",
     "recordingsFolder": "Recordings folder",
     "changeFolder": "Change…",
+    "recordingFormat": "Recording format",
+    "recordingFormatDescription": "How each recording is saved when it stops. WAV is lossless but takes about 4 times more space.",
+    "recordingFormats": {
+      "mp3": "MP3 (smaller)",
+      "wav": "WAV (lossless)"
+    },
     "recording": "Recording",
     "recordShortcut": "Recording shortcut",
     "recordShortcutDescription": "Works even with the app in the background. Hold it to record until you let go; press it twice in a row (e.g. Ctrl+Win, Win) to record hands-free until you press it again or stop it from the dock.",

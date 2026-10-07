@@ -54,7 +54,8 @@ export async function startTranscription(): Promise<void> {
     filePath: media.filePath,
     model: s.model,
     language: s.language,
-    translate: s.translate,
+    // Ya no se ofrece traducir al inglés: se transcribe siempre en el idioma original.
+    translate: false,
     historyId: entry.id,
     options: transcribeOptionsFrom(s)
   }

@@ -417,30 +417,105 @@
   padding: var(--space-2) 12px 0 12px;
 }
 
-.toolbar-field {
+/* Modelo e idioma: un botón con el resumen que abre su menú (con un submenú para cada uno). */
+.choice-trigger {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
+  height: var(--control-height);
+  max-width: 340px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-bottom-color: var(--border-bottom);
+  border-radius: var(--radius-sm);
+  background: var(--bg-control);
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease),
+    opacity var(--duration) var(--ease);
 }
 
-.toolbar-field label {
-  white-space: nowrap;
+.choice-trigger:hover {
+  background: var(--bg-control-hover);
+}
+
+.choice-trigger:active,
+.choice-trigger[aria-expanded='true'] {
+  background: var(--bg-control-pressed);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.choice-trigger:focus-visible {
+  outline: 2px solid var(--text-1);
+  outline-offset: 1px;
+}
+
+.choice-trigger:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.choice-trigger-icon {
+  flex: none;
+  color: var(--accent);
+}
+
+.choice-trigger-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* `key` cambia con lo elegido: el texto nuevo entra con un fundido corto. */
+  animation: choice-value-in var(--duration-slow) var(--ease);
+}
+
+.choice-trigger-model {
+  font-weight: 600;
+}
+
+.choice-trigger-dot {
+  color: var(--text-3);
+}
+
+.choice-trigger-chevron {
+  flex: none;
+  margin-left: var(--space-1);
   color: var(--text-2);
-  font-size: 13px;
+  transition: transform var(--duration-slow) var(--ease-spring);
 }
 
-/* Anchos fijos: si no, el botón del Select cambia de tamaño con cada opción elegida. */
-#toolbar-model {
-  width: 136px;
+.choice-trigger[aria-expanded='true'] .choice-trigger-chevron {
+  transform: rotate(180deg);
 }
 
-#toolbar-language {
-  width: 196px;
+@keyframes choice-value-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
 }
 
-.toolbar-translate {
-  margin-left: 4px;
-  white-space: nowrap;
+/* El menú de modelo e idioma: más aire y transición más larga que un menú contextual. */
+.choice-anchor > .menu {
+  min-width: 280px;
+}
+
+.choice-anchor > .menu.entering {
+  animation: choice-menu-in var(--duration-slow) var(--ease);
+}
+
+.choice-anchor > .menu.exiting {
+  animation: menu-out var(--duration) var(--ease-out) forwards;
+}
+
+@keyframes choice-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
 }
 
 .toolbar .spacer {
@@ -547,17 +622,6 @@
 @media (prefers-reduced-motion: reduce) {
   .mic-wave > span {
     transition: none;
-  }
-}
-
-/* En ventanas angostas las etiquetas de los combos se ocultan (siguen para lectores de pantalla). */
-@container main (max-width: 880px) {
-  .toolbar-field label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
   }
 }
 

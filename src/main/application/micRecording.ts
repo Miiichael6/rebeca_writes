@@ -5,6 +5,7 @@ import {
   type MicStartResult,
   type MicState,
   type MonitorLevel,
+  type RecordingFormat,
   type RecordingSource
 } from '@shared/recording'
 import { LevelMeter } from '../domain/capture/levelMeter'
@@ -24,6 +25,8 @@ export interface MicRecordingDeps {
   live: Pick<LiveControl, 'handle' | 'recordingOrigin'>
   /** Carpeta de las grabaciones finales, según Configuración. */
   recordingsDir: () => string
+  /** Formato del archivo final, según Configuración; se fija al empezar cada grabación. */
+  format: () => RecordingFormat
   /** Micrófono elegido en el menú; vacío = el predeterminado de Windows. */
   micId: () => string
   publisher: EventPublisher
@@ -33,6 +36,7 @@ export interface MicRecordingDeps {
 interface Recording {
   source: RecordingSource
   name: string
+  format: RecordingFormat
   startedAt: number
   stream: CaptureStream
   pcm: string
@@ -42,7 +46,7 @@ interface Recording {
 
 /**
  * Grabar desde la app (tarea 29). Escribe el `.pcm` que transcribe la sesión en vivo de la
- * tarea 27, igual que haría Rebecca Listen, y al parar lo deja como MP3 en la carpeta de
+ * tarea 27, igual que haría Rebecca Listen, y al parar lo deja como MP3 o WAV en la carpeta de
  * grabaciones. Las órdenes van de una en una: un "parar" pulsado mientras arranca espera.
  */
 export class MicRecording {
@@ -150,7 +154,16 @@ export class MicRecording {
       const { path: pcm, writer } = await this.deps.files.createPcm()
       const converter = new Pcm16kConverter(stream.sampleRate, stream.channels)
       const meter = new LevelMeter(stream.sampleRate, stream.channels)
-      const recording = { source, name, startedAt: Date.now(), stream, pcm, writer, converter }
+      const recording = {
+        source,
+        name,
+        format: this.deps.format(),
+        startedAt: Date.now(),
+        stream,
+        pcm,
+        writer,
+        converter
+      }
       if (source === 'both') ownVoice = new OwnVoiceTimeline(stream.sampleRate, stream.channels)
       stream.onData((samples) => {
         writer.append(converter.convert(samples))
@@ -225,19 +238,20 @@ export class MicRecording {
     await recording.stream.stop().catch(() => {})
     recording.writer.append(recording.converter.flush())
     await recording.writer.close()
-    const media = await this.saveMp3(recording)
+    const media = await this.save(recording)
     await this.deps.live.handle({ kind: 'end', pcm: recording.pcm, media }, 'mic')
   }
 
   /** La grabación final, o `null` si no se pudo convertir (la entrada queda sin medio). */
-  private async saveMp3(recording: Recording): Promise<string | null> {
+  private async save(recording: Recording): Promise<string | null> {
+    const { name, format, pcm } = recording
     try {
-      const out = await this.deps.files.freeRecordingPath(this.deps.recordingsDir(), recording.name)
-      await this.deps.encoder.pcmToMp3(recording.pcm, out)
+      const out = await this.deps.files.freeRecordingPath(this.deps.recordingsDir(), name, format)
+      await this.deps.encoder.encode(pcm, out, format)
       this.deps.log.info(`Micrófono: grabación guardada en ${out}`)
       return out
     } catch (err) {
-      this.deps.log.error('Micrófono: no se pudo guardar el MP3', err)
+      this.deps.log.error('Micrófono: no se pudo guardar la grabación', err)
       return null
     }
   }

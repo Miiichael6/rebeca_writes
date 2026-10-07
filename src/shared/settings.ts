@@ -1,6 +1,11 @@
 import { DEFAULT_DOCK_POSITION, type DockPosition } from './dock'
 import type { UiLanguageSetting } from './i18n'
-import { DEFAULT_RECORDING_SOURCE, type RecordingSource } from './recording'
+import {
+  DEFAULT_RECORDING_FORMAT,
+  DEFAULT_RECORDING_SOURCE,
+  type RecordingFormat,
+  type RecordingSource
+} from './recording'
 import { DEFAULT_RECORD_SHORTCUT } from './shortcut'
 import type { ThemeMode } from './theme'
 import type { Backend, TranscribeOptions } from './types'
@@ -50,6 +55,8 @@ export interface Settings {
   model: string
   /** Código de `WHISPER_LANGUAGES` o `AUTO_LANGUAGE`. */
   language: string
+  /** Idiomas marcados con estrella: van arriba del menú de idiomas, en el orden en que se marcaron. */
+  favoriteLanguages: string[]
   translate: boolean
   joinLines: boolean
   autoScroll: boolean
@@ -83,8 +90,10 @@ export interface Settings {
   recordingSource: RecordingSource
   /** Micrófono para Mi voz y Ambos; vacío = el predeterminado de Windows. */
   recordingMicId: string
-  /** Carpeta de los MP3 grabados; vacío = `Documentos\RebeccaWrites\Grabaciones`. */
+  /** Carpeta de las grabaciones; vacío = `Documentos\RebeccaWrites\Grabaciones`. */
   recordingsDir: string
+  /** Formato en que se guarda cada grabación al parar. */
+  recordingFormat: RecordingFormat
   /** Atajo global para grabar (tarea 31), como `Ctrl+Super`; `null` = desactivado. */
   recordShortcut: string | null
   /** El dock pregunta si grabar al empezar una llamada (tarea 32). */
@@ -134,6 +143,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     cudaOffered: false,
     model: 'small',
     language: AUTO_LANGUAGE,
+    favoriteLanguages: ['es', 'en', 'pt'],
     translate: false,
     joinLines: true,
     autoScroll: true,
@@ -153,6 +163,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     recordingSource: DEFAULT_RECORDING_SOURCE,
     recordingMicId: '',
     recordingsDir: '',
+    recordingFormat: DEFAULT_RECORDING_FORMAT,
     recordShortcut: DEFAULT_RECORD_SHORTCUT,
     suggestMeetingRecording: true,
     dockPosition: DEFAULT_DOCK_POSITION,

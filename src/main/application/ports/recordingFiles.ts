@@ -1,3 +1,5 @@
+import type { RecordingFormat } from '@shared/recording'
+
 /** El `.pcm` abierto mientras se graba. */
 export interface PcmWriter {
   append(chunk: Buffer): void
@@ -9,12 +11,12 @@ export interface PcmWriter {
 export interface RecordingFiles {
   /** Crea un `.pcm` vacío en la carpeta temporal y lo deja abierto para escribir. */
   createPcm(): Promise<{ path: string; writer: PcmWriter }>
-  /** Ruta libre para `<name>.mp3` en `dir` (creándola si no existe), sin pisar nada. */
-  freeRecordingPath(dir: string, name: string): Promise<string>
+  /** Ruta libre para `<name>.<format>` en `dir` (creándola si no existe), sin pisar nada. */
+  freeRecordingPath(dir: string, name: string, format: RecordingFormat): Promise<string>
   remove(path: string): Promise<void>
 }
 
 /** Puerto de salida: pasar el `.pcm` en vivo a la grabación final. */
 export interface RecordingEncoder {
-  pcmToMp3(pcm: string, out: string): Promise<void>
+  encode(pcm: string, out: string, format: RecordingFormat): Promise<void>
 }

@@ -521,12 +521,12 @@ export interface AppApi {
   }
   /**
    * Grabar desde la app (tarea 29): la grabación se transcribe como una sesión `live` y al
-   * parar queda como MP3 en la carpeta de grabaciones.
+   * parar queda como MP3 o WAV en la carpeta de grabaciones.
    */
   mic: {
     /** `name` es el de la entrada, ya traducido. */
     start: (source: RecordingSource, name: string) => Promise<MicStartResult>
-    /** Resuelve cuando el MP3 está guardado y la sesión recibió el fin. */
+    /** Resuelve cuando la grabación está guardada y la sesión recibió el fin. */
     stop: () => Promise<void>
     getState: () => Promise<MicState>
     /** Los micrófonos conectados ahora mismo. */
@@ -542,7 +542,7 @@ export interface AppApi {
      */
     startMonitor: (source: RecordingSource, micId: string) => Promise<void>
     stopMonitor: () => Promise<void>
-    /** Carpeta donde se guardan los MP3 (la de ajustes o la de por defecto). */
+    /** Carpeta donde se guardan las grabaciones (la de ajustes o la de por defecto). */
     getRecordingsDir: () => Promise<string>
     /** Diálogo para elegir otra carpeta; la guarda en ajustes. `null` si se cancela. */
     pickRecordingsDir: () => Promise<string | null>

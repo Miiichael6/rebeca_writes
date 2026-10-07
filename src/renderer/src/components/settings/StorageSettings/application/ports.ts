@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react'
+import type { RecordingFormat } from '@shared/recording'
 
 /** Puerto de salida: las carpetas de la app y la caché de vistas previas (H.264). */
 export interface StoragePort {
   getModelsDir(): Promise<string>
   openModelsDir(): Promise<void>
-  /** Carpeta de los MP3 grabados con el micrófono (tarea 29). */
+  /** Carpeta de las grabaciones del micrófono (tarea 29). */
   getRecordingsDir(): Promise<string>
   /** Diálogo para elegir otra; `null` si se cancela. */
   pickRecordingsDir(): Promise<string | null>
@@ -14,10 +15,12 @@ export interface StoragePort {
   clearPreviewCache(): Promise<void>
 }
 
-/** Puerto de salida: el límite de la caché, que se recuerda entre sesiones. */
+/** Puerto de salida: el límite de la caché y el formato de las grabaciones, que se recuerdan. */
 export interface SettingsPort {
   useCacheLimitGB(): number
   setCacheLimitGB(gb: number): void
+  useRecordingFormat(): RecordingFormat
+  setRecordingFormat(format: RecordingFormat): void
 }
 
 /** Puerto de salida: avisos al usuario. */

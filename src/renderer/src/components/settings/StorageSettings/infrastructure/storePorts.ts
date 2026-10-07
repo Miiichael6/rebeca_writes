@@ -18,7 +18,9 @@ export const storePorts: StorageSettingsPorts = {
   },
   settings: {
     useCacheLimitGB: () => useSettingsStore((s) => s.settings.previewCacheMaxGB),
-    setCacheLimitGB: (gb) => updateSettings({ previewCacheMaxGB: gb })
+    setCacheLimitGB: (gb) => updateSettings({ previewCacheMaxGB: gb }),
+    useRecordingFormat: () => useSettingsStore((s) => s.settings.recordingFormat),
+    setRecordingFormat: (format) => updateSettings({ recordingFormat: format })
   },
   notify: { notify: (message) => toast(message) }
 }

@@ -77,11 +77,17 @@
     "older": "Anteriores"
   },
   "toolbar": {
+    "addFavorite": "Marcar como favorito (*)",
+    "removeFavorite": "Quitar de favoritos (*)",
+    "modelItem": "Modelo Whisper",
+    "languageItem": "Idioma",
+    "choiceMenu": "Modelo e idioma",
+    "detectVoice": "Detectar voz",
+    "detectVoiceHint": "Puede alargar un poco la transcripción",
     "model": "Modelo Whisper:",
     "moreModels": "Descargar más modelos...",
     "language": "Idioma:",
     "autoDetect": "Detectar automáticamente",
-    "translate": "Traducir al inglés",
     "hideVideo": "Ocultar panel de video",
     "showVideo": "Mostrar panel de video",
     "showTranscript": "Mostrar ventana de transcripción",
@@ -294,6 +300,12 @@
     "showLicense": "Ver licencia",
     "recordingsFolder": "Carpeta de grabaciones",
     "changeFolder": "Cambiar…",
+    "recordingFormat": "Formato de grabación",
+    "recordingFormatDescription": "Cómo se guarda cada grabación al parar. WAV no pierde calidad pero ocupa unas 4 veces más.",
+    "recordingFormats": {
+      "mp3": "MP3 (más pequeño)",
+      "wav": "WAV (sin pérdida)"
+    },
     "recording": "Grabación",
     "recordShortcut": "Atajo para grabar",
     "recordShortcutDescription": "Funciona aunque la app esté en segundo plano. Mantenlo pulsado para grabar hasta que lo sueltes; púlsalo dos veces seguidas (p. ej. Ctrl+Win, Win) para grabar sin manos hasta volver a pulsarlo o pararlo en el dock.",

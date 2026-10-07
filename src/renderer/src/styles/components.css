@@ -937,6 +937,61 @@
   text-overflow: ellipsis;
 }
 
+/* Ítem con aclaración en letra pequeña debajo del texto. */
+.menu-item-described {
+  height: auto;
+  min-height: 34px;
+  padding-block: 6px;
+}
+
+.menu-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.menu-item-description {
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* Interruptor pequeño al final de un ítem que se activa y desactiva. */
+.menu-item-switch {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 16px;
+  margin-left: var(--space-3);
+  border: 1px solid var(--border-control-strong);
+  border-radius: var(--radius-round);
+  transition:
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.menu-item-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-2);
+  transition: transform var(--duration) var(--ease);
+}
+
+.menu-item[aria-checked='true'] .menu-item-switch {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.menu-item[aria-checked='true'] .menu-item-switch::after {
+  background: var(--on-accent);
+  transform: translateX(16px);
+}
+
 .menu-item-chevron {
   flex: none;
   margin-right: calc(-1 * var(--space-1));
@@ -961,7 +1016,158 @@
   left: anchor(right);
   margin: 0 0 0 calc(2 * var(--space-1));
   position-try-fallbacks: flip-inline, flip-block;
-  animation: menu-in var(--duration-fast) var(--ease);
+  /* Un submenú largo (los idiomas) se desplaza en vez de salirse de la ventana. */
+  max-height: min(360px, calc(100vh - 2 * var(--title-bar-height)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.menu.menu-submenu.entering {
+  animation: submenu-in var(--duration) var(--ease);
+}
+
+.menu.menu-submenu.exiting {
+  pointer-events: none;
+  animation: submenu-out var(--duration-fast) var(--ease-out) forwards;
+}
+
+.menu-item,
+.menu-item-hint {
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.menu-item-chevron {
+  transition: transform var(--duration) var(--ease);
+}
+
+.menu-item-sub[aria-expanded='true'] .menu-item-chevron {
+  transform: translateX(2px);
+}
+
+/* Fila con un botón al final (la estrella de favorito de los idiomas). */
+.menu-row {
+  position: relative;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+}
+
+.menu-row > .menu-item {
+  padding-right: 36px;
+}
+
+.menu-row-action {
+  position: absolute;
+  right: var(--space-1);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity var(--duration) var(--ease),
+    transform var(--duration) var(--ease-spring),
+    color var(--duration) var(--ease),
+    background var(--duration-fast) var(--ease);
+}
+
+.menu-row:hover > .menu-row-action,
+.menu-row:has(.menu-item:focus-visible) > .menu-row-action,
+.menu-row-action.active {
+  opacity: 1;
+  transform: none;
+}
+
+.menu-row-action:hover {
+  background: var(--bg-subtle-pressed);
+  color: var(--text-1);
+}
+
+.menu-row-action.active {
+  color: var(--accent);
+  animation: star-pop var(--duration-slow) var(--ease-spring);
+}
+
+.menu-row-action.active svg {
+  fill: currentColor;
+}
+
+/*
+ * Fila que entra o sale del bloque de favoritos: el alto pasa de 0 a su valor (o al revés), así
+ * las filas de abajo bajan o suben suaves en vez de saltar. Solo recorta en vertical, para no
+ * cortar la línea separadora, que sobresale a los lados.
+ */
+.menu-motion {
+  interpolate-size: allow-keywords;
+}
+
+.menu-motion-enter,
+.menu-motion-exit {
+  overflow-x: visible;
+  overflow-y: clip;
+}
+
+.menu-motion-enter {
+  animation: menu-motion-in var(--duration-slow) var(--ease);
+}
+
+.menu-motion-enter > .menu-row {
+  animation: menu-motion-row-in var(--duration-slow) var(--ease);
+}
+
+.menu-motion-exit {
+  pointer-events: none;
+  animation: menu-motion-out var(--duration-slow) var(--ease) forwards;
+}
+
+@keyframes menu-motion-in {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes menu-motion-row-in {
+  from {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes menu-motion-out {
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes star-pop {
+  40% {
+    transform: scale(1.35) rotate(-12deg);
+  }
+}
+
+@keyframes submenu-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+}
+
+@keyframes submenu-out {
+  to {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
 }
 
 .menu-top-start .menu-submenu,

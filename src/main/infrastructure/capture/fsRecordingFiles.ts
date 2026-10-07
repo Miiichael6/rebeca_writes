@@ -31,11 +31,11 @@ export function createFsRecordingFiles(pcmDir: string): RecordingFiles {
       }
     },
 
-    async freeRecordingPath(dir, name) {
+    async freeRecordingPath(dir, name, format) {
       await mkdir(dir, { recursive: true })
       const base = recordingFileName(name)
       for (let attempt = 1; ; attempt++) {
-        const path = join(dir, numberedFileName(base, attempt))
+        const path = join(dir, numberedFileName(base, attempt, format))
         const taken = await access(path).then(
           () => true,
           () => false

@@ -5,7 +5,9 @@ import type { Blocker } from '../domain/toolbar'
 export interface TranscriptionChoice {
   model: string
   language: string
-  translate: boolean
+  favoriteLanguages: string[]
+  /** Filtro de voz de whisper (`--vad`). */
+  vad: boolean
 }
 
 /** Puerto de salida: lo que se elige para transcribir (se recuerda entre sesiones). */
@@ -13,7 +15,8 @@ export interface SettingsPort {
   useChoice(): TranscriptionChoice
   setModel(model: string): void
   setLanguage(language: string): void
-  setTranslate(translate: boolean): void
+  setFavoriteLanguages(languages: string[]): void
+  setVad(vad: boolean): void
 }
 
 export interface DownloadedModel {
