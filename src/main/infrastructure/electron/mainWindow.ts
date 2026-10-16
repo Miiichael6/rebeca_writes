@@ -6,7 +6,7 @@ import { WINDOW_COLORS } from '@shared/theme'
 import type { Logger } from '../../application/ports/eventPublisher'
 import type { SettingsRepository } from '../../application/ports/settingsRepository'
 import { devRendererUrl, loadRendererPage, secureWebPreferences } from './rendererPage'
-import { resolvedTheme, titleBarOverlay } from './theme'
+import { followThemeOverlay, resolvedTheme, titleBarOverlay } from './theme'
 
 const MIN_WIDTH = 960
 const MIN_HEIGHT = 600
@@ -77,6 +77,7 @@ export class MainWindow {
       icon,
       webPreferences: secureWebPreferences()
     })
+    followThemeOverlay(window)
 
     window.on('ready-to-show', () => {
       if (saved.maximized) window.maximize()

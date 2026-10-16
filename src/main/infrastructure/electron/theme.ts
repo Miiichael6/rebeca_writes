@@ -12,7 +12,19 @@ export function titleBarOverlay(theme: ResolvedTheme): Electron.TitleBarOverlayO
   return { color: background, symbolColor: symbol, height: TITLE_BAR_HEIGHT }
 }
 
+/**
+ * Ventanas creadas con `titleBarOverlay`: las únicas que se recolorean. Las del dock son
+ * transparentes y sin barra; `setTitleBarOverlay` lanza en ellas y el fondo las taparía.
+ */
+const overlayWindows = new WeakSet<BrowserWindow>()
+
+/** Marca una ventana creada con `titleBarOverlay` para que siga el tema. */
+export function followThemeOverlay(window: BrowserWindow): void {
+  overlayWindows.add(window)
+}
+
 function applyTheme(window: BrowserWindow, theme: ResolvedTheme): void {
+  if (!overlayWindows.has(window)) return
   window.setBackgroundColor(WINDOW_COLORS[theme].background)
   window.setTitleBarOverlay(titleBarOverlay(theme))
 }
