@@ -9,6 +9,7 @@ import type {
   CudaDownloadResult,
   CudaPackageStatus,
   CudaProgress,
+  ClipResult,
   ExportSaved,
   HistoryEntry,
   HistoryOpened,
@@ -97,6 +98,9 @@ export const IpcChannel = {
   ExportSave: 'export:save',
   ExportSaveSrtBeside: 'export:saveSrtBeside',
   ExportShowInFolder: 'export:showInFolder',
+  ClipCut: 'clip:cut',
+  ClipShowInFolder: 'clip:showInFolder',
+  ClipWaveform: 'clip:waveform',
   QueueGet: 'queue:get',
   QueuePickFiles: 'queue:pickFiles',
   QueueAddPaths: 'queue:addPaths',
@@ -233,6 +237,12 @@ export interface IpcInvokeMap {
     result: SaveSrtBesideResult
   }
   [IpcChannel.ExportShowInFolder]: { args: [path: string]; result: void }
+  [IpcChannel.ClipCut]: {
+    args: [entryId: string, start: number, end: number, transcribe: boolean]
+    result: ClipResult
+  }
+  [IpcChannel.ClipShowInFolder]: { args: [path: string]; result: void }
+  [IpcChannel.ClipWaveform]: { args: [entryId: string]; result: number[] | null }
   [IpcChannel.QueueGet]: { args: []; result: QueueState }
   [IpcChannel.QueuePickFiles]: {
     args: [filterLabels: Record<MediaFilterKey, string>]
@@ -472,6 +482,20 @@ export interface AppApi {
       speakerNames: Record<string, string>
     ) => Promise<SaveSrtBesideResult>
     /** Abre el Explorador con un archivo exportado en esta sesión seleccionado. */
+    showInFolder: (path: string) => Promise<void>
+  }
+  clip: {
+    /**
+     * Recorta `[start, end)` segundos del archivo de la entrada y lo guarda junto al original
+     * (tarea 39). Con `transcribe`, el recorte entra en la cola.
+     */
+    cut: (entryId: string, start: number, end: number, transcribe: boolean) => Promise<ClipResult>
+    /**
+     * Picos del audio (0–1, `WAVEFORM_BARS` barras de igual duración) para ver dónde hay voz o
+     * sonido; `null` si no se pudo leer.
+     */
+    waveform: (entryId: string) => Promise<number[] | null>
+    /** Abre el Explorador con un recorte de esta sesión seleccionado. */
     showInFolder: (path: string) => Promise<void>
   }
   queue: {

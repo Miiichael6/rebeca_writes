@@ -117,6 +117,29 @@
     "previewFailed": "Couldn’t prepare a preview for this format.",
     "recording": "Recording in progress: the audio will be playable when it stops."
   },
+  "clip": {
+    "button": "Trim",
+    "title": "Trim",
+    "confirm": "Trim",
+    "start": "Start",
+    "end": "End",
+    "useCurrent": "Use current position",
+    "length": "Clip length: {{time}}",
+    "error_format": "Type times like 1:30 or 1:02:30",
+    "error_order": "The end must come after the start",
+    "error_beyond": "The start is past the end of the file",
+    "transcribe": "Transcribe the clip (adds it to the queue)",
+    "hint": "Saved next to the original file, with the range in its name. The original is not touched.",
+    "cutting": "Trimming...",
+    "saved": "Clip saved: {{name}}",
+    "savedQueued": "Clip saved and queued: {{name}}",
+    "missing": "The original file is no longer in its folder",
+    "invalid": "The range is not valid",
+    "failed": "Could not trim",
+    "waveLoading": "Analyzing the audio...",
+    "waveFailed": "Could not read the audio to draw the waveform",
+    "waveLabel": "Audio waveform: tall bars where there is speech or sound. Drag to pick the range."
+  },
   "speakers": {
     "you": "You",
     "ambient": "Ambient",
@@ -154,6 +177,8 @@
   "bottomBar": {
     "copy": "Copy transcription",
     "copied": "Copied",
+    "copyForAi": "Copy for AI: no timestamps, [BLANK_AUDIO] or repetitions",
+    "copiedForAi": "Copied for AI ({{percent}}% shorter)",
     "joinLines": "Join lines",
     "autoScroll": "Auto-scroll",
     "export": "Export",

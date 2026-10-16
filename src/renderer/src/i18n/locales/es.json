@@ -120,6 +120,29 @@
     "previewFailed": "No se pudo preparar la vista previa de este formato.",
     "recording": "Se está grabando: el audio se podrá reproducir al terminar."
   },
+  "clip": {
+    "button": "Recortar",
+    "title": "Recortar",
+    "confirm": "Recortar",
+    "start": "Inicio",
+    "end": "Fin",
+    "useCurrent": "Usar la posición actual",
+    "length": "Duración del recorte: {{time}}",
+    "error_format": "Escribe los tiempos como 1:30 o 1:02:30",
+    "error_order": "El fin tiene que ir después del inicio",
+    "error_beyond": "El inicio está después del final del archivo",
+    "transcribe": "Transcribir el recorte (se añade a la cola)",
+    "hint": "Se guarda junto al archivo original, con el tramo en el nombre. El original no se toca.",
+    "cutting": "Recortando...",
+    "saved": "Recorte guardado: {{name}}",
+    "savedQueued": "Recorte guardado y en la cola: {{name}}",
+    "missing": "El archivo original ya no está en su carpeta",
+    "invalid": "El tramo no es válido",
+    "failed": "No se pudo recortar",
+    "waveLoading": "Analizando el audio...",
+    "waveFailed": "No se pudo leer el audio para dibujar la onda",
+    "waveLabel": "Onda del audio: barras altas donde hay voz o sonido. Arrastra para elegir el tramo."
+  },
   "speakers": {
     "you": "Usted",
     "ambient": "Ambiente",
@@ -157,6 +180,8 @@
   "bottomBar": {
     "copy": "Copiar transcripción",
     "copied": "Copiado",
+    "copyForAi": "Copiar para IA: sin marcas de tiempo, [BLANK_AUDIO] ni repeticiones",
+    "copiedForAi": "Copiado para IA ({{percent}} % más corto)",
     "joinLines": "Unir líneas",
     "autoScroll": "Desplaz. auto",
     "export": "Exportar",

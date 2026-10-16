@@ -1,4 +1,4 @@
-import { Copy, Download } from 'lucide-react'
+import { Copy, Download, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { usePorts } from '../application/ports'
 import { useExportMenu } from '../application/useExportMenu'
@@ -21,6 +21,14 @@ export function BottomBar(): React.JSX.Element {
         icon={<Copy size={15} strokeWidth={1.5} />}
         disabled={empty}
         onClick={transcript.copy}
+      />
+      <Button
+        size="sm"
+        aria-label={t('bottomBar.copyForAi')}
+        title={t('bottomBar.copyForAi')}
+        icon={<Sparkles size={15} strokeWidth={1.5} />}
+        disabled={empty}
+        onClick={transcript.copyForAi}
       />
       <Checkbox checked={joinLines} onChange={settings.setJoinLines}>
         {t('bottomBar.joinLines')}

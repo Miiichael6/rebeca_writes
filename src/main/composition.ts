@@ -8,6 +8,7 @@ import { BackendService } from './application/backendService'
 import { CudaService } from './application/cudaService'
 import { Dock } from './application/dock'
 import { DockMenu } from './application/dockMenu'
+import { ClipService } from './application/clipService'
 import { ExportService } from './application/exportService'
 import { HistoryService } from './application/historyService'
 import { LiveControl } from './application/liveControl'
@@ -41,6 +42,7 @@ import { netDownloader } from './infrastructure/electron/netDownloader'
 import { windowPublisher as publisher } from './infrastructure/electron/windowPublisher'
 import { ffmpegRecordingEncoder } from './infrastructure/ffmpeg/ffmpegRecordingEncoder'
 import { ffmpegPreviewEncoder } from './infrastructure/ffmpeg/ffmpegPreviewEncoder'
+import { ffmpegClipper } from './infrastructure/ffmpeg/ffmpegClipper'
 import { ffmpegMediaTools } from './infrastructure/ffmpeg/ffmpegTools'
 import { HOTKEY_BINARY, HotkeySidecar } from './infrastructure/hotkey/hotkeySidecar'
 import { CALLS_BINARY, MicUsageSidecar } from './infrastructure/meeting/micUsageSidecar'
@@ -214,6 +216,15 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     }
   })
   const intake = new QueueIntake({ queue, settings, history, opener, expander: fsPathExpander })
+  const clips = new ClipService({
+    history,
+    media: ffmpegMediaTools,
+    clipper: ffmpegClipper,
+    disk: nodeDisk,
+    shell: electronShell,
+    log,
+    enqueue: (paths) => intake.addPaths(paths)
+  })
 
   // --- En vivo ---
   // Tiene su propio pipeline: sus eventos no llegan al renderer tal cual.
@@ -320,6 +331,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     opener,
     history: new HistoryService(history, historyMedia),
     exporter,
+    clips,
     queue,
     intake,
     manager,

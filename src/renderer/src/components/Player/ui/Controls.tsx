@@ -5,6 +5,7 @@ import {
   Minimize2,
   Pause,
   Play,
+  Scissors,
   Volume2,
   VolumeX
 } from 'lucide-react'
@@ -12,14 +13,18 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlaybackRate } from '@renderer/store/player'
 import { usePorts } from '../application/ports'
+import { useClipDialog } from '../application/useClipDialog'
 import type { VideoStage } from '../application/useVideoStage'
 import { Select, Slider } from '../../ui'
+import { ClipDialog } from './ClipDialog'
 import { SeekBar } from './SeekBar'
 
-/** Barra de controles: reproducir, posición, volumen, subtítulos, maximizar y velocidad. */
+/** Controles: reproducir, posición, volumen, subtítulos, recortar, maximizar y velocidad. */
 export function Controls({ stage }: { stage: VideoStage }): React.JSX.Element {
   const { t } = useTranslation()
-  const { playback, settings, view } = usePorts()
+  const { playback, settings, view, library } = usePorts()
+  const entry = library.useEntry()
+  const clip = useClipDialog(entry?.id)
   const { src, playing, volume, muted, rate } = playback.useTransport()
   const showCaptions = settings.useShowCaptions()
   const videoVisible = view.useVideoVisible()
@@ -76,6 +81,15 @@ export function Controls({ stage }: { stage: VideoStage }): React.JSX.Element {
         <CaptionsIcon size={18} strokeWidth={1.5} className="icon-on" />
         <CaptionsOff size={18} strokeWidth={1.5} className="icon-off" />
       </button>
+      <button
+        className="player-btn"
+        aria-label={t('clip.button')}
+        title={t('clip.button')}
+        disabled={disabled || !entry || entry.live === true}
+        onClick={clip.show}
+      >
+        <Scissors size={16} strokeWidth={1.5} />
+      </button>
       {videoVisible && (
         <button
           className="player-btn"
@@ -99,6 +113,7 @@ export function Controls({ stage }: { stage: VideoStage }): React.JSX.Element {
         disabled={disabled}
         onChange={(v) => playback.setRate(Number(v) as PlaybackRate)}
       />
+      <ClipDialog dialog={clip} />
     </div>
   )
 }

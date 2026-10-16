@@ -3,6 +3,7 @@ import { IpcChannel, type IpcInvokeMap } from '@shared/ipc'
 import { RECORDING_SOURCES, type RecordingSource } from '@shared/recording'
 import { DOCK_BUTTONS, type DockButton } from '@shared/dock'
 import type { BackendService } from './application/backendService'
+import type { ClipService } from './application/clipService'
 import type { CudaService } from './application/cudaService'
 import type { Dock } from './application/dock'
 import type { DockMenu } from './application/dockMenu'
@@ -44,6 +45,7 @@ export interface IpcDeps {
   opener: MediaOpener
   history: HistoryService
   exporter: ExportService
+  clips: ClipService
   queue: QueueService
   intake: QueueIntake
   manager: TranscriptionManager
@@ -81,6 +83,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     previews,
     history,
     exporter,
+    clips,
     queue,
     intake,
     manager,
@@ -165,6 +168,11 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     exporter.saveSrtBeside(entryId, segments, overwrite, speakerNames)
   )
   handle(IpcChannel.ExportShowInFolder, (_event, path) => exporter.showInFolder(path))
+  handle(IpcChannel.ClipCut, (_event, entryId, start, end, transcribe) =>
+    clips.cut(entryId, start, end, transcribe)
+  )
+  handle(IpcChannel.ClipWaveform, (_event, entryId) => clips.waveform(entryId))
+  handle(IpcChannel.ClipShowInFolder, (_event, path) => clips.showInFolder(path))
 
   handle(IpcChannel.QueueGet, () => queue.getState())
   handle(IpcChannel.QueuePickFiles, (event, filterLabels) =>

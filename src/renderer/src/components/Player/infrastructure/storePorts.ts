@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
+import { cutClip } from '@renderer/lib/clipMedia'
 import { MOTION } from '@renderer/lib/motion'
 import { playbackFor, previewOf } from '@renderer/lib/preview'
 import { useMountTransition } from '@renderer/lib/useMountTransition'
@@ -36,6 +37,7 @@ export const storePorts: PlayerPorts = {
         }))
       ),
     useCurrentTime: () => usePlayerStore((s) => s.currentTime),
+    getCurrentTime: () => usePlayerStore.getState().currentTime,
     useDuration: () => usePlayerStore((s) => s.duration),
     useCaption: () => {
       const segments = useTranscriptStore((s) => s.segments)
@@ -82,5 +84,6 @@ export const storePorts: PlayerPorts = {
   stage: { observeLimit: observeStageLimit },
   animation: {
     useStageTransition: (visible) => useMountTransition(visible, MOTION)
-  }
+  },
+  clip: { cut: cutClip, waveform: (entryId) => window.api.clip.waveform(entryId) }
 }

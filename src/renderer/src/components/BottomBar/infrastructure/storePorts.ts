@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/react/shallow'
-import { copyTranscript } from '@renderer/lib/copyTranscript'
+import { copyTranscript, copyTranscriptForAi } from '@renderer/lib/copyTranscript'
 import { exportAs, exportFileName, saveSrtNextToFile } from '@renderer/lib/exportTranscript'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
 import { useTranscriptStore } from '@renderer/store/transcript'
@@ -18,6 +18,7 @@ export const storePorts: BottomBarPorts = {
   transcript: {
     useIsEmpty: () => useTranscriptStore((s) => s.segments.length === 0),
     copy: () => void copyTranscript(),
+    copyForAi: () => void copyTranscriptForAi(),
     exportAs: (format) => void exportAs(format),
     saveSrtBeside: (overwrite) => saveSrtNextToFile(overwrite),
     fileName: exportFileName

@@ -85,6 +85,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 35 | [Detector de persona al grabar](done/35_detector_de_persona.md) | 9 Pulido | 29 | ✅ Terminada (prueba real con dos voces pendiente) |
 | 36 | [Calidad de la transcripción](in_progress/36_calidad_de_transcripcion.md) | 9 Pulido | — | 🔄 En progreso |
 | 37 | [Transcripción por trozos de voz](pending/37_transcripcion_por_trozos.md) | 9 Pulido | 36 | ⬜ Pendiente |
+| 38 | [Copiar para IA](done/38_copiar_para_ia.md) | 9 Pulido | — | ✅ Terminada (prueba manual pendiente) |
+| 39 | [Recortar audio y video](done/39_recortar_audio_video.md) | 9 Pulido | — | ✅ Terminada (prueba manual pendiente) |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -110,4 +112,6 @@ todas → 22 → 23 → 24
                                29 → 35 (detector de persona al grabar)
 36 (calidad de la transcripción: VAD, umbrales, flash attention, large-v3-turbo) — sin dependencias
 36 → 37 (transcripción por trozos de voz con whisper-server)
+38 (copiar para IA) — sin dependencias
+39 (recortar audio y video con forma de onda) — sin dependencias
 ```

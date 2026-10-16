@@ -18,6 +18,8 @@ export interface TransportState {
 export interface PlaybackPort {
   useTransport(): TransportState
   useCurrentTime(): number
+  /** La posición de ahora, sin suscribirse (para leerla al pulsar un botón). */
+  getCurrentTime(): number
   useDuration(): number
   /** Texto del segmento que suena, o `null` en los silencios. */
   useCaption(): string | null
@@ -75,6 +77,14 @@ export interface AnimationPort {
   useStageTransition(visible: boolean): StageTransition
 }
 
+/** Puerto de salida: recortar un tramo del archivo (tarea 39). */
+export interface ClipPort {
+  /** Recorta y avisa del resultado; con `transcribe`, el recorte entra en la cola. */
+  cut(entryId: string, start: number, end: number, transcribe: boolean): Promise<void>
+  /** Picos del audio de 0 a 1 para ver dónde hay voz o sonido; `null` si no se pudo. */
+  waveform(entryId: string): Promise<number[] | null>
+}
+
 /** Todo lo que el reproductor necesita del exterior. Los adaptadores lo implementan. */
 export interface PlayerPorts {
   playback: PlaybackPort
@@ -83,6 +93,7 @@ export interface PlayerPorts {
   view: ViewPort
   stage: StagePort
   animation: AnimationPort
+  clip: ClipPort
 }
 
 export const PortsContext = createContext<PlayerPorts | null>(null)

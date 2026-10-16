@@ -18,6 +18,8 @@ export interface TranscriptPort {
   /** `true` si no hay segmentos que copiar ni exportar. */
   useIsEmpty(): boolean
   copy(): void
+  /** Copia compacta para pegar en una IA (tarea 38). */
+  copyForAi(): void
   exportAs(format: ExportFormat): void
   /**
    * Guarda el `.srt` junto al archivo. Devuelve la ruta del que ya existe cuando hace falta

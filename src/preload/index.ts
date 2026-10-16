@@ -98,6 +98,12 @@ const api: AppApi = {
       invoke(IpcChannel.ExportSaveSrtBeside, entryId, segments, overwrite, speakerNames),
     showInFolder: (path) => invoke(IpcChannel.ExportShowInFolder, path)
   },
+  clip: {
+    cut: (entryId, start, end, transcribe) =>
+      invoke(IpcChannel.ClipCut, entryId, start, end, transcribe),
+    waveform: (entryId) => invoke(IpcChannel.ClipWaveform, entryId),
+    showInFolder: (path) => invoke(IpcChannel.ClipShowInFolder, path)
+  },
   queue: {
     getState: () => invoke(IpcChannel.QueueGet),
     pickFiles: (filterLabels) => invoke(IpcChannel.QueuePickFiles, filterLabels),

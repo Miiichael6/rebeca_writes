@@ -337,6 +337,17 @@ export interface ExportSaved {
 export type SaveSrtBesideResult =
   { status: 'saved'; path: string } | { status: 'exists'; path: string } | { status: 'missing' }
 
+/**
+ * "Recortar" (tarea 39). `saved`: el recorte está junto al original (`queued`: además entró en
+ * la cola para transcribirlo); `missing`: el original ya no está; `invalid`: el tramo no vale;
+ * `failed`: ffmpeg no pudo.
+ */
+export type ClipResult =
+  | { status: 'saved'; path: string; queued: boolean }
+  | { status: 'missing' }
+  | { status: 'invalid' }
+  | { status: 'failed' }
+
 /** Fallos de la búsqueda o descarga de una actualización (tarea 25). */
 export type UpdateErrorCode = 'offline' | 'checkFailed' | 'downloadFailed' | 'noDiskSpace'
 
