@@ -5,6 +5,8 @@ import type { DockSettingsPorts } from '../application/ports'
 export const storePorts: DockSettingsPorts = {
   settings: {
     useDockPosition: () => useSettingsStore((s) => s.settings.dockPosition),
-    setDockPosition: (dockPosition) => updateSettings({ dockPosition })
+    setDockPosition: (dockPosition) => updateSettings({ dockPosition }),
+    useHideInFullscreen: () => useSettingsStore((s) => s.settings.hideDockInFullscreen),
+    setHideInFullscreen: (hideDockInFullscreen) => updateSettings({ hideDockInFullscreen })
   }
 }

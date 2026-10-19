@@ -7,6 +7,7 @@ import { createArgvHandler } from './application/argvHandler'
 import { BackendService } from './application/backendService'
 import { CudaService } from './application/cudaService'
 import { Dock } from './application/dock'
+import { DockFullscreen } from './application/dockFullscreen'
 import { DockMenu } from './application/dockMenu'
 import { ClipService } from './application/clipService'
 import { ExportService } from './application/exportService'
@@ -47,6 +48,7 @@ import { ffmpegMediaTools } from './infrastructure/ffmpeg/ffmpegTools'
 import { HOTKEY_BINARY, HotkeySidecar } from './infrastructure/hotkey/hotkeySidecar'
 import { CALLS_BINARY, MicUsageSidecar } from './infrastructure/meeting/micUsageSidecar'
 import { fsPathExpander } from './infrastructure/fs/expandPaths'
+import { FULLSCREEN_BINARY, FullscreenSidecar } from './infrastructure/fullscreen/fullscreenSidecar'
 import { fsPreviewStore } from './infrastructure/fs/fsPreviewStore'
 import { nodeDisk } from './infrastructure/fs/nodeDisk'
 import { createTempWorkspace } from './infrastructure/fs/tempWorkspace'
@@ -83,6 +85,7 @@ export interface AppControl {
 export interface Services extends IpcDeps {
   registry: MediaRegistry
   meetings: MeetingSuggester
+  dockFullscreen: DockFullscreen
   /** Encola los archivos o atiende la orden en vivo que lleguen por la línea de órdenes. */
   queueFromArgv: (argv: readonly string[], cwd: string) => Promise<QueueAddResult | null>
 }
@@ -289,6 +292,14 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     log
   })
 
+  // --- Esconder el dock con una app a pantalla completa (tarea 40) ---
+  const dockFullscreen = new DockFullscreen({
+    source: new FullscreenSidecar(join(bundledBinDir, FULLSCREEN_BINARY), log),
+    dock,
+    log
+  })
+  settings.onChanged((next) => dockFullscreen.configure(next.hideDockInFullscreen))
+
   // --- Atajo para grabar (tarea 31) ---
   const hotkey = new RecordHotkey({
     source: new HotkeySidecar(join(bundledBinDir, HOTKEY_BINARY), log),
@@ -343,6 +354,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     dockMenu,
     hotkey,
     meetings,
+    dockFullscreen,
     showMainWindow: control.showMainWindow,
     registry,
     queueFromArgv: createArgvHandler({

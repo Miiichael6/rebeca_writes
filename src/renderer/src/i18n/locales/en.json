@@ -342,6 +342,10 @@
     "detectSpeakersDescription": "While recording, each sentence is tagged with who says it (You, Person 1, Person 2…). Click a tag to give it a name. Uses a 28 MB voice model that is downloaded once.",
     "detectSpeakersDownloading": "Downloading the voice model (28 MB)…",
     "detectSpeakersFailed": "The voice model could not be downloaded. Check your connection and turn the switch on again.",
+    "openAtLogin": "Start with Windows",
+    "openAtLoginDescription": "Opens the app when you turn on the PC, without a window: just the dock, ready to record.",
+    "hideDockInFullscreen": "Hide the dock in full screen",
+    "hideDockInFullscreenDescription": "While a game, a video or a presentation fills the screen, the dock disappears and comes back when you leave it.",
     "dockPosition": "Dock position",
     "dockPositionDescription": "Where the dock hides: at the top or bottom of the screen, at a corner or in the middle.",
     "dockPositions": {

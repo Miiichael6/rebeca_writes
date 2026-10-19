@@ -100,6 +100,10 @@ export interface Settings {
   suggestMeetingRecording: boolean
   /** Dónde vive el dock (tarea 33). */
   dockPosition: DockPosition
+  /** Esconder el dock mientras una app ocupa toda la pantalla: juegos, videos (tarea 40). */
+  hideDockInFullscreen: boolean
+  /** Abrir la app (solo el dock, sin ventana) al iniciar Windows (tarea 40). */
+  openAtLogin: boolean
   /** Etiquetar quién habla al grabar (tarea 35); la primera vez descarga el modelo de voces. */
   detectSpeakers: boolean
 
@@ -167,6 +171,8 @@ export function createDefaultSettings(cpuCount: number): Settings {
     recordShortcut: DEFAULT_RECORD_SHORTCUT,
     suggestMeetingRecording: true,
     dockPosition: DEFAULT_DOCK_POSITION,
+    hideDockInFullscreen: true,
+    openAtLogin: false,
     detectSpeakers: false,
     queue: { skipExistingSrt: false, autoSaveSrt: false },
     window: { width: 1100, height: 790, maximized: false }

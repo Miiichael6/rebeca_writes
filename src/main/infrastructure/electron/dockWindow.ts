@@ -17,7 +17,7 @@ function workArea(): Electron.Rectangle {
  * La ventana del dock: transparente, sin marco, siempre encima, fuera de la barra de tareas y
  * sin quitarle nunca el foco a la app que se está usando. Carga el renderer en `#/dock`.
  */
-function createDockWindow(bounds: Area): BrowserWindow {
+function createDockWindow(bounds: Area, hidden: () => boolean): BrowserWindow {
   const window = new BrowserWindow({
     ...bounds,
     show: false,
@@ -36,7 +36,9 @@ function createDockWindow(bounds: Area): BrowserWindow {
   })
   // También encima de las apps a pantalla completa.
   window.setAlwaysOnTop(true, 'screen-saver')
-  window.once('ready-to-show', () => window.showInactive())
+  window.once('ready-to-show', () => {
+    if (!hidden()) window.showInactive()
+  })
   loadRendererPage(window, '/dock')
   return window
 }
@@ -79,6 +81,8 @@ export class ElectronDockSurface implements DockSurface {
   private placedAt: DockPosition | null = null
   /** La ventana es la barra escondida (y no la píldora, quieta o a medio deslizar). */
   private atEdge = true
+  /** Quitada de la pantalla por una app a pantalla completa (tarea 40). */
+  private hidden = false
 
   constructor(private readonly position: () => DockPosition) {}
 
@@ -86,7 +90,7 @@ export class ElectronDockSurface implements DockSurface {
     if (this.window && !this.window.isDestroyed()) return
     this.placedAt = this.position()
     this.atEdge = true
-    const window = createDockWindow(dockBounds(workArea(), null, this.placedAt))
+    const window = createDockWindow(dockBounds(workArea(), null, this.placedAt), () => this.hidden)
     window.on('closed', () => {
       if (this.window === window) this.window = null
     })
@@ -115,6 +119,16 @@ export class ElectronDockSurface implements DockSurface {
     if (!this.view || !this.placedAt) return false
     const bounds = dockBounds(workArea(), dockWidth(this.view), this.placedAt)
     return contains(bounds, screen.getCursorScreenPoint())
+  }
+
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden
+    const window = this.window
+    if (!window || window.isDestroyed()) return
+    if (hidden) return window.hide()
+    window.showInactive()
+    // Al volver a mostrarla Windows puede bajarla de nivel: otra vez encima de todo.
+    window.setAlwaysOnTop(true, 'screen-saver')
   }
 
   /** Fuera o a la barra según `view.out`: la píldora se desliza y en la barra toma su forma. */

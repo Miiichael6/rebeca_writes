@@ -9,6 +9,8 @@ export interface DockSurface {
   show(view: DockView): void
   /** El ratón está sobre el dock fuera, según el sistema (no según la página). */
   cursorInside(): boolean
+  /** Lo quita de la pantalla del todo, también la barra del borde, o lo vuelve a poner (tarea 40). */
+  setHidden(hidden: boolean): void
 }
 
 /** Puerto de salida: la ventana del menú contextual del dock. */

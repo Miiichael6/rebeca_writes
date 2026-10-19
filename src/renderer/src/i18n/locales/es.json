@@ -351,6 +351,10 @@
     "detectSpeakersDescription": "Al grabar, cada frase queda marcada con quién la dice (Usted, Persona 1, Persona 2…). Haz clic en una etiqueta para ponerle nombre. Usa un modelo de voces de 28 MB que se descarga una vez.",
     "detectSpeakersDownloading": "Descargando el modelo de voces (28 MB)…",
     "detectSpeakersFailed": "No se pudo descargar el modelo de voces. Comprueba la conexión y vuelve a activar el interruptor.",
+    "openAtLogin": "Iniciar con Windows",
+    "openAtLoginDescription": "Abre la app al encender la PC, sin ventana: solo el dock, listo para grabar.",
+    "hideDockInFullscreen": "Esconder el dock a pantalla completa",
+    "hideDockInFullscreenDescription": "Mientras un juego, un video o una presentación ocupa toda la pantalla, el dock desaparece y vuelve al salir.",
     "dockPosition": "Posición del dock",
     "dockPositionDescription": "Dónde se esconde el dock: arriba o abajo de la pantalla, en una esquina o al centro.",
     "dockPositions": {

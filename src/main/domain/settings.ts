@@ -92,7 +92,9 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     recordShortcut: shortcutOrNull,
     suggestMeetingRecording: bool,
     detectSpeakers: bool,
-    dockPosition: oneOf(DOCK_POSITIONS)
+    dockPosition: oneOf(DOCK_POSITIONS),
+    hideDockInFullscreen: bool,
+    openAtLogin: bool
   }
 }
 

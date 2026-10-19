@@ -12,6 +12,10 @@ class FakeSurface implements DockSurface {
   cursor = true
   open = vi.fn()
   close = vi.fn()
+  hidden = false
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden
+  }
   show(view: DockView): void {
     this.last = view
   }
@@ -216,5 +220,18 @@ describe('Dock', () => {
     expect(surface.close).toHaveBeenCalledOnce()
     expect(vi.getTimerCount()).toBe(0)
     expect(dock.view()).toMatchObject({ out: false, question: null })
+  })
+
+  it('desaparece con una app a pantalla completa y vuelve al salir de ella', () => {
+    const { dock, surface } = setup()
+    dock.hover()
+    dock.setFullscreen(true)
+    expect(surface.hidden).toBe(true)
+    expect(surface.last?.out).toBe(true)
+
+    dock.setFullscreen(false)
+    expect(surface.hidden).toBe(false)
+    // Vuelve escondido en el borde, no fuera como lo dejó el ratón.
+    expect(surface.last?.out).toBe(false)
   })
 })

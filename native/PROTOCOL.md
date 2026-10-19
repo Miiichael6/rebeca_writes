@@ -230,3 +230,28 @@ Si stdin se cierra, el sidecar termina.
 | `embedding`    | Huella del tramo pedido                                                                   |
 | `embed_failed` | El WAV no existe, no tiene el formato esperado o el tramo está vacío                      |
 | `error`        | `bad_command`: línea que no es JSON o `cmd` desconocido. `not_loaded`: `embed` sin `load` |
+
+# Protocolo de `rl-fullscreen`
+
+Quinto binario del crate (tarea 40): dice si la ventana de delante ocupa todo el monitor principal (un juego, un video a pantalla completa, una presentación), para que el dock se quite de en medio. Qué hacer con eso lo decide main (`src/main/application/dockFullscreen.ts`).
+
+| Tubería | Dirección      | Contenido                                       |
+| ------- | -------------- | ----------------------------------------------- |
+| stdin   | main → sidecar | Sin comandos: solo lo mantiene vivo (se ignora) |
+| stderr  | sidecar → main | Eventos JSON, uno por línea                     |
+| stdout  | —              | Sin uso                                         |
+
+Si stdin se cierra, el sidecar termina. Para dejar de vigilar, main cierra stdin.
+
+## Eventos (stderr)
+
+```json
+{ "type": "fullscreen", "active": true }
+```
+
+| `type`       | Cuándo                                     |
+| ------------ | ------------------------------------------ |
+| `fullscreen` | Al arrancar y cada vez que cambia `active` |
+
+- `active`: la ventana en primer plano es visible, no está minimizada, está en el monitor **principal** (donde vive el dock) y su rectángulo cubre todo el monitor, barra de tareas incluida. Una ventana maximizada solo cubre el área de trabajo y no cuenta. El escritorio (`Progman`, `WorkerW`) y la barra de tareas (`Shell_TrayWnd`) se descartan por su clase.
+- Sondeo cada 500 ms con `GetForegroundWindow`: pasar a pantalla completa (F11, un juego que arranca) no cambia la ventana en primer plano, así que no hay un único evento que esperar. Solo se emite cuando cambia.

@@ -5,6 +5,7 @@ import log from 'electron-log/main'
 import { APP_ID, APP_NAME } from '@shared/app'
 import { IpcChannel } from '@shared/ipc'
 import { createServices } from './composition'
+import { followOpenAtLogin, openedAtLogin } from './infrastructure/electron/loginItem'
 import { setupLogging } from './infrastructure/electron/logging'
 import { MainWindow } from './infrastructure/electron/mainWindow'
 import { handleMediaProtocol, registerMediaScheme } from './infrastructure/electron/mediaProtocol'
@@ -39,7 +40,7 @@ const services = createServices(
 )
 const { settings, registry, queue, backends, previews, manager, live, mic, updates, dock } =
   services
-const { dockMenu, hotkey, meetings } = services
+const { dockMenu, hotkey, meetings, dockFullscreen } = services
 const mainWindow = new MainWindow(settings, log)
 
 app.on('second-instance', (_event, argv, workingDirectory) => {
@@ -71,6 +72,8 @@ app.whenReady().then(async () => {
     if (nativeTheme.themeSource !== theme) nativeTheme.themeSource = theme
   })
 
+  followOpenAtLogin(settings, log)
+
   handleMediaProtocol((id) => registry.resolve(id))
   registerIpcHandlers(services)
   queue.init().catch((err) => log.error('No se pudo leer la cola', err))
@@ -78,12 +81,14 @@ app.whenReady().then(async () => {
   // Autodetección del backend en segundo plano; la ventana no la espera.
   backends.info().catch((err) => log.error('No se pudo resolver el backend', err))
 
-  mainWindow.create()
+  // Al iniciar Windows (tarea 40) arranca solo con el dock; la ventana se abre desde él.
+  if (!openedAtLogin(process.argv)) mainWindow.create()
   dock.open()
   dockMenu.prepare()
   // Los cambios posteriores llegan por `settings.onChanged` (composition).
   hotkey.configure(settings.get().recordShortcut)
   meetings.configure(settings.get().suggestMeetingRecording)
+  dockFullscreen.configure(settings.get().hideDockInFullscreen)
   updates.scheduleAutoCheck()
   // Arranque en frío con archivos ("Abrir con"). Si la cola pregunta si retomar, esperan a
   // la respuesta y "Descartar" no los quita.
@@ -105,6 +110,8 @@ app.on('will-quit', () => {
   hotkey.dispose()
   // Igual con `rl-calls.exe`: deja de vigilar el micrófono.
   meetings.dispose()
+  // Y con `rl-fullscreen.exe`.
+  dockFullscreen.dispose()
 })
 
 /** Antes de cerrar: la grabación en curso se guarda (D9) y se escribe lo pendiente. */

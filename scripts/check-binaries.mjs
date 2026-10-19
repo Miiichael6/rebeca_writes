@@ -13,8 +13,9 @@ const REQUIRED = [
     file: join(CPU_DIR, name),
     fix: 'npm run fetch:bin -- --only=cpu'
   })),
-  // Sidecars: captura de audio (tarea 29), atajo para grabar (31) y uso del micrófono (32).
-  ...['rl-capture.exe', 'rl-hotkey.exe', 'rl-calls.exe'].map((name) => ({
+  // Sidecars: captura de audio (tarea 29), atajo para grabar (31), uso del micrófono (32) y
+  // pantalla completa (40).
+  ...['rl-capture.exe', 'rl-hotkey.exe', 'rl-calls.exe', 'rl-fullscreen.exe'].map((name) => ({
     file: join(ROOT, 'resources', 'bin', name),
     fix: 'npm run build:native'
   })),
@@ -48,5 +49,5 @@ if (missing.length > 0) {
   process.exit(1)
 }
 console.log(
-  'Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, rl-calls, rl-speaker + sherpa-onnx, ffmpeg, ffprobe).'
+  'Binarios OK (whisper-cli cpu + runtime VC++, rl-capture, rl-hotkey, rl-calls, rl-fullscreen, rl-speaker + sherpa-onnx, ffmpeg, ffprobe).'
 )

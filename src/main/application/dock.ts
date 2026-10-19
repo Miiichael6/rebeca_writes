@@ -35,6 +35,8 @@ export class Dock {
   private mouseWatch: ReturnType<typeof setInterval> | null = null
   /** Quien sugirió grabar la reunión, para avisarle de la respuesta. */
   private meetingAnswered: (() => void) | null = null
+  /** Hay una app a pantalla completa: el dock no está ni en el borde (tarea 40). */
+  private fullscreen = false
 
   constructor(private readonly deps: DockDeps) {}
 
@@ -58,6 +60,7 @@ export class Dock {
     this.hovered = false
     this.revealed = false
     this.question = null
+    this.fullscreen = false
     this.deps.surface.close()
   }
 
@@ -138,6 +141,21 @@ export class Dock {
   revealUntilStopped(): void {
     this.revealed = true
     this.refresh()
+  }
+
+  /**
+   * Una app ocupa toda la pantalla (un juego, un video) o deja de ocuparla: mientras tanto el
+   * dock desaparece, también la barra del borde, para no estorbar ni dejarse tocar sin querer.
+   */
+  setFullscreen(active: boolean): void {
+    if (active === this.fullscreen) return
+    this.fullscreen = active
+    if (active) {
+      this.stopWatching()
+      this.hovered = false
+    }
+    this.deps.surface.setHidden(active)
+    if (!active) this.refresh()
   }
 
   /** Vuelve a pintar el dock (p. ej. al empezar o parar una grabación). */
