@@ -4,6 +4,7 @@ import { appendQuery, EMPTY_QUERY, matchPrefix, moveIndex } from '@renderer/lib/
 import { MOTION_FAST } from '@renderer/lib/motion'
 import { useMountTransition } from '@renderer/lib/useMountTransition'
 import { useOutsidePointer } from '@renderer/lib/useOutsidePointer'
+import { TITLE_BAR_HEIGHT } from '@shared/theme'
 import { SelectList } from './SelectList'
 import type { SelectOption } from './selectOption'
 
@@ -18,7 +19,7 @@ export interface SelectProps<T extends string> {
   id?: string
   disabled?: boolean
   style?: CSSProperties
-  /** `up` obliga a abrir hacia arriba; por defecto abre donde haya sitio. */
+  /** `up` prefiere abrir hacia arriba si cabe; por defecto abre hacia abajo si cabe. */
   direction?: 'auto' | 'up'
 }
 
@@ -37,13 +38,16 @@ interface Placement {
   maxHeight: number
 }
 
-/** Abre hacia abajo si cabe; si no, hacia el lado con más espacio, acortando la lista si hace falta. */
-function placeList(anchor: HTMLElement, count: number, forceUp: boolean): Placement {
+/**
+ * Abre hacia el lado preferido si cabe; si no, hacia el lado con más espacio, acortando la lista
+ * si hace falta. Por arriba no cuenta la barra de título: los botones nativos la taparían.
+ */
+function placeList(anchor: HTMLElement, count: number, preferUp: boolean): Placement {
   const rect = anchor.getBoundingClientRect()
   const below = window.innerHeight - rect.bottom - LIST_GAP - VIEWPORT_MARGIN
-  const above = rect.top - LIST_GAP - VIEWPORT_MARGIN
+  const above = rect.top - TITLE_BAR_HEIGHT - LIST_GAP - VIEWPORT_MARGIN
   const wanted = Math.min(LIST_MAX_HEIGHT, count * OPTION_HEIGHT + 8)
-  const up = forceUp || (below < wanted && above > below)
+  const up = preferUp ? above >= wanted || above > below : below < wanted && above > below
   return {
     up,
     end: rect.left + LIST_MAX_WIDTH > window.innerWidth - VIEWPORT_MARGIN,
