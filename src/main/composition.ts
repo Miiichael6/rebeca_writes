@@ -112,14 +112,17 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     dir: join(userData, 'history'),
     onCorrupt: (backup, err) => log.error(`Historial corrupto; respaldado en ${backup}`, err)
   })
-  const dictionary = new DictionaryService(
-    new JsonDictionaryRepository({
+  const dictionary = new DictionaryService({
+    repository: new JsonDictionaryRepository({
       path: join(userData, 'dictionary.json'),
       onCorrupt: (backup, err) =>
         log.error(`dictionary.json corrupto; respaldado en ${backup}`, err)
     }),
-    settings
-  )
+    settings,
+    history,
+    dialogs: electronDialogs,
+    disk: nodeDisk
+  })
   const queueStore = new JsonQueueRepository({
     path: join(userData, 'queue.json'),
     onCorrupt: (backup, err) => log.error(`Cola corrupta; respaldada en ${backup}`, err)

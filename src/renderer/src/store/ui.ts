@@ -62,6 +62,9 @@ interface UiState {
   transcriptWindowOpen: boolean
   toggleTranscriptWindow: () => void
   setTranscriptWindowOpen: (open: boolean) => void
+  /** Diálogo del diccionario (tarea 42); se abre desde el menú rápido y desde Configuración. */
+  dictionaryOpen: boolean
+  setDictionaryOpen: (open: boolean) => void
 }
 
 /** Tema inicial antes de hablar con el main. Chromium ya refleja `nativeTheme` en esta media query. */
@@ -107,7 +110,9 @@ export const useUiStore = create<UiState>()((set) => ({
   setTranscriptCovered: (transcriptCovered) => set({ transcriptCovered }),
   transcriptWindowOpen: false,
   toggleTranscriptWindow: () => set((s) => ({ transcriptWindowOpen: !s.transcriptWindowOpen })),
-  setTranscriptWindowOpen: (transcriptWindowOpen) => set({ transcriptWindowOpen })
+  setTranscriptWindowOpen: (transcriptWindowOpen) => set({ transcriptWindowOpen }),
+  dictionaryOpen: false,
+  setDictionaryOpen: (dictionaryOpen) => set({ dictionaryOpen })
 }))
 
 /**

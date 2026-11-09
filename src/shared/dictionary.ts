@@ -18,6 +18,9 @@ export interface DictionaryEntry {
   enabled: boolean
 }
 
+/** Versión del formato de `dictionary.json` y de los `.json` exportados. */
+export const DICTIONARY_VERSION = 1
+
 /** Tope de tokens del `--prompt` de whisper (n_text_ctx / 2 = 224), con margen. */
 const PROMPT_TOKEN_BUDGET = 220
 /** Estimación conservadora sin tokenizador: palabras raras y mayúsculas gastan más tokens. */
@@ -95,16 +98,26 @@ function matchAt(text: string, words: Word[], at: number, pattern: Pattern): Mat
   return { length: last + 1, replacement: pattern.written + kept }
 }
 
+/** Trozo del resultado: texto copiado tal cual o puesto por el diccionario. */
+export interface DictionaryPart {
+  text: string
+  replaced: boolean
+}
+
 /**
- * Reemplaza en `text` las formas habladas por su forma escrita. Compara sin mayúsculas ni
- * tildes, ignora la puntuación y los espacios entre palabras y solo toca palabras completas
- * (`cua` no cambia `cuadro`). Sin coincidencia aproximada: da demasiados falsos positivos.
+ * `text` partido en trozos sin tocar y trozos reemplazados (para resaltarlos al probar el
+ * diccionario). Unidos dan `applyDictionary(text, entries)`.
  */
-export function applyDictionary(text: string, entries: readonly DictionaryEntry[]): string {
+export function dictionaryParts(
+  text: string,
+  entries: readonly DictionaryEntry[]
+): DictionaryPart[] {
   const patterns = patternsOf(entries)
-  if (patterns.length === 0) return text
-  const words = wordsOf(text)
-  let result = ''
+  const parts: DictionaryPart[] = []
+  const keep = (slice: string): void => {
+    if (slice) parts.push({ text: slice, replaced: false })
+  }
+  const words = patterns.length > 0 ? wordsOf(text) : []
   let copiedUpTo = 0
   for (let at = 0; at < words.length;) {
     const match = patterns.reduce<Match | null>(
@@ -115,11 +128,24 @@ export function applyDictionary(text: string, entries: readonly DictionaryEntry[
       at++
       continue
     }
-    result += text.slice(copiedUpTo, words[at].start) + match.replacement
+    keep(text.slice(copiedUpTo, words[at].start))
+    parts.push({ text: match.replacement, replaced: true })
     copiedUpTo = words[at + match.length - 1].end
     at += match.length
   }
-  return result + text.slice(copiedUpTo)
+  keep(text.slice(copiedUpTo))
+  return parts
+}
+
+/**
+ * Reemplaza en `text` las formas habladas por su forma escrita. Compara sin mayúsculas ni
+ * tildes, ignora la puntuación y los espacios entre palabras y solo toca palabras completas
+ * (`cua` no cambia `cuadro`). Sin coincidencia aproximada: da demasiados falsos positivos.
+ */
+export function applyDictionary(text: string, entries: readonly DictionaryEntry[]): string {
+  return dictionaryParts(text, entries)
+    .map((p) => p.text)
+    .join('')
 }
 
 /**
@@ -163,4 +189,18 @@ export function dictionaryPrompt(
   const vocabulary = words.join(PROMPT_SEPARATOR)
   const base = basePrompt ? keepTail(basePrompt.trim(), PROMPT_CHAR_BUDGET - length - 1) : ''
   return base ? `${base} ${vocabulary}` : vocabulary
+}
+
+/** Formatos para importar y exportar el diccionario (tarea 42). */
+export const DICTIONARY_FILE_FORMATS = ['json', 'csv'] as const
+export type DictionaryFileFormat = (typeof DICTIONARY_FILE_FORMATS)[number]
+
+export function isDictionaryFileFormat(value: unknown): value is DictionaryFileFormat {
+  return DICTIONARY_FILE_FORMATS.includes(value as DictionaryFileFormat)
+}
+
+/** Archivo elegido al importar: su formato (por la extensión) y su texto. */
+export interface DictionaryImportedFile {
+  format: DictionaryFileFormat
+  content: string
 }

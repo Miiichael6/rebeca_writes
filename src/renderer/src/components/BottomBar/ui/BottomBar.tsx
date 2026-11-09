@@ -1,6 +1,7 @@
-import { Copy, Download, Sparkles } from 'lucide-react'
+import { BookA, Copy, Download, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { usePorts } from '../application/ports'
+import { useApplyDictionary } from '../application/useApplyDictionary'
 import { useExportMenu } from '../application/useExportMenu'
 import { Button, Checkbox, ConfirmDialog, Menu } from '../../ui'
 
@@ -11,6 +12,7 @@ export function BottomBar(): React.JSX.Element {
   const { joinLines, autoScroll } = settings.useOptions()
   const empty = transcript.useIsEmpty()
   const exportMenu = useExportMenu(empty)
+  const dictionary = useApplyDictionary()
 
   return (
     <footer className="bottombar">
@@ -29,6 +31,14 @@ export function BottomBar(): React.JSX.Element {
         icon={<Sparkles size={15} strokeWidth={1.5} />}
         disabled={empty}
         onClick={transcript.copyForAi}
+      />
+      <Button
+        size="sm"
+        aria-label={t('bottomBar.applyDictionary')}
+        title={t('bottomBar.applyDictionaryHint')}
+        icon={<BookA size={15} strokeWidth={1.5} />}
+        disabled={!dictionary.enabled}
+        onClick={dictionary.apply}
       />
       <Checkbox checked={joinLines} onChange={settings.setJoinLines}>
         {t('bottomBar.joinLines')}

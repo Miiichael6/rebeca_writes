@@ -28,11 +28,24 @@ export interface TranscriptPort {
   saveSrtBeside(overwrite?: boolean): Promise<string | null>
   /** Nombre del archivo de una ruta. */
   fileName(path: string): string
+  /** Hay una transcripción terminada que se puede editar (para «Aplicar diccionario»). */
+  useCanApplyDictionary(): boolean
+  /**
+   * Aplica el diccionario a la transcripción abierta y la guarda. Devuelve cuántos segmentos
+   * cambiaron, o `null` si no había una transcripción que cambiar.
+   */
+  applyDictionary(): Promise<number | null>
+}
+
+/** Puerto de salida: avisos. */
+export interface FeedbackPort {
+  toast(message: string): void
 }
 
 export interface BottomBarPorts {
   settings: SettingsPort
   transcript: TranscriptPort
+  feedback: FeedbackPort
 }
 
 export const PortsContext = createContext<BottomBarPorts | null>(null)

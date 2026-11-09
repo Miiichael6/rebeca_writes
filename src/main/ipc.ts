@@ -122,6 +122,10 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.DictionaryGet, () => dictionary.get())
   // Se valida entrada por entrada en `parseDictionaryEntries`: lo inválido se descarta.
   handle(IpcChannel.DictionarySet, (_event, entries) => dictionary.set(entries))
+  handle(IpcChannel.DictionaryImport, (event) => dictionary.importFile(ownerOf(event)))
+  handle(IpcChannel.DictionaryExport, (event, content, format, filterLabel) =>
+    dictionary.exportFile(ownerOf(event), content, format, filterLabel)
+  )
 
   handle(IpcChannel.ThemeGetResolved, () => resolvedTheme())
 
@@ -167,6 +171,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   )
   handle(IpcChannel.HistoryShowInFolder, (_event, id) => history.showInFolder(id))
   handle(IpcChannel.HistoryRetranscribe, (_event, id) => intake.retranscribe(id))
+  handle(IpcChannel.HistoryApplyDictionary, (_event, id) => dictionary.applyTo(id))
 
   handle(IpcChannel.ExportSave, (event, entryId, format, segments, options, filterLabel) =>
     exporter.save(ownerOf(event), entryId, format, segments, options, filterLabel)

@@ -28,10 +28,16 @@ export interface VadModelPort {
   prepare(): Promise<ModelDownloadResult>
 }
 
+/** Puerto de salida: el diálogo para editar las palabras del diccionario. */
+export interface DictionaryPort {
+  open(): void
+}
+
 export interface TranscriptionOptionsPorts {
   options: OptionsPort
   hardware: HardwarePort
   vadModel: VadModelPort
+  dictionary: DictionaryPort
 }
 
 export const PortsContext = createContext<TranscriptionOptionsPorts | null>(null)

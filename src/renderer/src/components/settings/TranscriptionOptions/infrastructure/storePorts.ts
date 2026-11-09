@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow'
 import { updateSettings, useSettingsStore } from '@renderer/store/settings'
+import { useUiStore } from '@renderer/store/ui'
 import type { TranscriptionOptionsPorts } from '../application/ports'
 
 /** Adaptadores de los puertos sobre el store de ajustes, el navegador y el API del preload. */
@@ -24,5 +25,8 @@ export const storePorts: TranscriptionOptionsPorts = {
   },
   vadModel: {
     prepare: () => window.api.vad.prepareModel()
+  },
+  dictionary: {
+    open: () => useUiStore.getState().setDictionaryOpen(true)
   }
 }

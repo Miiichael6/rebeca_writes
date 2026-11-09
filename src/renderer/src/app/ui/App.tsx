@@ -1,3 +1,4 @@
+import DictionaryDialog from '@renderer/components/DictionaryDialog'
 import DropOverlay from '@renderer/components/DropOverlay'
 import QueuePanel from '@renderer/components/QueuePanel'
 import SettingsPage from '@renderer/components/settings/SettingsPage'
@@ -27,6 +28,7 @@ export function App(): React.JSX.Element {
       {view === 'settings' ? <SettingsPage /> : <MainView />}
 
       <QueuePanel />
+      <DictionaryDialog />
       <DropOverlay />
       <Toaster />
     </div>

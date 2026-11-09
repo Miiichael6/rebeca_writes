@@ -1,13 +1,10 @@
-import type { DictionaryEntry } from '@shared/dictionary'
+import { DICTIONARY_VERSION, type DictionaryEntry } from '@shared/dictionary'
 import { isRecord } from './guards'
 
 /**
  * Reglas de `dictionary.json` (tarea 41): lo que no vale se descarta, así un archivo editado
  * a mano nunca rompe la app.
  */
-
-/** Versión del formato de `dictionary.json`. */
-export const DICTIONARY_VERSION = 1
 
 const MAX_ENTRIES = 1000
 const MAX_SPOKEN_FORMS = 20

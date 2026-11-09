@@ -52,6 +52,8 @@ export interface ViewPort {
   toggleVideo(): void
   toggleTranscriptWindow(): void
   openSettings(): void
+  /** Diálogo para editar las palabras del diccionario (tarea 42). */
+  openDictionary(): void
 }
 
 export interface ToolbarPorts {

@@ -2159,3 +2159,215 @@ body.drag-selecting {
   width: var(--control-height);
   padding: 0;
 }
+
+/* ---------- Diccionario (tarea 42) ---------- */
+.dict-dialog .dialog-body {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.dict-dialog .dialog-body h2,
+.dict-dialog .dialog-text {
+  margin-bottom: 0;
+}
+
+.dict-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dict-search {
+  position: relative;
+  flex: 1;
+  max-width: 280px;
+  margin-left: auto;
+  color: var(--text-2);
+}
+
+.dict-search svg {
+  position: absolute;
+  top: 50%;
+  left: var(--space-3);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.dict-search .input {
+  padding-left: calc(var(--space-3) + 20px);
+}
+
+.dict-table {
+  max-height: min(46vh, 420px);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.dict-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 56px 56px 40px;
+  align-items: start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.dict-row + .dict-row {
+  border-top: 1px solid var(--border);
+}
+
+.dict-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-items: center;
+  background: var(--bg-card-secondary);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* Una palabra apagada se ve atenuada, pero sus controles siguen usables. */
+.dict-row.disabled .dict-chip,
+.dict-row.disabled .dict-written-cell .input {
+  color: var(--text-3);
+}
+
+.dict-check-cell {
+  display: flex;
+  justify-content: center;
+  min-height: var(--control-height);
+  align-items: center;
+}
+
+.dict-chips-cell,
+.dict-written-cell {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.dict-chips.input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  height: auto;
+  min-height: var(--control-height);
+  padding: 3px var(--space-2);
+  cursor: text;
+}
+
+.dict-chips:focus-within {
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--accent);
+}
+
+.dict-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: 1px 2px 1px var(--space-2);
+  border-radius: var(--radius-round);
+  background: var(--bg-selected);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.dict-chip-remove {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.dict-chip-remove:hover {
+  background: var(--bg-subtle-hover);
+  color: var(--text-1);
+}
+
+.dict-chip-remove:focus-visible {
+  outline: 2px solid var(--text-1);
+}
+
+.dict-chips-input {
+  flex: 1;
+  min-width: 80px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.dict-chips-input::placeholder {
+  color: var(--text-3);
+}
+
+.input.invalid,
+.dict-chips.input.invalid {
+  border-bottom: 2px solid var(--critical);
+}
+
+.dict-error {
+  color: var(--critical);
+  font-size: var(--text-sm);
+}
+
+.dict-no-results {
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.dict-empty {
+  padding: var(--space-6) var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.dict-empty .dialog-hint {
+  max-width: 52ch;
+  margin-inline: auto;
+}
+
+.dict-try {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dict-try-label {
+  font-weight: 600;
+}
+
+.dict-try-result {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card-secondary);
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  user-select: text;
+}
+
+.dict-try-result mark {
+  background: var(--mark-bg);
+  color: inherit;
+  border-radius: 2px;
+}
+
+.dialog-actions.dict-actions {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.dict-file-actions {
+  display: flex;
+  gap: var(--space-2);
+}

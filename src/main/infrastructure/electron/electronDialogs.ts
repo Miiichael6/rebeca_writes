@@ -34,6 +34,11 @@ export const electronDialogs: Dialogs = {
     return result.canceled ? null : (result.filePaths[0] ?? null)
   },
 
+  async pickFile(owner, filters) {
+    const result = await showOpen(owner, { properties: ['openFile'], filters })
+    return result.canceled ? null : (result.filePaths[0] ?? null)
+  },
+
   async pickSavePath(owner, { defaultPath, filterName, extension }) {
     const options = { defaultPath, filters: [{ name: filterName, extensions: [extension] }] }
     const result = owner

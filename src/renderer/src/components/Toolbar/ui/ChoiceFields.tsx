@@ -8,9 +8,11 @@ import {
   Cpu,
   Download,
   Languages,
+  PenLine,
   Star
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { usePorts } from '../application/ports'
 import {
   useDictionaryChoice,
   useLanguageChoice,
@@ -89,6 +91,7 @@ export function ChoiceFields({
   const language = useLanguageChoice(i18n.language, t('toolbar.autoDetect'))
   const vad = useVadChoice()
   const dictionary = useDictionaryChoice()
+  const { view } = usePorts()
   const [open, setOpen] = useState(false)
   const favorites: Favorites = {
     ...useFavoriteLanguages(),
@@ -137,6 +140,13 @@ export function ChoiceFields({
       toggled: dictionary.value,
       keepOpen: true,
       onSelect: dictionary.toggle
+    },
+    {
+      // Cierra el menú: abre el diálogo para editar las palabras.
+      key: 'dictionaryEdit',
+      label: t('toolbar.dictionaryEdit'),
+      icon: PenLine,
+      onSelect: view.openDictionary
     }
   ]
 

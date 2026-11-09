@@ -10,6 +10,8 @@ export interface Disk {
   listDir(dir: string): Promise<string[]>
   /** Borra el archivo, y si es una carpeta todo lo que tiene. No falla si no existe. */
   remove(path: string): Promise<void>
+  /** Lee un archivo de texto UTF-8 (sin BOM). */
+  readText(path: string): Promise<string>
   /** Escribe UTF-8 sin BOM de forma atómica (archivo temporal + rename). */
   writeTextAtomic(path: string, text: string): Promise<void>
 }

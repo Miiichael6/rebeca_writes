@@ -1,16 +1,16 @@
-import { AudioLines, Filter, Rows3, Settings2 } from 'lucide-react'
+import { AudioLines, BookA, Filter, Rows3, Settings2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { defaultThreads } from '@shared/settings'
 import { usePorts } from '../application/ports'
 import { MAX_LEN_MAX, MAX_LEN_MIN } from '../domain/options'
-import { NumberInput, SettingRow, Toggle } from '../../../ui'
+import { Button, NumberInput, SettingRow, Toggle } from '../../../ui'
 import { PromptSetting } from './PromptSetting'
 import { VadSetting } from './VadSetting'
 
 /** Modelos › opciones de transcripción: prompt, longitud, ruido, filtro de voz, normalizado e hilos. */
 export function TranscriptionOptions(): React.JSX.Element {
   const { t } = useTranslation()
-  const { options, hardware } = usePorts()
+  const { options, hardware, dictionary } = usePorts()
   const { maxLen, suppressNst, normalize, threads } = options.useValues()
   const cores = hardware.cores()
 
@@ -45,6 +45,14 @@ export function TranscriptionOptions(): React.JSX.Element {
       </SettingRow>
 
       <VadSetting />
+
+      <SettingRow
+        icon={<BookA size={20} strokeWidth={1.5} />}
+        title={t('settings.dictionary')}
+        description={t('settings.dictionaryDescription')}
+      >
+        <Button onClick={dictionary.open}>{t('settings.dictionaryEdit')}</Button>
+      </SettingRow>
 
       <SettingRow
         icon={<AudioLines size={20} strokeWidth={1.5} />}

@@ -38,7 +38,10 @@ const api: AppApi = {
   },
   dictionary: {
     get: () => invoke(IpcChannel.DictionaryGet),
-    set: (entries) => invoke(IpcChannel.DictionarySet, entries)
+    set: (entries) => invoke(IpcChannel.DictionarySet, entries),
+    importFile: () => invoke(IpcChannel.DictionaryImport),
+    exportFile: (content, format, filterLabel) =>
+      invoke(IpcChannel.DictionaryExport, content, format, filterLabel)
   },
   theme: {
     getResolved: () => invoke(IpcChannel.ThemeGetResolved),
@@ -93,6 +96,7 @@ const api: AppApi = {
     relocate: (id, filterLabels) => invoke(IpcChannel.HistoryRelocate, id, filterLabels),
     showInFolder: (id) => invoke(IpcChannel.HistoryShowInFolder, id),
     retranscribe: (id) => invoke(IpcChannel.HistoryRetranscribe, id),
+    applyDictionary: (id) => invoke(IpcChannel.HistoryApplyDictionary, id),
     onAdded: (listener) => on(IpcChannel.HistoryAdded, listener)
   },
   export: {

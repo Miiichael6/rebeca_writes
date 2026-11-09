@@ -1,6 +1,7 @@
 import type { ResolvedTheme } from './theme'
 import type { Settings, SettingsPatch } from './settings'
-import type { DictionaryEntry } from './dictionary'
+import type { DictionaryEntry, DictionaryFileFormat, DictionaryImportedFile } from './dictionary'
+import type { ReappliedSegments } from './reapplyDictionary'
 import type { ExportFormat, ExportOptions } from './exporters'
 import type { MediaFilterKey } from './formats'
 import type {
@@ -61,6 +62,8 @@ export const IpcChannel = {
   SettingsChanged: 'settings:changed',
   DictionaryGet: 'dictionary:get',
   DictionarySet: 'dictionary:set',
+  DictionaryImport: 'dictionary:import',
+  DictionaryExport: 'dictionary:export',
   ThemeGetResolved: 'theme:get-resolved',
   ThemeChanged: 'theme:changed',
   BackendGetInfo: 'backend:get-info',
@@ -98,6 +101,7 @@ export const IpcChannel = {
   HistoryRelocate: 'history:relocate',
   HistoryShowInFolder: 'history:showInFolder',
   HistoryRetranscribe: 'history:retranscribe',
+  HistoryApplyDictionary: 'history:applyDictionary',
   HistoryAdded: 'history:added',
   ExportSave: 'export:save',
   ExportSaveSrtBeside: 'export:saveSrtBeside',
@@ -179,6 +183,11 @@ export interface IpcInvokeMap {
   [IpcChannel.SettingsSet]: { args: [patch: SettingsPatch]; result: Settings }
   [IpcChannel.DictionaryGet]: { args: []; result: DictionaryEntry[] }
   [IpcChannel.DictionarySet]: { args: [entries: DictionaryEntry[]]; result: DictionaryEntry[] }
+  [IpcChannel.DictionaryImport]: { args: []; result: DictionaryImportedFile | null }
+  [IpcChannel.DictionaryExport]: {
+    args: [content: string, format: DictionaryFileFormat, filterLabel: string]
+    result: string | null
+  }
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
   [IpcChannel.BackendGetInfo]: { args: []; result: BackendInfo }
   [IpcChannel.BackendCudaStatus]: { args: []; result: CudaPackageStatus }
@@ -227,6 +236,7 @@ export interface IpcInvokeMap {
   }
   [IpcChannel.HistoryShowInFolder]: { args: [id: string]; result: void }
   [IpcChannel.HistoryRetranscribe]: { args: [id: string]; result: boolean }
+  [IpcChannel.HistoryApplyDictionary]: { args: [id: string]; result: ReappliedSegments | null }
   [IpcChannel.ExportSave]: {
     args: [
       entryId: string,
@@ -371,6 +381,14 @@ export interface AppApi {
     get: () => Promise<DictionaryEntry[]>
     /** Guarda la lista completa; lo inválido se descarta y se devuelve la que quedó. */
     set: (entries: DictionaryEntry[]) => Promise<DictionaryEntry[]>
+    /** Elige un `.json` o `.csv` y devuelve su texto (tarea 42); `null` si se cancela. */
+    importFile: () => Promise<DictionaryImportedFile | null>
+    /** "Guardar como" del texto ya serializado; devuelve la ruta o `null` si se cancela. */
+    exportFile: (
+      content: string,
+      format: DictionaryFileFormat,
+      filterLabel: string
+    ) => Promise<string | null>
   }
   theme: {
     getResolved: () => Promise<ResolvedTheme>
@@ -473,6 +491,11 @@ export interface AppApi {
     showInFolder: (id: string) => Promise<void>
     /** Vuelve a encolar el archivo con los ajustes actuales; `false` si no se pudo. */
     retranscribe: (id: string) => Promise<boolean>
+    /**
+     * Aplica el diccionario (sus palabras activas, aunque el interruptor esté apagado) a una
+     * transcripción terminada y la guarda (tarea 42). `null` si no existe o se está transcribiendo.
+     */
+    applyDictionary: (id: string) => Promise<ReappliedSegments | null>
     /**
      * Cambia el texto de un segmento (edición en línea). Guarda el de whisper en
      * `originalText`; pasar ese mismo texto lo restaura. `null` si la entrada no está en disco.

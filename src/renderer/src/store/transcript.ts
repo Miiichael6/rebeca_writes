@@ -204,3 +204,22 @@ export function applySegmentEdit(index: number, text: string): string | null {
   useTranscriptStore.setState({ segments: next })
   return entry.id
 }
+
+/**
+ * Pone los segmentos que guardó el main tras aplicar el diccionario (tarea 42), si la entrada
+ * sigue abierta y se puede editar. Devuelve `true` si los puso.
+ */
+export function replaceSegments(entryId: string, segments: Segment[]): boolean {
+  const state = useTranscriptStore.getState()
+  if (state.entry?.id !== entryId) {
+    // Ya se cambió de archivo: que al volver se lea del historial y no de la copia de la sesión.
+    results.delete(entryId)
+    return false
+  }
+  if (!canEdit(state)) return false
+  if (state.status === 'done' || state.status === 'error') {
+    results.set(entryId, { segments, error: state.error })
+  }
+  useTranscriptStore.setState({ segments })
+  return true
+}

@@ -56,6 +56,7 @@ export const storePorts: ToolbarPorts = {
     useTranscriptWindowOpen: () => useUiStore((s) => s.transcriptWindowOpen),
     toggleVideo: () => useUiStore.getState().toggleVideo(),
     toggleTranscriptWindow: () => useUiStore.getState().toggleTranscriptWindow(),
-    openSettings: () => useUiStore.getState().setView('settings')
+    openSettings: () => useUiStore.getState().setView('settings'),
+    openDictionary: () => useUiStore.getState().setDictionaryOpen(true)
   }
 }
