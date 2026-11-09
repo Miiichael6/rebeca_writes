@@ -5,6 +5,7 @@ import { DOCK_BUTTONS, type DockButton } from '@shared/dock'
 import type { BackendService } from './application/backendService'
 import type { ClipService } from './application/clipService'
 import type { CudaService } from './application/cudaService'
+import type { DictionaryService } from './application/dictionaryService'
 import type { Dock } from './application/dock'
 import type { DockMenu } from './application/dockMenu'
 import type { ExportService } from './application/exportService'
@@ -36,6 +37,7 @@ type Handler<C extends keyof IpcInvokeMap> = (
 /** Los casos de uso que atiende `ipc.ts`; se crean en `index.ts`. */
 export interface IpcDeps {
   settings: SettingsRepository
+  dictionary: DictionaryService
   backends: BackendService
   cuda: CudaService
   models: ModelService
@@ -75,6 +77,7 @@ const ownerOf = (event: IpcMainInvokeEvent): BrowserWindow | null =>
 export function registerIpcHandlers(deps: IpcDeps): void {
   const {
     settings,
+    dictionary,
     backends,
     cuda,
     models,
@@ -115,6 +118,10 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.SettingsGet, () => settings.load())
   // El patch se valida clave por clave en `mergeSettings`: lo inválido se ignora.
   handle(IpcChannel.SettingsSet, (_event, patch) => settings.update(patch))
+
+  handle(IpcChannel.DictionaryGet, () => dictionary.get())
+  // Se valida entrada por entrada en `parseDictionaryEntries`: lo inválido se descarta.
+  handle(IpcChannel.DictionarySet, (_event, entries) => dictionary.set(entries))
 
   handle(IpcChannel.ThemeGetResolved, () => resolvedTheme())
 

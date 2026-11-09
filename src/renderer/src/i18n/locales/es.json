@@ -103,6 +103,8 @@
     "choiceMenu": "Modelo e idioma",
     "detectVoice": "Detectar voz",
     "detectVoiceHint": "Puede alargar un poco la transcripción",
+    "dictionary": "Diccionario",
+    "dictionaryHint": "Cambia palabras al transcribir",
     "model": "Modelo Whisper:",
     "moreModels": "Descargar más modelos...",
     "language": "Idioma:",

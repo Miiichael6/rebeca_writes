@@ -61,3 +61,10 @@ export function useVadChoice(): { value: boolean; toggle: () => void } {
   const { vad } = settings.useChoice()
   return { value: vad, toggle: () => settings.setVad(!vad) }
 }
+
+/** Diccionario de reemplazos: corrige palabras al transcribir. */
+export function useDictionaryChoice(): { value: boolean; toggle: () => void } {
+  const { settings } = usePorts()
+  const { dictionary } = settings.useChoice()
+  return { value: dictionary, toggle: () => settings.setDictionary(!dictionary) }
+}

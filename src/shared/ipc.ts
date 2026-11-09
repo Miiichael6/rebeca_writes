@@ -1,5 +1,6 @@
 import type { ResolvedTheme } from './theme'
 import type { Settings, SettingsPatch } from './settings'
+import type { DictionaryEntry } from './dictionary'
 import type { ExportFormat, ExportOptions } from './exporters'
 import type { MediaFilterKey } from './formats'
 import type {
@@ -58,6 +59,8 @@ export const IpcChannel = {
   SettingsGet: 'settings:get',
   SettingsSet: 'settings:set',
   SettingsChanged: 'settings:changed',
+  DictionaryGet: 'dictionary:get',
+  DictionarySet: 'dictionary:set',
   ThemeGetResolved: 'theme:get-resolved',
   ThemeChanged: 'theme:changed',
   BackendGetInfo: 'backend:get-info',
@@ -174,6 +177,8 @@ export interface IpcInvokeMap {
   [IpcChannel.ClipboardWriteText]: { args: [text: string]; result: void }
   [IpcChannel.SettingsGet]: { args: []; result: Settings }
   [IpcChannel.SettingsSet]: { args: [patch: SettingsPatch]; result: Settings }
+  [IpcChannel.DictionaryGet]: { args: []; result: DictionaryEntry[] }
+  [IpcChannel.DictionarySet]: { args: [entries: DictionaryEntry[]]; result: DictionaryEntry[] }
   [IpcChannel.ThemeGetResolved]: { args: []; result: ResolvedTheme }
   [IpcChannel.BackendGetInfo]: { args: []; result: BackendInfo }
   [IpcChannel.BackendCudaStatus]: { args: []; result: CudaPackageStatus }
@@ -360,6 +365,12 @@ export interface AppApi {
     set: (patch: SettingsPatch) => Promise<Settings>
     /** Avisa de cada cambio, venga de esta ventana o del main. */
     onChanged: (listener: (settings: Settings) => void) => () => void
+  }
+  /** Diccionario de reemplazos (tarea 41); se activa con `settings.dictionaryEnabled`. */
+  dictionary: {
+    get: () => Promise<DictionaryEntry[]>
+    /** Guarda la lista completa; lo inválido se descarta y se devuelve la que quedó. */
+    set: (entries: DictionaryEntry[]) => Promise<DictionaryEntry[]>
   }
   theme: {
     getResolved: () => Promise<ResolvedTheme>

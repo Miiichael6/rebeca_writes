@@ -1,9 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
-import type { BackendService } from '../../src/main/application/backendService'
-import type { ModelService } from '../../src/main/application/modelService'
-import type { WhisperRequest } from '../../src/main/application/ports/whisperProcess'
-import { TranscriptionPipeline } from '../../src/main/application/transcriptionPipeline'
+import { describe, expect, it } from 'vitest'
 import type { TranscribeJob } from '../../src/shared/types'
+import { fakePipeline } from './pipelineFixture'
 
 const job: TranscribeJob = {
   id: 'j1',
@@ -20,35 +17,7 @@ async function argsWith(
   downloaded: string | null = null
 ): Promise<string[]> {
   let path = vadPath
-  const requests: WhisperRequest[] = []
-  const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
-  const pipeline = new TranscriptionPipeline({
-    media: {
-      probe: async () => ({ durationSec: 10 }) as never,
-      toWav: async () => 'a.wav'
-    },
-    temp: { dir: () => 'tmp', remove: async () => {} },
-    whisper: {
-      run: async (request) => {
-        requests.push(request)
-        return { segments: [], detectedLanguage: null }
-      }
-    },
-    binaries: {
-      installed: () => ['cpu'],
-      cliPath: () => 'whisper-cli.exe',
-      hasNvidiaGpu: async () => false,
-      probe: async () => true
-    },
-    backends: {
-      info: async () => ({ backend: 'cpu', installed: ['cpu'] }),
-      acquire: () => () => {},
-      notifyFallback: () => {}
-    } as unknown as BackendService,
-    models: {
-      resolvePath: async () => 'model.bin',
-      acquire: () => () => {}
-    } as unknown as ModelService,
+  const { pipeline, requests } = fakePipeline({
     vadModel: {
       readyPath: async () => path,
       prepare: async () => {
@@ -57,8 +26,7 @@ async function argsWith(
           ? { status: 'done' as const }
           : { status: 'error' as const, code: 'downloadFailed' as const }
       }
-    },
-    log
+    }
   })
   const errors: unknown[] = []
   pipeline.on('error', (e) => errors.push(e))

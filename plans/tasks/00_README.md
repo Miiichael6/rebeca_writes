@@ -88,6 +88,8 @@ Documento fuente: [../about_this_project.md](../about_this_project.md) · Captur
 | 38 | [Copiar para IA](done/38_copiar_para_ia.md) | 9 Pulido | — | ✅ Terminada (prueba manual pendiente) |
 | 39 | [Recortar audio y video](done/39_recortar_audio_video.md) | 9 Pulido | — | ✅ Terminada (prueba manual pendiente) |
 | 40 | [Iniciar con Windows y esconder el dock a pantalla completa](done/40_inicio_con_windows_y_pantalla_completa.md) | 9 Pulido | 30 | ✅ Terminada (prueba manual pendiente) |
+| 41 | [Diccionario: motor e interruptor](done/41_diccionario_motor.md) | 9 Pulido | — | ✅ Terminada (prueba del interruptor en la app pendiente) |
+| 42 | [Diccionario: sub-ventana para editarlo](pending/42_diccionario_ventana.md) | 9 Pulido | 41 | ⬜ Pendiente |
 
 \* La 12 (persistencia) se adelanta respecto a la fase 5 del documento porque la necesitan 16, 17, 18 y 21.
 
@@ -116,4 +118,5 @@ todas → 22 → 23 → 24
 38 (copiar para IA) — sin dependencias
 39 (recortar audio y video con forma de onda) — sin dependencias
 30 → 40 (iniciar con Windows y esconder el dock a pantalla completa)
+41 (diccionario: reemplazos, --prompt e interruptor en el menú rápido) → 42 (sub-ventana para editarlo)
 ```

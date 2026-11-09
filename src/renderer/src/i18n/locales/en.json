@@ -98,6 +98,8 @@
     "choiceMenu": "Model and language",
     "detectVoice": "Detect voice",
     "detectVoiceHint": "May make transcription take a bit longer",
+    "dictionary": "Dictionary",
+    "dictionaryHint": "Replaces words while transcribing",
     "model": "Whisper model:",
     "moreModels": "Download more models...",
     "language": "Language:",

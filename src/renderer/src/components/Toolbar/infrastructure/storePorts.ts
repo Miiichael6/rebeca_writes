@@ -24,13 +24,15 @@ export const storePorts: ToolbarPorts = {
           model: s.settings.model,
           language: s.settings.language,
           favoriteLanguages: s.settings.favoriteLanguages,
-          vad: s.settings.vad
+          vad: s.settings.vad,
+          dictionary: s.settings.dictionaryEnabled
         }))
       ),
     setModel: (model) => updateSettings({ model }),
     setLanguage: (language) => updateSettings({ language }),
     setFavoriteLanguages: (favoriteLanguages) => updateSettings({ favoriteLanguages }),
-    setVad: (vad) => updateSettings({ vad })
+    setVad: (vad) => updateSettings({ vad }),
+    setDictionary: (dictionaryEnabled) => updateSettings({ dictionaryEnabled })
   },
   models: {
     useDownloaded: () => useModelsStore(useShallow(selectDownloaded)),

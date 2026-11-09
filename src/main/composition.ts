@@ -7,6 +7,7 @@ import { createArgvHandler } from './application/argvHandler'
 import { BackendService } from './application/backendService'
 import { CudaService } from './application/cudaService'
 import { Dock } from './application/dock'
+import { DictionaryService } from './application/dictionaryService'
 import { DockFullscreen } from './application/dockFullscreen'
 import { DockMenu } from './application/dockMenu'
 import { ClipService } from './application/clipService'
@@ -54,6 +55,7 @@ import { nodeDisk } from './infrastructure/fs/nodeDisk'
 import { createTempWorkspace } from './infrastructure/fs/tempWorkspace'
 import { createFsPcmFiles } from './infrastructure/live/fsPcmFiles'
 import { createHistoryMedia } from './infrastructure/media/historyMediaAdapter'
+import { JsonDictionaryRepository } from './infrastructure/persistence/jsonDictionaryRepository'
 import { JsonHistoryRepository } from './infrastructure/persistence/jsonHistoryRepository'
 import { createJsonModelStore } from './infrastructure/persistence/jsonModelStore'
 import { SPEAKER_BINARY, SpeakerSidecar } from './infrastructure/speakers/speakerSidecar'
@@ -110,6 +112,14 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     dir: join(userData, 'history'),
     onCorrupt: (backup, err) => log.error(`Historial corrupto; respaldado en ${backup}`, err)
   })
+  const dictionary = new DictionaryService(
+    new JsonDictionaryRepository({
+      path: join(userData, 'dictionary.json'),
+      onCorrupt: (backup, err) =>
+        log.error(`dictionary.json corrupto; respaldado en ${backup}`, err)
+    }),
+    settings
+  )
   const queueStore = new JsonQueueRepository({
     path: join(userData, 'queue.json'),
     onCorrupt: (backup, err) => log.error(`Cola corrupta; respaldada en ${backup}`, err)
@@ -175,6 +185,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     backends,
     models,
     vadModel,
+    dictionary,
     log
   }
   const manager = new TranscriptionManager({
@@ -342,6 +353,7 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
 
   return {
     settings,
+    dictionary,
     backends,
     cuda,
     models,

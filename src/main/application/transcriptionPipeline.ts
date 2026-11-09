@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events'
+import { correctSegment, dictionaryPrompt, type DictionaryEntry } from '@shared/dictionary'
 import { AUTO_LANGUAGE } from '@shared/whisper'
 import type {
+  Segment,
   TranscribeDoneEvent,
   TranscribeErrorEvent,
   TranscribeJob,
@@ -12,6 +14,7 @@ import { withBackendFallback } from '../domain/fallback'
 import { TranscribeError, toErrorCode } from '../domain/transcribeError'
 import { whisperArgs } from '../domain/whisperArgs'
 import type { BackendService } from './backendService'
+import type { DictionaryService } from './dictionaryService'
 import type { ModelService } from './modelService'
 import type { BackendBinaries } from './ports/backendBinaries'
 import type { Logger } from './ports/eventPublisher'
@@ -35,6 +38,8 @@ export interface TranscriptionPipelineDeps {
   models: ModelService
   /** Modelo del filtro de voz; si el trabajo lo pide y falta, se descarga (si falla, sin filtro). */
   vadModel: Pick<SingleFileModel, 'readyPath' | 'prepare'>
+  /** Diccionario de reemplazos (tarea 41): sus palabras van al `--prompt` y corrige cada segmento. */
+  dictionary: Pick<DictionaryService, 'active'>
   log: Logger
   /**
    * "Detectar quién habla" para archivos ya grabados (tarea 35): si se pasa, al terminar whisper
@@ -82,6 +87,14 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
     return undefined
   }
 
+  /** Entradas del diccionario para este trabajo; si no se puede leer, se transcribe sin él. */
+  private async dictionaryEntries(jobId: string): Promise<DictionaryEntry[]> {
+    return this.deps.dictionary.active().catch((err) => {
+      this.deps.log.warn(`Transcripción ${jobId}: no se pudo leer el diccionario`, err)
+      return []
+    })
+  }
+
   /** Ejecuta el pipeline completo del trabajo. Nunca rechaza: los fallos emiten `error`. */
   async start(job: TranscribeJob): Promise<void> {
     const { media, temp, whisper, binaries, backends, models, log } = this.deps
@@ -110,6 +123,9 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
 
       const language = job.language || AUTO_LANGUAGE
       const vadModel = job.options?.vad ? await this.vadModelPath(job.id) : undefined
+      const dictionary = await this.dictionaryEntries(job.id)
+      const options = { ...job.options, prompt: dictionaryPrompt(dictionary, job.options?.prompt) }
+      const correct = (segment: Segment): Segment => correctSegment(segment, dictionary)
       const backendInfo = await backends.info()
       const { result, backend } = await withBackendFallback(
         backendInfo.backend,
@@ -120,7 +136,7 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
             wav,
             language,
             translate: job.translate,
-            options: job.options,
+            options,
             vadModel
           })
           const cli = binaries.cliPath(b)
@@ -135,7 +151,7 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
                 onSegment: (segment) =>
                   this.emitTyped('segment', {
                     jobId: job.id,
-                    segments: [segment]
+                    segments: [correct(segment)]
                   } satisfies TranscribeSegmentEvent),
                 onProgress: (percent) =>
                   this.emitProgress(
@@ -151,14 +167,15 @@ export class TranscriptionPipeline extends EventEmitter implements Transcription
         backends.notifyFallback
       )
 
-      let segments = result.segments
+      const corrected = result.segments.map(correct)
+      let segments = corrected
       const speakers = this.deps.speakers
       if (speakers?.enabled() && !signal.aborted) {
         segments = await new SpeakerLabeler(speakers.embedder, null)
           .label(wav, segments, 0)
           .catch((err) => {
             log.warn(`Transcripción ${job.id}: no se pudo detectar quién habla`, err)
-            return result.segments
+            return corrected
           })
       }
 

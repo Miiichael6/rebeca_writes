@@ -8,6 +8,8 @@ export interface TranscriptionChoice {
   favoriteLanguages: string[]
   /** Filtro de voz de whisper (`--vad`). */
   vad: boolean
+  /** Diccionario de reemplazos (tarea 41). */
+  dictionary: boolean
 }
 
 /** Puerto de salida: lo que se elige para transcribir (se recuerda entre sesiones). */
@@ -17,6 +19,7 @@ export interface SettingsPort {
   setLanguage(language: string): void
   setFavoriteLanguages(languages: string[]): void
   setVad(vad: boolean): void
+  setDictionary(enabled: boolean): void
 }
 
 export interface DownloadedModel {

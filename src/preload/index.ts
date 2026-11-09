@@ -36,6 +36,10 @@ const api: AppApi = {
     set: (patch) => invoke(IpcChannel.SettingsSet, patch),
     onChanged: (listener) => on(IpcChannel.SettingsChanged, listener)
   },
+  dictionary: {
+    get: () => invoke(IpcChannel.DictionaryGet),
+    set: (entries) => invoke(IpcChannel.DictionarySet, entries)
+  },
   theme: {
     getResolved: () => invoke(IpcChannel.ThemeGetResolved),
     onChanged: (listener) => on(IpcChannel.ThemeChanged, listener)

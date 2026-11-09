@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   AudioLines,
   AudioWaveform,
+  BookA,
   Check,
   ChevronDown,
   Cpu,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
+  useDictionaryChoice,
   useLanguageChoice,
   useModelChoice,
   useVadChoice,
@@ -73,7 +75,7 @@ function languageItems(items: MenuItem[], favorites: Favorites): MenuItem[] {
 }
 
 /**
- * Modelo, idioma y filtro de voz: lo que se elige antes de transcribir. Un solo botón con el
+ * Modelo, idioma, filtro de voz y diccionario: lo que se elige antes de transcribir. Un solo botón con el
  * resumen («Small · Español») que abre un menú con un submenú para modelo e idioma.
  */
 export function ChoiceFields({
@@ -86,6 +88,7 @@ export function ChoiceFields({
   const { t, i18n } = useTranslation()
   const language = useLanguageChoice(i18n.language, t('toolbar.autoDetect'))
   const vad = useVadChoice()
+  const dictionary = useDictionaryChoice()
   const [open, setOpen] = useState(false)
   const favorites: Favorites = {
     ...useFavoriteLanguages(),
@@ -125,6 +128,15 @@ export function ChoiceFields({
       keepOpen: true,
       separator: true,
       onSelect: vad.toggle
+    },
+    {
+      key: 'dictionary',
+      label: t('toolbar.dictionary'),
+      description: t('toolbar.dictionaryHint'),
+      icon: BookA,
+      toggled: dictionary.value,
+      keepOpen: true,
+      onSelect: dictionary.toggle
     }
   ]
 

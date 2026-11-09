@@ -1,5 +1,6 @@
 import { LocateFixed, Pencil, Undo2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { restorableOriginal } from '@shared/editSegment'
 import type { Segment } from '@shared/types'
 import type { SearchMatch } from '@renderer/lib/search'
 import { usePorts } from '../application/ports'
@@ -45,8 +46,8 @@ export function SegmentList({
       icon: Pencil,
       onSelect: () => edit.start(menu.index)
     })
-    const original = menuSegment.originalText
-    if (menuSegment.edited && original !== undefined) {
+    const original = restorableOriginal(menuSegment)
+    if (original !== undefined) {
       menuItems.push({
         label: t('transcript.restoreOriginal'),
         icon: Undo2,

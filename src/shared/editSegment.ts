@@ -14,3 +14,13 @@ export function editSegment(segment: Segment, text: string): Segment {
   }
   return next
 }
+
+/**
+ * Texto de whisper al que se puede volver con «Restaurar original», o `undefined` si el
+ * segmento está como lo dio whisper. Vale para ediciones del usuario y para cambios del
+ * diccionario (tarea 41), que guardan `originalText` sin marcar `edited`.
+ */
+export function restorableOriginal(segment: Segment): string | undefined {
+  const original = segment.originalText
+  return original !== undefined && original !== segment.text ? original : undefined
+}

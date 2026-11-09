@@ -72,6 +72,8 @@ export interface Settings {
   vad: boolean
   /** `-t`; por defecto la mitad de los núcleos. */
   threads: number
+  /** Diccionario de reemplazos (tarea 41): corrige palabras y las pasa al `--prompt`. */
+  dictionaryEnabled: boolean
 
   // Interfaz.
   showCaptions: boolean
@@ -162,6 +164,7 @@ export function createDefaultSettings(cpuCount: number): Settings {
     normalize: true,
     vad: true,
     threads: defaultThreads(cpuCount),
+    dictionaryEnabled: false,
     showCaptions: true,
     videoHeight: 360,
     theme: 'system',
