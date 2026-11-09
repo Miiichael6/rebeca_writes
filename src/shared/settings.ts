@@ -90,6 +90,10 @@ export interface Settings {
   recordingSource: RecordingSource
   /** Micrófono para Mi voz y Ambos; vacío = el predeterminado de Windows. */
   recordingMicId: string
+  /** Salida cuyo sonido se graba en Computadora y Ambos; vacío = la predeterminada de Windows. */
+  recordingOutputId: string
+  /** Programa cuyo sonido se graba en Computadora y Ambos (su .exe); vacío = todo lo de la salida. */
+  recordingAppExe: string
   /** Carpeta de las grabaciones; vacío = `Documentos\RebeccaWrites\Grabaciones`. */
   recordingsDir: string
   /** Formato en que se guarda cada grabación al parar. */
@@ -166,6 +170,8 @@ export function createDefaultSettings(cpuCount: number): Settings {
     previewCacheMaxGB: 5,
     recordingSource: DEFAULT_RECORDING_SOURCE,
     recordingMicId: '',
+    recordingOutputId: '',
+    recordingAppExe: '',
     recordingsDir: '',
     recordingFormat: DEFAULT_RECORDING_FORMAT,
     recordShortcut: DEFAULT_RECORD_SHORTCUT,

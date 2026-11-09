@@ -48,6 +48,7 @@ interface UiState {
   setQueueOpen: (open: boolean) => void
   videoVisible: boolean
   toggleVideo: () => void
+  setVideoVisible: (visible: boolean) => void
   /** Menú lateral reducido a una franja de iconos. */
   sidebarCollapsed: boolean
   toggleSidebar: () => void
@@ -101,6 +102,7 @@ export const useUiStore = create<UiState>()((set) => ({
       return { sidebarCollapsed }
     }),
   toggleVideo: () => set((s) => ({ videoVisible: !s.videoVisible })),
+  setVideoVisible: (videoVisible) => set({ videoVisible }),
   transcriptCovered: false,
   setTranscriptCovered: (transcriptCovered) => set({ transcriptCovered }),
   transcriptWindowOpen: false,

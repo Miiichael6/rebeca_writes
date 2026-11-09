@@ -3,6 +3,7 @@
 //! Reads JSON commands from stdin, one per line, answers with JSON events on
 //! stderr and streams PCM on stdout. The protocol is described in `PROTOCOL.md`.
 
+mod app_audio;
 mod capture;
 mod command;
 mod device;
@@ -19,7 +20,7 @@ use event::{ErrorCode, Event, StreamErrorReason, emit};
 
 fn main() {
     // Streams stop when dropped, so they live here for as long as they run.
-    let mut streams: HashMap<u8, cpal::Stream> = HashMap::new();
+    let mut streams: HashMap<u8, Box<dyn std::any::Any>> = HashMap::new();
     for line in std::io::stdin().lock().lines() {
         // A broken stdin means main is gone: stop quietly.
         let Ok(line) = line else { break };
@@ -36,9 +37,34 @@ fn main() {
     }
 }
 
-fn run(command: Command, streams: &mut HashMap<u8, cpal::Stream>) {
+fn run(command: Command, streams: &mut HashMap<u8, Box<dyn std::any::Any>>) {
     match command {
         Command::List => list(),
+        Command::Apps => match app_audio::list_apps() {
+            Ok(apps) => emit(&Event::Apps { apps }),
+            Err(message) => emit(&Event::Error {
+                code: ErrorCode::EnumerationFailed,
+                message,
+            }),
+        },
+        Command::OpenApp { stream_id, exe } => {
+            streams.remove(&stream_id);
+            match app_audio::open_app(stream_id, &exe) {
+                Ok(stream) => {
+                    streams.insert(stream_id, Box::new(stream));
+                    emit(&Event::Opened {
+                        stream_id,
+                        sample_rate: app_audio::SAMPLE_RATE,
+                        channels: app_audio::CHANNELS,
+                    });
+                }
+                Err(message) => emit(&Event::StreamError {
+                    stream_id,
+                    reason: StreamErrorReason::OpenFailed,
+                    message,
+                }),
+            }
+        }
         Command::Open {
             stream_id,
             device_id,
@@ -48,7 +74,7 @@ fn run(command: Command, streams: &mut HashMap<u8, cpal::Stream>) {
             streams.remove(&stream_id);
             match capture::open(stream_id, &device_id, kind) {
                 Ok(open) => {
-                    streams.insert(stream_id, open.stream);
+                    streams.insert(stream_id, Box::new(open.stream));
                     emit(&Event::Opened {
                         stream_id,
                         sample_rate: open.sample_rate,

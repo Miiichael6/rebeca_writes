@@ -3,7 +3,10 @@ import { IpcChannel } from '@shared/ipc'
 import type { RecordingFormat } from '@shared/recording'
 import { LiveBusyError, type LiveOrigin } from '../../src/main/application/liveControl'
 import { MicRecording, type MicRecordingDeps } from '../../src/main/application/micRecording'
-import type { CaptureStream } from '../../src/main/application/ports/audioCapture'
+import {
+  AppNotRunningError,
+  type CaptureStream
+} from '../../src/main/application/ports/audioCapture'
 import type { AudioDevice } from '../../src/main/domain/capture/sidecarProtocol'
 import type { LiveCommand } from '../../src/main/domain/liveArgs'
 
@@ -40,6 +43,8 @@ function setup(
     recordingOrigin?: LiveOrigin | null
     liveBusy?: boolean
     micId?: string
+    outputId?: string
+    appExe?: string
     format?: RecordingFormat
   } = {}
 ) {
@@ -50,6 +55,8 @@ function setup(
     capture: {
       listDevices: vi.fn(async () => [USB_MIC]),
       open: vi.fn(async () => stream),
+      listApps: vi.fn(async () => []),
+      openApp: vi.fn(async () => stream),
       dispose: vi.fn()
     },
     files: {
@@ -73,6 +80,8 @@ function setup(
     recordingsDir: () => 'D:\\Grabaciones',
     format: () => options.format ?? 'mp3',
     micId: () => options.micId ?? '',
+    outputId: () => options.outputId ?? '',
+    appExe: () => options.appExe ?? '',
     publisher: { publish: vi.fn() },
     log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
   } satisfies MicRecordingDeps
@@ -136,6 +145,31 @@ describe('MicRecording', () => {
     expect(deps.capture.open).toHaveBeenCalledWith('capture', 'usb')
   })
 
+  it('graba el sonido de la salida elegida en el menú', async () => {
+    const { mic, deps } = setup({ outputId: 'hdmi' })
+    await mic.start('system', 'x')
+    expect(deps.capture.open).toHaveBeenCalledWith('render', 'hdmi')
+  })
+
+  it('graba solo el programa elegido en lugar de la salida', async () => {
+    const { mic, deps } = setup({ appExe: 'spotify.exe', outputId: 'hdmi' })
+    await mic.start('system', 'x')
+    expect(deps.capture.openApp).toHaveBeenCalledWith('spotify.exe')
+    expect(deps.capture.open).not.toHaveBeenCalled()
+  })
+
+  it('avisa si el programa elegido no está abierto', async () => {
+    const { mic, deps } = setup({ appExe: 'spotify.exe' })
+    deps.capture.openApp.mockRejectedValueOnce(new AppNotRunningError('spotify.exe is not running'))
+    expect(await mic.start('system', 'x')).toEqual({ ok: false, error: 'appNotRunning' })
+  })
+
+  it('los medidores abren la salida elegida', async () => {
+    const { mic, deps } = setup()
+    await mic.startMonitor('system', '', 'hdmi', '')
+    expect(deps.capture.open).toHaveBeenCalledWith('render', 'hdmi')
+  })
+
   it('lista los micrófonos con el nombre que muestra Windows', async () => {
     const { mic } = setup()
     expect(await mic.microphones()).toEqual([
@@ -172,8 +206,8 @@ describe('MicRecording', () => {
 
   it('los medidores abren el sistema y el micrófono elegido sin grabar y emiten su nivel', async () => {
     const { mic, deps, stream, written } = setup()
-    await mic.startMonitor('both', 'usb')
-    expect(deps.capture.open).toHaveBeenCalledWith('render')
+    await mic.startMonitor('both', 'usb', '', '')
+    expect(deps.capture.open).toHaveBeenCalledWith('render', undefined)
     expect(deps.capture.open).toHaveBeenCalledWith('capture', 'usb')
 
     stream.data(new Float32Array(800).fill(1))
@@ -193,7 +227,7 @@ describe('MicRecording', () => {
     const { mic, deps, stream } = setup()
     // El sistema se abre primero.
     deps.capture.open.mockRejectedValueOnce(new Error('sin salida'))
-    await mic.startMonitor('both', '')
+    await mic.startMonitor('both', '', '', '')
     stream.data(new Float32Array(800).fill(1))
     expect(deps.publisher.publish).toHaveBeenCalledWith(IpcChannel.MicMonitorLevel, {
       device: 'voice',
@@ -205,7 +239,7 @@ describe('MicRecording', () => {
 
   it('empezar a grabar cierra los medidores', async () => {
     const { mic, deps, stream } = setup()
-    await mic.startMonitor('voice', '')
+    await mic.startMonitor('voice', '', '', '')
     expect(deps.capture.open).toHaveBeenCalledWith('capture', undefined)
     await mic.start('voice', 'x')
     expect(stream.stopped).toBe(true)
@@ -214,10 +248,10 @@ describe('MicRecording', () => {
 
   it('los medidores abren solo los dispositivos de la fuente elegida', async () => {
     const { mic, deps } = setup()
-    await mic.startMonitor('system', 'usb')
+    await mic.startMonitor('system', 'usb', '', '')
     expect(deps.capture.open).toHaveBeenCalledTimes(1)
-    expect(deps.capture.open).toHaveBeenCalledWith('render')
-    await mic.startMonitor('voice', 'usb')
+    expect(deps.capture.open).toHaveBeenCalledWith('render', undefined)
+    await mic.startMonitor('voice', 'usb', '', '')
     expect(deps.capture.open).toHaveBeenCalledTimes(2)
     expect(deps.capture.open).toHaveBeenLastCalledWith('capture', 'usb')
     await mic.stopMonitor()

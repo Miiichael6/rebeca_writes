@@ -24,12 +24,27 @@ export function usesMicrophone(source: RecordingSource): boolean {
   return source !== 'system'
 }
 
+/** Mi voz no graba el sonido del equipo: solo Computadora y Ambos muestran la lista de salidas. */
+export function usesOutput(source: RecordingSource): boolean {
+  return source !== 'voice'
+}
+
 /**
- * El micrófono que se marca en el menú: el guardado si sigue conectado; si no, el predeterminado
+ * Los programas abiertos más el elegido si ya no suena (o se cerró): sigue visible y marcado en el
+ * menú en lugar de desaparecer, y grabar avisa de que no está abierto.
+ */
+export function withSavedApp(running: MicDevice[], savedExe: string): MicDevice[] {
+  if (!savedExe || running.some((a) => a.id === savedExe)) return running
+  const name = savedExe.replace(/\.exe$/i, '')
+  return [...running, { id: savedExe, name, isDefault: false }]
+}
+
+/**
+ * El micrófono (o la salida) que se marca en el menú: el guardado si sigue conectado; si no, el predeterminado
  * (`''`), que es el que abre el main en ese caso.
  */
-export function selectedMicId(micId: string, microphones: MicDevice[]): string {
-  return microphones.some((d) => d.id === micId) ? micId : ''
+export function selectedMicId(micId: string, devices: MicDevice[]): string {
+  return devices.some((d) => d.id === micId) ? micId : ''
 }
 
 /** Botón de grabar: qué muestra y si se puede pulsar. */

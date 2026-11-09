@@ -39,18 +39,26 @@ function fakeCapture(failing?: DeviceKind): {
   capture: AudioCapture
   streams: Partial<Record<DeviceKind, FakeStream>>
   opened: Array<[DeviceKind, string | undefined]>
+  appsOpened: string[]
   nextOutput: { channels: number; sampleRate: number } | null
 } {
   const streams: Partial<Record<DeviceKind, FakeStream>> = {}
   const opened: Array<[DeviceKind, string | undefined]> = []
+  const appsOpened: string[] = []
   const fake = {
     capture: null as unknown as AudioCapture,
     streams,
     opened,
+    appsOpened,
     nextOutput: null as { channels: number; sampleRate: number } | null
   }
   fake.capture = {
     listDevices: async () => [],
+    listApps: async () => [],
+    openApp: async (exe) => {
+      appsOpened.push(exe)
+      return new FakeStream(2)
+    },
     open: async (kind, deviceId) => {
       if (kind === failing) throw new Error('sin dispositivo')
       const reopened = kind === 'render' && streams.render

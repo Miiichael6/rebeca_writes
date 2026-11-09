@@ -30,8 +30,8 @@ export interface MicDevice {
   isDefault: boolean
 }
 
-/** Por qué no empezó: Listen está grabando, no hay dispositivo o falló otra cosa. */
-export type MicStartError = 'liveBusy' | 'noDevice' | 'failed'
+/** Por qué no empezó: Listen está grabando, no hay dispositivo, el programa elegido no está abierto o falló otra cosa. */
+export type MicStartError = 'liveBusy' | 'noDevice' | 'appNotRunning' | 'failed'
 
 export type MicStartResult = { ok: true; state: MicState } | { ok: false; error: MicStartError }
 

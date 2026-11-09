@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { ChevronDown, Mic, MicVocal, Square } from 'lucide-react'
+import { AppWindow, ChevronDown, Mic, MicVocal, Speaker, Square } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { RECORDING_SOURCES } from '@shared/recording'
+import { RECORDING_SOURCES, type MicDevice } from '@shared/recording'
 import { useMicAction, type MicAction } from '../application/useMicAction'
 import { Button, Menu, type MenuItem } from '../../ui'
 import { MicLevelMeters } from './MicLevelMeters'
@@ -9,17 +9,32 @@ import { SOURCE_ICONS } from './sourceIcons'
 
 /**
  * Arriba, los niveles del sistema y del micrófono; luego las fuentes y, si la elegida usa el
- * micrófono, el submenú Micrófono con el predeterminado y los conectados (el elegido se ve al
- * lado del ítem).
+ * micrófono, el submenú Micrófono y, si usa el sonido del equipo, el submenú Salida, cada uno con
+ * el predeterminado y los conectados (el elegido se ve al lado del ítem).
  */
 function menuItems(
   action: MicAction,
-  labels: { microphone: string; defaultMicrophone: string; levels: string }
+  labels: {
+    microphone: string
+    defaultMicrophone: string
+    output: string
+    defaultOutput: string
+    app: string
+    allSound: string
+    levels: string
+  }
 ): MenuItem[] {
   const levels: MenuItem = {
     key: 'levels',
     label: labels.levels,
-    content: <MicLevelMeters source={action.source} micId={action.savedMicId} />
+    content: (
+      <MicLevelMeters
+        source={action.source}
+        micId={action.savedMicId}
+        outputId={action.savedOutputId}
+        appExe={action.appExe}
+      />
+    )
   }
   const sources: MenuItem[] = RECORDING_SOURCES.map((source, index) => ({
     key: source,
@@ -30,26 +45,79 @@ function menuItems(
     keepOpen: true,
     onSelect: () => action.chooseSource(source)
   }))
-  if (!action.usesMicrophone) return [levels, ...sources]
-
-  const microphones: MenuItem[] = [
-    { key: '', label: labels.defaultMicrophone },
-    ...action.microphones.map((d) => ({ key: d.id, label: d.name }))
-  ].map((item) => ({
-    ...item,
-    key: `mic:${item.key}`,
-    checked: item.key === action.micId,
-    onSelect: () => action.chooseMic(item.key)
-  }))
-  const microphone: MenuItem = {
-    key: 'microphone',
-    label: labels.microphone,
-    icon: MicVocal,
-    hint: microphones.find((item) => item.checked)?.label,
-    separator: true,
-    submenu: microphones
+  const deviceMenu = (config: {
+    key: string
+    label: string
+    icon: MenuItem['icon']
+    defaultLabel: string
+    devices: MicDevice[]
+    selected: string
+    choose: (id: string) => void
+    separator: boolean
+  }): MenuItem => {
+    const items: MenuItem[] = [
+      { key: '', label: config.defaultLabel },
+      ...config.devices.map((d) => ({ key: d.id, label: d.name }))
+    ].map((item) => ({
+      ...item,
+      key: `${config.key}:${item.key}`,
+      checked: item.key === config.selected,
+      onSelect: () => config.choose(item.key)
+    }))
+    return {
+      key: config.key,
+      label: config.label,
+      icon: config.icon,
+      hint: items.find((item) => item.checked)?.label,
+      separator: config.separator,
+      submenu: items
+    }
   }
-  return [levels, ...sources, microphone]
+
+  const devices: MenuItem[] = []
+  if (action.usesOutput) {
+    devices.push(
+      deviceMenu({
+        key: 'app',
+        label: labels.app,
+        icon: AppWindow,
+        defaultLabel: labels.allSound,
+        devices: action.apps,
+        selected: action.appExe,
+        choose: action.chooseApp,
+        separator: true
+      })
+    )
+  }
+  if (action.usesOutput && !action.appExe) {
+    devices.push(
+      deviceMenu({
+        key: 'output',
+        label: labels.output,
+        icon: Speaker,
+        defaultLabel: labels.defaultOutput,
+        devices: action.outputs,
+        selected: action.outputId,
+        choose: action.chooseOutput,
+        separator: devices.length === 0
+      })
+    )
+  }
+  if (action.usesMicrophone) {
+    devices.push(
+      deviceMenu({
+        key: 'microphone',
+        label: labels.microphone,
+        icon: MicVocal,
+        defaultLabel: labels.defaultMicrophone,
+        devices: action.microphones,
+        selected: action.micId,
+        choose: action.chooseMic,
+        separator: devices.length === 0
+      })
+    )
+  }
+  return [levels, ...sources, ...devices]
 }
 
 /**
@@ -110,7 +178,7 @@ export function MicButton(): React.JSX.Element {
         disabled={button.disabled}
         icon={<ChevronDown size={12} strokeWidth={1.5} />}
         onClick={() => {
-          if (!menuOpen) action.refreshMicrophones()
+          if (!menuOpen) action.refreshDevices()
           setMenuOpen(!menuOpen)
         }}
       />
@@ -122,6 +190,10 @@ export function MicButton(): React.JSX.Element {
         items={menuItems(action, {
           microphone: t('mic.microphone'),
           defaultMicrophone: t('mic.defaultMicrophone'),
+          output: t('mic.output'),
+          defaultOutput: t('mic.defaultOutput'),
+          app: t('mic.app'),
+          allSound: t('mic.allSound'),
           levels: t('mic.levels')
         })}
       />

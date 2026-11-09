@@ -1,4 +1,4 @@
-# RebeccaWrites
+# RebeccaWrites 
 
 App de escritorio para Windows que transcribe video y audio a texto 100 % en local con [whisper.cpp](https://github.com/ggml-org/whisper.cpp). Electron + React 19 + TypeScript (electron-vite). Spec completa en [plans/about_this_project.md](plans/about_this_project.md).
 

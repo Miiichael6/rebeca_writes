@@ -218,7 +218,14 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
       onDrained: (event) => publisher.publish(IpcChannel.QueueDrained, event)
     }
   })
-  const intake = new QueueIntake({ queue, settings, history, opener, expander: fsPathExpander })
+  const intake = new QueueIntake({
+    queue,
+    settings,
+    history,
+    opener,
+    expander: fsPathExpander,
+    dialogs: electronDialogs
+  })
   const clips = new ClipService({
     history,
     media: ffmpegMediaTools,
@@ -262,6 +269,8 @@ export function createServices(paths: AppPaths, control: AppControl): Services {
     recordingsDir: () => recordingsFolder.dir(),
     format: () => settings.get().recordingFormat,
     micId: () => settings.get().recordingMicId,
+    outputId: () => settings.get().recordingOutputId,
+    appExe: () => settings.get().recordingAppExe,
     publisher,
     log
   })

@@ -31,6 +31,14 @@ export function maximizedHeight(limit: number): number {
   return Math.max(limit, VIDEO_HEIGHT_MIN)
 }
 
+/** Cuánto por debajo del mínimo hay que arrastrar el asa para ocultar el panel. */
+export const COLLAPSE_DRAG_PX = 50
+
+/** Soltar el asa tan abajo oculta el panel en lugar de dejarlo en el alto mínimo. */
+export function isCollapseDrag(rawHeight: number): boolean {
+  return rawHeight < VIDEO_HEIGHT_MIN - COLLAPSE_DRAG_PX
+}
+
 /** Ajusta un alto al rango permitido y lo redondea a píxeles enteros. */
 export function clampVideoHeight(height: number, limit: number): number {
   return Math.round(Math.max(VIDEO_HEIGHT_MIN, Math.min(maximizedHeight(limit), height)))

@@ -14,6 +14,9 @@ interface ClipWaveformProps {
 /** Movimiento (px) a partir del cual un clic se cuenta como arrastre. */
 const DRAG_PX = 3
 
+/** Separación mínima (s) entre las dos etiquetas. */
+const MIN_GAP = 0.1
+
 /**
  * Forma de onda del diálogo "Recortar" (tarea 39): barras altas donde hay voz o sonido, casi
  * planas en los silencios. Arrastrar elige el tramo; un clic sin arrastrar mueve el inicio.
@@ -28,6 +31,31 @@ export function ClipWaveform({
   const { t } = useTranslation()
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ x: number; time: number; moved: boolean } | null>(null)
+  const track = useRef<HTMLDivElement>(null)
+
+  /** Arrastra una etiqueta bajo la onda: mueve solo su extremo sin cruzar al otro. */
+  const dragHandle = (which: 'start' | 'end') => (e: React.PointerEvent<HTMLButtonElement>) => {
+    const box = track.current?.getBoundingClientRect()
+    if (!box || box.width === 0) return
+    e.preventDefault()
+    const el = e.currentTarget
+    el.setPointerCapture(e.pointerId)
+    const move = (ev: PointerEvent): void => {
+      const time = Math.min(1, Math.max(0, (ev.clientX - box.left) / box.width)) * duration
+      const s = start ?? 0
+      const f = end ?? duration
+      if (which === 'start') onRange(Math.min(time, f - MIN_GAP), f)
+      else onRange(s, Math.max(time, s + MIN_GAP))
+    }
+    const up = (): void => {
+      el.removeEventListener('pointermove', move)
+      el.removeEventListener('pointerup', up)
+      el.removeEventListener('pointercancel', up)
+    }
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerup', up)
+    el.addEventListener('pointercancel', up)
+  }
 
   const timeAt = (clientX: number): number => {
     const box = ref.current?.getBoundingClientRect()
@@ -96,6 +124,24 @@ export function ClipWaveform({
             )
           })}
         </svg>
+      </div>
+      <div ref={track} className="clip-wave-handles">
+        <button
+          type="button"
+          className="clip-wave-handle"
+          style={{ left: `${from * 100}%` }}
+          aria-label={t('clip.start')}
+          title={t('clip.start')}
+          onPointerDown={dragHandle('start')}
+        />
+        <button
+          type="button"
+          className="clip-wave-handle"
+          style={{ left: `${to * 100}%` }}
+          aria-label={t('clip.end')}
+          title={t('clip.end')}
+          onPointerDown={dragHandle('end')}
+        />
       </div>
       <div className="clip-wave-axis" aria-hidden="true">
         <span>0:00</span>

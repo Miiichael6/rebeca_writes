@@ -1,6 +1,11 @@
-import type { AudioCapture, CaptureStream } from '../../application/ports/audioCapture'
+import {
+  AppNotRunningError,
+  type AudioCapture,
+  type CaptureStream
+} from '../../application/ports/audioCapture'
 import type { Logger } from '../../application/ports/eventPublisher'
 import type {
+  AudioApp,
   AudioDevice,
   DeviceKind,
   SidecarCommand,
@@ -69,6 +74,20 @@ export class SidecarAudioCapture implements AudioCapture {
     return this.openDevice(device)
   }
 
+  async listApps(): Promise<AudioApp[]> {
+    const event = await this.request(
+      { cmd: 'apps' },
+      (e) => e.type === 'apps' || e.type === 'error'
+    )
+    if (event.type !== 'apps') throw new Error('No se pudieron listar los programas')
+    return event.apps
+  }
+
+  async openApp(exe: string): Promise<CaptureStream> {
+    this.log.info(`Captura: se abre el audio de ${exe}`)
+    return this.openStream((streamId) => ({ cmd: 'openapp', streamId, exe }), exe)
+  }
+
   dispose(): void {
     this.process.dispose()
   }
@@ -82,14 +101,26 @@ export class SidecarAudioCapture implements AudioCapture {
     return event.devices
   }
 
-  private async openDevice(device: AudioDevice): Promise<CaptureStream> {
+  private openDevice(device: AudioDevice): Promise<CaptureStream> {
+    return this.openStream((streamId) => ({
+      cmd: 'open',
+      streamId,
+      deviceId: device.id,
+      kind: device.kind
+    }))
+  }
+
+  private async openStream(
+    command: (streamId: number) => SidecarCommand,
+    app?: string
+  ): Promise<CaptureStream> {
     const streamId = this.nextStreamId
     this.nextStreamId = (this.nextStreamId % MAX_STREAM_ID) + 1
     const handlers: StreamHandlers = {}
     this.streams.set(streamId, handlers)
 
     const event = await this.request(
-      { cmd: 'open', streamId, deviceId: device.id, kind: device.kind },
+      command(streamId),
       (e) => (e.type === 'opened' || e.type === 'stream_error') && e.streamId === streamId
     ).catch((error: Error) => {
       this.streams.delete(streamId)
@@ -97,7 +128,9 @@ export class SidecarAudioCapture implements AudioCapture {
     })
     if (event.type !== 'opened') {
       this.streams.delete(streamId)
-      throw new Error(event.type === 'stream_error' ? event.message : 'No se pudo abrir')
+      const message = event.type === 'stream_error' ? event.message : 'No se pudo abrir'
+      if (app && message.endsWith('is not running')) throw new AppNotRunningError(message)
+      throw new Error(message)
     }
 
     return {

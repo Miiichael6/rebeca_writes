@@ -9,23 +9,41 @@ import type { AudioCapture, CaptureStream } from './ports/audioCapture'
  * loopback con sus silencios rellenados, Mi voz es el micrófono tal cual y Ambos es la mezcla de
  * los dos, con el loopback como reloj. Si se pierde la salida (p. ej. al desconectar los
  * audífonos) se sigue con la nueva predeterminada; perder el micrófono termina el stream.
- * `micId` es el micrófono elegido; sin él (o si ya no está), el predeterminado de Windows.
+ * `micId` es el micrófono elegido y `target` de dónde sale el sonido del equipo; sin ellos (o si
+ * ya no están), los predeterminados de Windows.
  * `observeMix` ve en *Ambos* cada bloque del sistema y del micrófono antes de sumarlos.
  */
+/**
+ * Qué sonido del equipo se graba: el de un programa (`appExe`) o el de una salida (`outputId`);
+ * sin ninguno, el de la salida predeterminada. El programa manda sobre la salida.
+ */
+export interface SystemTarget {
+  outputId?: string
+  appExe?: string
+}
+
 export async function openRecordingSource(
   capture: AudioCapture,
   source: RecordingSource,
   micId?: string,
-  observeMix?: MixObserver
+  observeMix?: MixObserver,
+  target: SystemTarget = {}
 ): Promise<CaptureStream> {
   switch (source) {
     case 'system':
-      return withLoopbackSilence(await followDefaultOutput(capture))
+      return withLoopbackSilence(await openSystem(capture, target))
     case 'voice':
       return capture.open('capture', micId)
     case 'both':
-      return openMixed(capture, micId, observeMix)
+      return openMixed(capture, micId, observeMix, target)
   }
+}
+
+/** El sonido del programa elegido o, sin él, el de la salida (siguiéndola si cambia). */
+export function openSystem(capture: AudioCapture, target: SystemTarget): Promise<CaptureStream> {
+  return target.appExe
+    ? capture.openApp(target.appExe)
+    : followDefaultOutput(capture, target.outputId)
 }
 
 /** Reintentos para reabrir la salida: Windows tarda un momento en elegir la nueva predeterminada. */
@@ -33,13 +51,16 @@ export const REOPEN_ATTEMPTS = 10
 export const REOPEN_DELAY_MS = 200
 
 /**
- * El loopback de la salida predeterminada, siguiéndola: si el dispositivo se pierde, abre el que
+ * El loopback de la salida `outputId` (o la predeterminada), siguiéndola: si el dispositivo se pierde, abre el que
  * Windows ponga en su lugar y adapta su audio al formato del primero. Solo termina si no queda
  * ninguna salida que abrir (o se cae el sidecar). El hueco mientras se reabre lo rellena
  * `withLoopbackSilence`.
  */
-export async function followDefaultOutput(capture: AudioCapture): Promise<CaptureStream> {
-  const first = await capture.open('render')
+export async function followDefaultOutput(
+  capture: AudioCapture,
+  outputId?: string
+): Promise<CaptureStream> {
+  const first = await capture.open('render', outputId)
   const format = { sampleRate: first.sampleRate, channels: first.channels }
   let current = first
   let data: (samples: Float32Array) => void = () => {}
@@ -61,7 +82,7 @@ export async function followDefaultOutput(capture: AudioCapture): Promise<Captur
       await new Promise((resolve) => setTimeout(resolve, REOPEN_DELAY_MS))
       if (stopped) return null
       try {
-        return await capture.open('render')
+        return await capture.open('render', outputId)
       } catch {
         // Aún no hay salida predeterminada: se vuelve a probar.
       }
@@ -147,9 +168,10 @@ export function withLoopbackSilence(stream: CaptureStream): CaptureStream {
 /** Abre el micrófono tras el loopback; si falla, vuelve a cerrar el loopback. */
 async function openBoth(
   capture: AudioCapture,
-  micId?: string
+  micId?: string,
+  target: SystemTarget = {}
 ): Promise<[CaptureStream, CaptureStream]> {
-  const system = await followDefaultOutput(capture)
+  const system = await openSystem(capture, target)
   try {
     return [system, await capture.open('capture', micId)]
   } catch (error) {
@@ -161,9 +183,10 @@ async function openBoth(
 async function openMixed(
   capture: AudioCapture,
   micId?: string,
-  observeMix?: MixObserver
+  observeMix?: MixObserver,
+  target: SystemTarget = {}
 ): Promise<CaptureStream> {
-  const [system, voice] = await openBoth(capture, micId)
+  const [system, voice] = await openBoth(capture, micId, target)
   const master = withLoopbackSilence(system)
   const mixer = new Mixer(master, voice, observeMix)
   let data: (samples: Float32Array) => void = () => {}

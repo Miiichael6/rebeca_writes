@@ -13,10 +13,10 @@ import { Pcm16kConverter } from '../domain/capture/pcm16k'
 import { microphoneName } from '../domain/capture/sidecarProtocol'
 import { OwnVoiceTimeline } from '../domain/speakers/ownVoiceTimeline'
 import { LiveBusyError, type LiveControl } from './liveControl'
-import type { AudioCapture, CaptureStream } from './ports/audioCapture'
+import { AppNotRunningError, type AudioCapture, type CaptureStream } from './ports/audioCapture'
 import type { EventPublisher, Logger } from './ports/eventPublisher'
 import type { PcmWriter, RecordingEncoder, RecordingFiles } from './ports/recordingFiles'
-import { followDefaultOutput, openRecordingSource, withLoopbackSilence } from './recordingSources'
+import { openRecordingSource, openSystem, withLoopbackSilence } from './recordingSources'
 
 export interface MicRecordingDeps {
   capture: AudioCapture
@@ -29,9 +29,16 @@ export interface MicRecordingDeps {
   format: () => RecordingFormat
   /** Micrófono elegido en el menú; vacío = el predeterminado de Windows. */
   micId: () => string
+  /** Salida cuyo sonido se graba en Computadora y Ambos; vacío = la predeterminada de Windows. */
+  outputId: () => string
+  /** Programa cuyo sonido se graba en Computadora y Ambos; vacío = todo lo de la salida. */
+  appExe: () => string
   publisher: EventPublisher
   log: Logger
 }
+
+/** El propio sidecar de captura tiene sesión de audio mientras mide: no es un programa a elegir. */
+const OWN_SIDECAR = 'rl-capture.exe'
 
 interface Recording {
   source: RecordingSource
@@ -84,13 +91,42 @@ export class MicRecording {
     return devices.map((d) => ({ id: d.id, name: microphoneName(d), isDefault: d.isDefault }))
   }
 
+  /** Las salidas de sonido activas, para elegir cuál grabar en Computadora y Ambos. */
+  async outputs(): Promise<MicDevice[]> {
+    const devices = await this.deps.capture.listDevices('render')
+    return devices.map((d) => ({ id: d.id, name: microphoneName(d), isDefault: d.isDefault }))
+  }
+
+  /** Nombre con el que se ve el programa grabado en el historial (`exe` si ya no se lista). */
+  private async appName(exe: string | undefined): Promise<string | undefined> {
+    if (!exe) return undefined
+    const apps = await this.deps.capture.listApps().catch(() => [])
+    return (
+      apps.find((a) => a.exe.toLowerCase() === exe.toLowerCase())?.name ??
+      exe.replace(/\.exe$/i, '')
+    )
+  }
+
+  /** Los programas con sesión de audio, para grabar solo uno. */
+  async apps(): Promise<MicDevice[]> {
+    const apps = await this.deps.capture.listApps()
+    return apps
+      .filter((a) => a.exe.toLowerCase() !== OWN_SIDECAR)
+      .map((a) => ({ id: a.exe, name: a.name, isDefault: false }))
+  }
+
   /**
-   * Medidores del menú: abre los dispositivos de `source` (el sonido del sistema y/o `micId`,
-   * vacío = el predeterminado) solo para emitir su nivel por `mic:monitorLevel`, sin grabar.
+   * Medidores del menú: abre los dispositivos de `source` (el sonido de `outputId` y/o `micId`,
+   * vacíos = los predeterminados) solo para emitir su nivel por `mic:monitorLevel`, sin grabar.
    * Cambiar de fuente o de micrófono es volver a llamarlo. Si uno no se puede abrir, el otro
    * mide igual.
    */
-  startMonitor(source: RecordingSource, micId: string): Promise<void> {
+  startMonitor(
+    source: RecordingSource,
+    micId: string,
+    outputId: string,
+    appExe: string
+  ): Promise<void> {
     return this.serial(async () => {
       await this.closeMonitor()
       if (this.recording) return
@@ -98,7 +134,12 @@ export class MicRecording {
         sourceDevices(source).map((device) =>
           device === 'system'
             ? this.openMonitor(device, async () =>
-                withLoopbackSilence(await followDefaultOutput(this.deps.capture))
+                withLoopbackSilence(
+                  await openSystem(this.deps.capture, {
+                    outputId: outputId || undefined,
+                    appExe: appExe || undefined
+                  })
+                )
               )
             : this.openMonitor(device, () => this.deps.capture.open('capture', micId || undefined))
         )
@@ -140,14 +181,20 @@ export class MicRecording {
     // la línea de tiempo nace en el mismo instante en que se empieza a escribir.
     let ownVoice: OwnVoiceTimeline | null = null
     let stream: CaptureStream
+    const appExe = source === 'voice' ? undefined : this.deps.appExe() || undefined
     try {
       const micId = this.deps.micId() || undefined
-      stream = await openRecordingSource(this.deps.capture, source, micId, (system, voice) =>
-        ownVoice?.push(system, voice)
+      const outputId = this.deps.outputId() || undefined
+      stream = await openRecordingSource(
+        this.deps.capture,
+        source,
+        micId,
+        (system, voice) => ownVoice?.push(system, voice),
+        { outputId, appExe }
       )
     } catch (err) {
       this.deps.log.warn(`Micrófono: no se pudo abrir la fuente ${source}: ${String(err)}`)
-      return { ok: false, error: 'noDevice' }
+      return { ok: false, error: err instanceof AppNotRunningError ? 'appNotRunning' : 'noDevice' }
     }
 
     try {
@@ -175,7 +222,7 @@ export class MicRecording {
       stream.onError((reason) => this.interrupt(reason))
       this.recording = recording
       await this.deps.live
-        .handle({ kind: 'start', pcm, name }, 'mic', ownVoice)
+        .handle({ kind: 'start', pcm, name, app: await this.appName(appExe) }, 'mic', ownVoice)
         .catch(async (err) => {
           this.recording = null
           await this.discard(recording)

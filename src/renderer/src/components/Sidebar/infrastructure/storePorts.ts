@@ -1,6 +1,6 @@
 import { useListExit } from '@renderer/lib/useListExit'
 import { useHistoryStore } from '@renderer/store/history'
-import { selectPendingCount, useQueueStore } from '@renderer/store/queue'
+import { announceQueued, selectPendingCount, useQueueStore } from '@renderer/store/queue'
 import { toast } from '@renderer/store/toast'
 import {
   SIDEBAR_WIDTH_DEFAULT,
@@ -38,6 +38,11 @@ export const storePorts: SidebarPorts = {
   queue: {
     usePendingCount: () => useQueueStore(selectPendingCount),
     openPanel: () => useUiStore.getState().setQueueOpen(true)
+  },
+  folder: {
+    scan: () => window.api.queue.scanFolder(),
+    confirm: (accept) => window.api.queue.confirmScan(accept),
+    announce: announceQueued
   },
   layout: {
     useCollapsed: () => useUiStore((s) => s.sidebarCollapsed),

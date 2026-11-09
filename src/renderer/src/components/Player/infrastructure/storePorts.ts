@@ -79,6 +79,7 @@ export const storePorts: PlayerPorts = {
   },
   view: {
     useVideoVisible: () => useUiStore((s) => s.videoVisible),
+    hideVideo: () => useUiStore.getState().setVideoVisible(false),
     setTranscriptCovered: (covered) => useUiStore.getState().setTranscriptCovered(covered)
   },
   stage: { observeLimit: observeStageLimit },

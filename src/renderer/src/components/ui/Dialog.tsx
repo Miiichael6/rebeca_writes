@@ -11,6 +11,8 @@ export interface ConfirmDialogProps {
   cancelLabel?: string
   /** Acción destructiva: el botón de confirmar se pinta en rojo. */
   danger?: boolean
+  /** Solo informa: sin botón de cancelar (Esc igual cierra). */
+  hideCancel?: boolean
   /** El foco empieza en Confirmar; para cuando lo destructivo es Cancelar. */
   focusConfirm?: boolean
   /** Elemento que recibe el foco al abrir (p. ej. un campo de texto); manda sobre `focusConfirm`. */
@@ -30,6 +32,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   danger,
+  hideCancel,
   focusConfirm,
   initialFocus,
   onConfirm,
@@ -43,7 +46,7 @@ export function ConfirmDialog({
   // El foco empieza en Cancelar: un Enter por accidente no confirma una acción destructiva.
   // (showModal enfoca el primer botón, así que `autoFocus` no basta.)
   const { ref, state } = useModalDialog(open, () =>
-    (initialFocus ?? (focusConfirm ? confirmRef : cancelRef)).current?.focus()
+    (initialFocus ?? (focusConfirm || hideCancel ? confirmRef : cancelRef)).current?.focus()
   )
 
   return (
@@ -65,9 +68,11 @@ export function ConfirmDialog({
         <Button ref={confirmRef} variant={danger ? 'danger' : 'primary'} onClick={onConfirm}>
           {confirmLabel ?? t('common.accept')}
         </Button>
-        <Button ref={cancelRef} onClick={onCancel}>
-          {cancelLabel ?? t('common.cancel')}
-        </Button>
+        {!hideCancel && (
+          <Button ref={cancelRef} onClick={onCancel}>
+            {cancelLabel ?? t('common.cancel')}
+          </Button>
+        )}
       </div>
     </dialog>
   )

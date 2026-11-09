@@ -57,6 +57,8 @@ export interface SettingsPort {
 /** Puerto de salida: el resto de la ventana. */
 export interface ViewPort {
   useVideoVisible(): boolean
+  /** Oculta el panel (arrastrando el asa hasta abajo); se vuelve a abrir desde la barra superior. */
+  hideVideo(): void
   setTranscriptCovered(covered: boolean): void
 }
 

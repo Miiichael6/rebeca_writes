@@ -7,6 +7,7 @@ use std::io::Write;
 
 use serde::Serialize;
 
+use crate::app_audio::AudioApp;
 use crate::device::AudioDevice;
 
 /// Machine-readable reason attached to every `error` event.
@@ -40,6 +41,10 @@ pub enum StreamErrorReason {
 pub enum Event {
     Devices {
         devices: Vec<AudioDevice>,
+    },
+    /// Programs with an audio session, answer to `apps`.
+    Apps {
+        apps: Vec<AudioApp>,
     },
     Warning {
         message: String,

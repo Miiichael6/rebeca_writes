@@ -7,7 +7,8 @@
 import { win32 } from 'path'
 
 export type LiveCommand =
-  { kind: 'start'; pcm: string; name: string } | { kind: 'end'; pcm: string; media: string | null }
+  | { kind: 'start'; pcm: string; name: string; app?: string }
+  | { kind: 'end'; pcm: string; media: string | null }
 
 const START = '--live-start'
 const NAME = '--live-name'

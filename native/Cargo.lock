@@ -502,6 +502,8 @@ dependencies = [
  "libloading",
  "serde",
  "serde_json",
+ "windows",
+ "windows-core",
  "windows-sys",
 ]
 

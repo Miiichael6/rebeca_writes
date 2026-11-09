@@ -19,20 +19,31 @@ Objeto JSON con el campo `cmd`. Los campos extra se ignoran.
 | `list` | Implementado | Un evento `devices` (precedido de un `warning` por cada endpoint que no se pudo describir) |
 | `open` | Implementado | `opened` o `stream_error` con `reason: "open_failed"`                                      |
 | `stop` | Implementado | `stopped` (también si el stream no existía)                                                |
+| `apps` | Implementado | Un evento `apps` con los programas que tienen sesión de audio                              |
+| `openapp` | Implementado | `opened` o `stream_error` (`... is not running` si el programa no está abierto)         |
 
 ```json
 {"cmd":"list"}
 {"cmd":"open","streamId":1,"deviceId":"wasapi:{0.0.0.00000000}.{...}","kind":"render"}
 {"cmd":"stop","streamId":1}
+{"cmd":"apps"}
+{"cmd":"openapp","streamId":2,"exe":"spotify.exe"}
 ```
 
 - `streamId` (1–255) lo elige main; un `open` con un id ya abierto reemplaza el stream anterior.
 - `kind: "render"` abre el endpoint en loopback (lo que suena); `capture`, el micrófono. El stream arranca capturando al abrirse con el formato de mezcla por defecto.
+- `openapp` captura solo el audio del programa `exe` y sus procesos hijos (API de loopback por proceso de Windows 10 2004+), a 48 kHz estéreo; los demás sonidos no se mezclan.
 - En loopback WASAPI no entrega nada mientras hay silencio: main rellena ceros por reloj (ver `src/main/audio/silence.ts`).
 
 ## Eventos (stderr)
 
 Objeto JSON con el campo `type`.
+
+### `apps`
+
+```json
+{ "type": "apps", "apps": [{ "exe": "spotify.exe", "name": "spotify" }] }
+```
 
 ### `devices`
 

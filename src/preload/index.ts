@@ -113,6 +113,8 @@ const api: AppApi = {
         IpcChannel.QueueAddPaths,
         Array.from(files, (file) => webUtils.getPathForFile(file)).filter(Boolean)
       ),
+    scanFolder: () => invoke(IpcChannel.QueueScanFolder),
+    confirmScan: (accept) => invoke(IpcChannel.QueueConfirmScan, accept),
     onFilesReceived: (listener) => on(IpcChannel.QueueFilesReceived, listener),
     remove: (id) => invoke(IpcChannel.QueueRemove, id),
     reorder: (ids) => invoke(IpcChannel.QueueReorder, ids),
@@ -135,10 +137,13 @@ const api: AppApi = {
     stop: () => invoke(IpcChannel.MicStop),
     getState: () => invoke(IpcChannel.MicGetState),
     listDevices: () => invoke(IpcChannel.MicListDevices),
+    listOutputs: () => invoke(IpcChannel.MicListOutputs),
+    listApps: () => invoke(IpcChannel.MicListApps),
     onChanged: (listener) => on(IpcChannel.MicChanged, listener),
     onLevel: (listener) => on(IpcChannel.MicLevel, listener),
     onMonitorLevel: (listener) => on(IpcChannel.MicMonitorLevel, listener),
-    startMonitor: (source, micId) => invoke(IpcChannel.MicMonitorStart, source, micId),
+    startMonitor: (source, micId, outputId, appExe) =>
+      invoke(IpcChannel.MicMonitorStart, source, micId, outputId, appExe),
     stopMonitor: () => invoke(IpcChannel.MicMonitorStop),
     getRecordingsDir: () => invoke(IpcChannel.MicGetRecordingsDir),
     pickRecordingsDir: () => invoke(IpcChannel.MicPickRecordingsDir),

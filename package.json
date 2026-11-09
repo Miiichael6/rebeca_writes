@@ -24,7 +24,7 @@
     "prebuild:win": "npm run build:native && npm run check:bin",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run clean:dist && npm run build && electron-builder --win",
-    "release": "npm run clean:dist && npm run build:native && npm run check:bin && npm run build && electron-builder --win --publish always",
+    "release": "node scripts/release.mjs",
     "build:native": "cd native && cargo build --release && node ../scripts/copy-native.mjs",
     "icons": "electron scripts/build-icons.mjs",
     "licenses": "node scripts/gen-licenses.mjs"

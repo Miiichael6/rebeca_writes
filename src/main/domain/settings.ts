@@ -87,6 +87,8 @@ function validators(cpuCount: number): { [K in FlatKey]: Validator<Settings[K]> 
     previewCacheMaxGB: positive,
     recordingSource: oneOf(RECORDING_SOURCES),
     recordingMicId: text(1000),
+    recordingOutputId: text(1000),
+    recordingAppExe: text(1000),
     recordingsDir: text(1000),
     recordingFormat: oneOf(RECORDING_FORMATS),
     recordShortcut: shortcutOrNull,

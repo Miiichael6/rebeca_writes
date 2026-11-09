@@ -44,7 +44,8 @@ nsis:
   artifactName: ${productName}-Setup-${version}.${ext}
   # userData (historial, modelos) se conserva al desinstalar.
   deleteAppDataOnUninstall: false
-# Releases en GitHub (D5: repo público). `draft`: se publica a mano tras revisarlo.
+# Releases en GitHub (D5: repo público). electron-builder solo usa esto para generar app-update.yml;
+# la subida la hace scripts/release.mjs con `gh` (`npm run release patch`).
 publish:
   provider: github
   owner: Miiichael6

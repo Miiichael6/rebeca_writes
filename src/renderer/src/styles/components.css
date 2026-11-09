@@ -835,7 +835,7 @@
   position: fixed;
   position-anchor: --menu;
   inset: auto;
-  min-width: 260px;
+  min-width: 200px;
   margin: 0;
   padding: var(--space-1);
   overflow: visible;
@@ -889,11 +889,12 @@
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  height: 34px;
-  padding: 0 var(--space-3);
+  height: 28px;
+  padding: 0 var(--space-2);
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
+  font-size: var(--text-sm);
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
@@ -919,9 +920,9 @@
 
 .menu-item-icon {
   flex: none;
-  width: 16px;
-  height: 16px;
-  margin-right: var(--space-1);
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
   color: var(--text-2);
 }
 
@@ -931,7 +932,7 @@
 
 .menu-item-hint {
   overflow: hidden;
-  max-width: 160px;
+  max-width: 130px;
   color: var(--text-3);
   font-weight: 400;
   text-overflow: ellipsis;
@@ -940,8 +941,8 @@
 /* Ítem con aclaración en letra pequeña debajo del texto. */
 .menu-item-described {
   height: auto;
-  min-height: 34px;
-  padding-block: 6px;
+  min-height: 28px;
+  padding-block: 4px;
 }
 
 .menu-item-text {
@@ -1510,6 +1511,13 @@
   height: 14px;
 }
 
+/* La ventana mide lo que ocupa el menú: un tope por la altura de la ventana (aún pequeña al
+   abrir) lo dejaba con barra de desplazamiento. El submenú siempre se ve entero. */
+.dock-menu-anchor .menu.menu-submenu {
+  max-height: none;
+  overflow-y: visible;
+}
+
 .dock-menu-anchor[data-opens='left'] .menu.menu-submenu {
   left: auto;
   right: anchor(left);
@@ -1578,6 +1586,53 @@
 .clip-wave-bar.in {
   fill: var(--accent);
   opacity: 1;
+}
+
+/* Etiquetas ▲ bajo la onda para arrastrar el inicio y el fin con facilidad. */
+.clip-wave-handles {
+  position: relative;
+  height: 22px;
+}
+
+.clip-wave-handle {
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.clip-wave-handle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 8px;
+  transform: translateX(-50%);
+  background: var(--accent);
+}
+
+.clip-wave-handle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.clip-wave-handle:hover::after,
+.clip-wave-handle:focus-visible::after {
+  filter: brightness(1.15);
 }
 
 .clip-wave-axis {

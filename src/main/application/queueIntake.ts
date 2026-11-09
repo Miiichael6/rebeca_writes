@@ -1,9 +1,15 @@
 import { basename } from 'path'
 import type { MediaFilterKey } from '@shared/formats'
-import type { HistoryEntry, OpenedMedia, OpenFilesResult, QueueAddResult } from '@shared/types'
+import type {
+  FolderScan,
+  HistoryEntry,
+  OpenedMedia,
+  OpenFilesResult,
+  QueueAddResult
+} from '@shared/types'
 import { isValidHistoryId } from '../domain/history'
 import type { MediaOpener } from './mediaOpener'
-import type { DialogOwner } from './ports/dialogs'
+import type { DialogOwner, Dialogs } from './ports/dialogs'
 import type { HistoryRepository } from './ports/historyRepository'
 import type { PathExpander } from './ports/pathExpander'
 import type { SettingsRepository } from './ports/settingsRepository'
@@ -15,10 +21,14 @@ export interface QueueIntakeDeps {
   history: HistoryRepository
   opener: MediaOpener
   expander: PathExpander
+  dialogs: Dialogs
 }
 
 /** Cómo entran archivos a la cola: diálogo, arrastrar y soltar, "Abrir con" y volver a transcribir. */
 export class QueueIntake {
+  /** Archivos de la última carpeta revisada, a la espera de que el usuario confirme. */
+  private scanned: string[] = []
+
   constructor(private readonly deps: QueueIntakeDeps) {}
 
   /** `queue:pickFiles`: diálogo con selección múltiple; todo lo elegido va a la cola. */
@@ -39,6 +49,26 @@ export class QueueIntake {
     if (paths.length === 0) return null
     if (paths.length === 1) return { kind: 'opened', media: await this.deps.opener.open(paths[0]) }
     return { kind: 'queued', result: { added: await this.enqueue(paths), ignored: 0 } }
+  }
+
+  /**
+   * `queue:scanFolder`: el usuario elige una carpeta y se cuentan sus audios y videos (con
+   * subcarpetas) sin encolar nada. La lista se queda aquí: `confirmScan` encola lo revisado, no
+   * una ruta que mande el renderer.
+   */
+  async scanFolder(owner: DialogOwner): Promise<FolderScan | null> {
+    const folder = await this.deps.dialogs.pickFolder(owner, '')
+    if (!folder) return null
+    const { files, ignored } = await this.deps.expander.expand([folder])
+    this.scanned = files
+    return { folder, count: files.length, ignored }
+  }
+
+  /** `queue:confirmScan`: con `accept` encola lo revisado; si no, lo descarta. */
+  async confirmScan(accept: boolean): Promise<QueueAddResult> {
+    const files = this.scanned
+    this.scanned = []
+    return { added: accept ? await this.enqueue(files) : 0, ignored: 0 }
   }
 
   /**

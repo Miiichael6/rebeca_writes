@@ -25,8 +25,16 @@ export function microphoneName(device: Pick<AudioDevice, 'name' | 'groupName'>):
     : device.name
 }
 
+/** Un programa con sesión de audio (`native/src/app_audio.rs`): `exe` es lo que se le pasa a `openapp`. */
+export interface AudioApp {
+  exe: string
+  name: string
+}
+
 export type SidecarCommand =
   | { cmd: 'list' }
+  | { cmd: 'apps' }
+  | { cmd: 'openapp'; streamId: number; exe: string }
   | { cmd: 'open'; streamId: number; deviceId: string; kind: DeviceKind }
   | { cmd: 'stop'; streamId: number }
 
@@ -34,6 +42,7 @@ export type StreamErrorReason = 'open_failed' | 'device_lost' | 'stream_failed'
 
 export type SidecarEvent =
   | { type: 'devices'; devices: AudioDevice[] }
+  | { type: 'apps'; apps: AudioApp[] }
   | { type: 'warning'; message: string }
   | { type: 'error'; code: string; message: string }
   | { type: 'opened'; streamId: number; sampleRate: number; channels: number }

@@ -179,6 +179,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     intake.pickFiles(ownerOf(event), filterLabels)
   )
   handle(IpcChannel.QueueAddPaths, (_event, paths) => intake.addPaths(paths))
+  handle(IpcChannel.QueueScanFolder, (event) => intake.scanFolder(ownerOf(event)))
+  handle(IpcChannel.QueueConfirmScan, (_event, accept) => intake.confirmScan(accept === true))
   handle(IpcChannel.QueueRemove, (_event, id) => queue.remove(String(id)))
   handle(IpcChannel.QueueReorder, (_event, ids) =>
     queue.reorder(Array.isArray(ids) ? ids.map(String) : [])
@@ -204,8 +206,10 @@ export function registerIpcHandlers(deps: IpcDeps): void {
   handle(IpcChannel.MicStop, () => mic.stop())
   handle(IpcChannel.MicGetState, () => mic.state())
   handle(IpcChannel.MicListDevices, () => mic.microphones())
-  handle(IpcChannel.MicMonitorStart, (_event, source, micId) =>
-    mic.startMonitor(source, String(micId))
+  handle(IpcChannel.MicListOutputs, () => mic.outputs())
+  handle(IpcChannel.MicListApps, () => mic.apps())
+  handle(IpcChannel.MicMonitorStart, (_event, source, micId, outputId, appExe) =>
+    mic.startMonitor(source, String(micId), String(outputId), String(appExe))
   )
   handle(IpcChannel.MicMonitorStop, () => mic.stopMonitor())
   handle(IpcChannel.MicGetRecordingsDir, () => recordingsFolder.dir())

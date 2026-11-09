@@ -103,7 +103,8 @@ export class LiveSession {
     pcm: string,
     name: string,
     onFinished: (session: LiveSession) => void,
-    ownVoice: OwnVoice | null = null
+    ownVoice: OwnVoice | null = null,
+    app?: string
   ): Promise<LiveSession> {
     const settings = deps.settings()
     const entry = await deps.history.create({
@@ -114,7 +115,8 @@ export class LiveSession {
       language: settings.language,
       translate: settings.translate,
       status: 'transcribing',
-      live: true
+      live: true,
+      ...(app ? { app } : {})
     })
     deps.log.info(`En vivo: empieza "${name}" (${pcm})`)
     const session = new LiveSession(

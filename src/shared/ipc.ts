@@ -19,6 +19,7 @@ import type {
   MediaPreviewEvent,
   HistoryEntryInput,
   OpenedMedia,
+  FolderScan,
   OpenFilesResult,
   QueueAddResult,
   QueueDrainedEvent,
@@ -104,6 +105,8 @@ export const IpcChannel = {
   QueueGet: 'queue:get',
   QueuePickFiles: 'queue:pickFiles',
   QueueAddPaths: 'queue:addPaths',
+  QueueScanFolder: 'queue:scanFolder',
+  QueueConfirmScan: 'queue:confirmScan',
   QueueFilesReceived: 'queue:filesReceived',
   QueueRemove: 'queue:remove',
   QueueReorder: 'queue:reorder',
@@ -122,6 +125,8 @@ export const IpcChannel = {
   MicStop: 'mic:stop',
   MicGetState: 'mic:state',
   MicListDevices: 'mic:devices',
+  MicListOutputs: 'mic:outputs',
+  MicListApps: 'mic:apps',
   MicChanged: 'mic:changed',
   MicLevel: 'mic:level',
   MicMonitorStart: 'mic:monitorStart',
@@ -249,6 +254,8 @@ export interface IpcInvokeMap {
     result: QueueAddResult
   }
   [IpcChannel.QueueAddPaths]: { args: [paths: string[]]; result: QueueAddResult }
+  [IpcChannel.QueueScanFolder]: { args: []; result: FolderScan | null }
+  [IpcChannel.QueueConfirmScan]: { args: [accept: boolean]; result: QueueAddResult }
   [IpcChannel.QueueRemove]: { args: [id: string]; result: void }
   [IpcChannel.QueueReorder]: { args: [ids: string[]]; result: void }
   [IpcChannel.QueuePause]: { args: []; result: void }
@@ -265,7 +272,12 @@ export interface IpcInvokeMap {
   [IpcChannel.MicStop]: { args: []; result: void }
   [IpcChannel.MicGetState]: { args: []; result: MicState }
   [IpcChannel.MicListDevices]: { args: []; result: MicDevice[] }
-  [IpcChannel.MicMonitorStart]: { args: [source: RecordingSource, micId: string]; result: void }
+  [IpcChannel.MicListOutputs]: { args: []; result: MicDevice[] }
+  [IpcChannel.MicListApps]: { args: []; result: MicDevice[] }
+  [IpcChannel.MicMonitorStart]: {
+    args: [source: RecordingSource, micId: string, outputId: string, appExe: string]
+    result: void
+  }
   [IpcChannel.MicMonitorStop]: { args: []; result: void }
   [IpcChannel.DockGet]: { args: []; result: DockView }
   [IpcChannel.DockHover]: { args: []; result: void }
@@ -510,6 +522,13 @@ export interface AppApi {
      * subcarpetas y se filtran por extensión). Las rutas se sacan en el preload.
      */
     addDropped: (files: File[]) => Promise<QueueAddResult>
+    /**
+     * Diálogo para elegir una carpeta: la recorre (con subcarpetas) y dice cuántos audios y
+     * videos tiene, sin encolar nada. `null` si se cancela.
+     */
+    scanFolder: () => Promise<FolderScan | null>
+    /** Con `true` encola lo revisado por `scanFolder`; con `false` lo descarta. */
+    confirmScan: (accept: boolean) => Promise<QueueAddResult>
     /** Archivos que llegaron por "Abrir con" con la app ya abierta. */
     onFilesReceived: (listener: (result: QueueAddResult) => void) => () => void
     /** Quita un trabajo que no se está procesando. */
@@ -555,6 +574,10 @@ export interface AppApi {
     getState: () => Promise<MicState>
     /** Los micrófonos conectados ahora mismo. */
     listDevices: () => Promise<MicDevice[]>
+    /** Las salidas de sonido activas (de donde se graba en Computadora y Ambos). */
+    listOutputs: () => Promise<MicDevice[]>
+    /** Los programas con sesión de audio (`id` es su .exe). */
+    listApps: () => Promise<MicDevice[]>
     onChanged: (listener: (state: MicState) => void) => () => void
     /** Nivel (0..1) de lo que se graba, cada 50 ms. */
     onLevel: (listener: (level: number) => void) => () => void
@@ -564,7 +587,12 @@ export interface AppApi {
      * Abre el sonido del sistema y el micrófono (vacío = predeterminado) solo para medir su
      * nivel, sin grabar.
      */
-    startMonitor: (source: RecordingSource, micId: string) => Promise<void>
+    startMonitor: (
+      source: RecordingSource,
+      micId: string,
+      outputId: string,
+      appExe: string
+    ) => Promise<void>
     stopMonitor: () => Promise<void>
     /** Carpeta donde se guardan las grabaciones (la de ajustes o la de por defecto). */
     getRecordingsDir: () => Promise<string>

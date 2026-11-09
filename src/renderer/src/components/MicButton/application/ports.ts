@@ -14,14 +14,24 @@ export interface MicPort {
   /** Micrófono elegido; vacío = el predeterminado de Windows. */
   useMicId(): string
   setMicId(id: string): void
+  /** Salida cuyo sonido se graba (Computadora y Ambos); vacío = la predeterminada de Windows. */
+  useOutputId(): string
+  setOutputId(id: string): void
   /** Los micrófonos conectados ahora mismo. */
   listMicrophones(): Promise<MicDevice[]>
+  /** Las salidas de sonido activas ahora mismo. */
+  listOutputs(): Promise<MicDevice[]>
+  /** Programa cuyo sonido se graba (su .exe); vacío = todo lo de la salida. */
+  useAppExe(): string
+  setAppExe(exe: string): void
+  /** Los programas con sesión de audio ahora mismo (`id` es el .exe). */
+  listApps(): Promise<MicDevice[]>
   /** Nivel (0..1) de lo que se graba, cada 50 ms. Devuelve la baja. */
   onLevel(listener: (level: number) => void): () => void
   /** Niveles de los medidores del menú mientras se mide. Devuelve la baja. */
   onMonitorLevel(listener: (level: MonitorLevel) => void): () => void
-  /** Abre el sonido del sistema y el micrófono (vacío = predeterminado) solo para medirlos. */
-  startMonitor(source: RecordingSource, micId: string): void
+  /** Abre la salida y el micrófono (vacíos = predeterminados) solo para medirlos. */
+  startMonitor(source: RecordingSource, micId: string, outputId: string, appExe: string): void
   stopMonitor(): void
   start(source: RecordingSource, name: string): void
   stop(): void

@@ -14,6 +14,17 @@ function workArea(): Electron.Rectangle {
 }
 
 /**
+ * Coloca la ventana en `bounds` y solo deja existir esa zona. Windows no deja que esta ventana
+ * mida menos de 64 px de lado (aunque `getBounds` diga otra cosa): la barra (48 × 6) quedaba en
+ * 64 × 64 y la píldora (48 de alto) en 64 de alto, y ese trozo transparente se tragaba los clics
+ * de la app de debajo. Fuera de la forma no se dibuja ni se recibe el ratón.
+ */
+function place(window: BrowserWindow, bounds: Area): void {
+  window.setBounds(bounds)
+  window.setShape([{ x: 0, y: 0, width: bounds.width, height: bounds.height }])
+}
+
+/**
  * La ventana del dock: transparente, sin marco, siempre encima, fuera de la barra de tareas y
  * sin quitarle nunca el foco a la app que se está usando. Carga el renderer en `#/dock`.
  */
@@ -34,6 +45,7 @@ function createDockWindow(bounds: Area, hidden: () => boolean): BrowserWindow {
     alwaysOnTop: true,
     webPreferences: secureWebPreferences()
   })
+  place(window, bounds)
   // También encima de las apps a pantalla completa.
   window.setAlwaysOnTop(true, 'screen-saver')
   window.once('ready-to-show', () => {
@@ -59,11 +71,11 @@ function slideWindow(
     const point = path.shift()
     if (window.isDestroyed() || point === undefined) {
       clearInterval(timer)
-      if (!window.isDestroyed()) window.setBounds(final)
+      if (!window.isDestroyed()) place(window, final)
       done()
       return
     }
-    window.setBounds({ ...to, ...point })
+    place(window, { ...to, ...point })
   }, FRAME_MS)
   return () => clearInterval(timer)
 }
@@ -163,6 +175,6 @@ export class ElectronDockSurface implements DockSurface {
   private jump(window: BrowserWindow, view: DockView, position: DockPosition): void {
     this.placedAt = position
     this.atEdge = !view.out
-    window.setBounds(dockBounds(workArea(), view.out ? dockWidth(view) : null, position))
+    place(window, dockBounds(workArea(), view.out ? dockWidth(view) : null, position))
   }
 }

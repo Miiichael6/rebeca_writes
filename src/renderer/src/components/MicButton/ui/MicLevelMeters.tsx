@@ -41,13 +41,17 @@ const ROWS = {
  */
 export function MicLevelMeters({
   source,
-  micId
+  micId,
+  outputId,
+  appExe
 }: {
   source: RecordingSource
   micId: string
+  outputId: string
+  appExe: string
 }): React.JSX.Element {
   const { t } = useTranslation()
-  const levels = useMicMonitor(source, micId)
+  const levels = useMicMonitor(source, micId, outputId, appExe)
   return (
     <>
       {sourceDevices(source).map((device) => (

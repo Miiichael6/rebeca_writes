@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { HistoryEntry, RenameFileFailure } from '@shared/types'
+import type { FolderScan, HistoryEntry, QueueAddResult, RenameFileFailure } from '@shared/types'
 import type { ExitingList } from '@renderer/lib/listExit'
 
 /** Puerto de salida: el historial de transcripciones. */
@@ -25,6 +25,15 @@ export interface HistoryPort {
   /** `false` si el archivo ya estaba en la cola. */
   retranscribe(id: string): Promise<boolean>
   showInFolder(id: string): Promise<void>
+}
+
+/** Puerto de salida: transcribir todo lo de una carpeta, previa confirmación. */
+export interface FolderImportPort {
+  /** Elige una carpeta y cuenta sus audios y videos; `null` si se cancela. */
+  scan(): Promise<FolderScan | null>
+  /** Encola (o descarta) lo revisado por `scan`. */
+  confirm(accept: boolean): Promise<QueueAddResult>
+  announce(result: QueueAddResult): void
 }
 
 export interface QueuePort {
@@ -58,6 +67,7 @@ export interface NotifierPort {
 export interface SidebarPorts {
   history: HistoryPort
   queue: QueuePort
+  folder: FolderImportPort
   layout: SidebarLayoutPort
   notifier: NotifierPort
 }

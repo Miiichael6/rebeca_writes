@@ -5,7 +5,9 @@ import {
   elapsedLabel,
   micButtonState,
   selectedMicId,
+  withSavedApp,
   usesMicrophone,
+  usesOutput,
   type MicButtonState
 } from '../domain/mic'
 import { recordingName } from '@renderer/lib/recordingName'
@@ -32,8 +34,22 @@ export interface MicAction {
   /** El guardado tal cual, para el medidor: si ya no está conectado, el main abre el predeterminado. */
   savedMicId: string
   chooseMic: (id: string) => void
+  /** La fuente elegida graba el sonido de una salida (Computadora o Ambos). */
+  usesOutput: boolean
+  /** Las salidas de sonido activas la última vez que se abrió el menú. */
+  outputs: MicDevice[]
+  /** La marcada en el menú; vacía = la predeterminada de Windows. */
+  outputId: string
+  /** La guardada tal cual, para el medidor. */
+  savedOutputId: string
+  chooseOutput: (id: string) => void
+  /** Los programas con sesión de audio la última vez que se abrió el menú. */
+  apps: MicDevice[]
+  /** El programa elegido (su .exe); vacío = todo lo que suena. */
+  appExe: string
+  chooseApp: (exe: string) => void
   /** Vuelve a pedir la lista (al abrir el menú, por si se conectó otro). */
-  refreshMicrophones: () => void
+  refreshDevices: () => void
   toggle: () => void
 }
 
@@ -53,24 +69,29 @@ export type MonitorLevels = Record<MonitorLevel['device'], number>
 const SILENT_LEVELS: MonitorLevels = { system: 0, voice: 0 }
 
 /**
- * Nivel en vivo del sonido del sistema y del micrófono `micId` mientras el componente que lo usa
+ * Nivel en vivo de la salida `outputId` y del micrófono `micId` mientras el componente que lo usa
  * está montado (los medidores del menú): el main los abre solo para medir y los cierra al
  * desmontarse.
  */
-export function useMicMonitor(source: RecordingSource, micId: string): MonitorLevels {
+export function useMicMonitor(
+  source: RecordingSource,
+  micId: string,
+  outputId: string,
+  appExe: string
+): MonitorLevels {
   const { mic } = usePorts()
   const [levels, setLevels] = useState(SILENT_LEVELS)
   useEffect(() => {
     const off = mic.onMonitorLevel(({ device, level }) =>
       setLevels((current) => ({ ...current, [device]: level }))
     )
-    mic.startMonitor(source, micId)
+    mic.startMonitor(source, micId, outputId, appExe)
     return () => {
       off()
       mic.stopMonitor()
       setLevels(SILENT_LEVELS)
     }
-  }, [mic, source, micId])
+  }, [mic, source, micId, outputId, appExe])
   return levels
 }
 
@@ -81,7 +102,11 @@ export function useMicAction(): MicAction {
   const button = micButtonState(mic.useState(), mic.useLiveSession(), mic.usePending())
   const source = mic.useSource()
   const savedMicId = mic.useMicId()
+  const savedOutputId = mic.useOutputId()
   const [microphones, setMicrophones] = useState<MicDevice[]>([])
+  const [outputs, setOutputs] = useState<MicDevice[]>([])
+  const [running, setRunning] = useState<MicDevice[]>([])
+  const appExe = mic.useAppExe()
   const now = useNow(button.kind === 'recording')
   const wave = useWave(button.kind === 'recording', mic.onLevel)
   const sourceLabel = (s: RecordingSource): string => t(`mic.sources.${s}`)
@@ -98,7 +123,19 @@ export function useMicAction(): MicAction {
     micId: selectedMicId(savedMicId, microphones),
     savedMicId,
     chooseMic: mic.setMicId,
-    refreshMicrophones: () => void mic.listMicrophones().then(setMicrophones),
+    usesOutput: usesOutput(source),
+    outputs,
+    outputId: selectedMicId(savedOutputId, outputs),
+    savedOutputId,
+    chooseOutput: mic.setOutputId,
+    apps: withSavedApp(running, appExe),
+    appExe,
+    chooseApp: mic.setAppExe,
+    refreshDevices: () => {
+      void mic.listMicrophones().then(setMicrophones)
+      void mic.listOutputs().then(setOutputs)
+      void mic.listApps().then(setRunning)
+    },
     toggle: () => {
       if (button.kind === 'recording') return mic.stop()
       mic.start(source, recordingName(source))

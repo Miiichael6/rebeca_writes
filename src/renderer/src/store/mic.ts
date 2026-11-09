@@ -31,6 +31,7 @@ const TOAST_MS = 6000
 const ERROR_KEYS = {
   liveBusy: 'mic.errorLiveBusy',
   noDevice: 'mic.errorNoDevice',
+  appNotRunning: 'mic.errorAppNotRunning',
   failed: 'mic.errorFailed'
 } as const satisfies Record<MicStartError, string>
 
@@ -73,9 +74,30 @@ export function listMicrophones(): Promise<MicDevice[]> {
   })
 }
 
-/** El micrófono abierto solo para medir (menú de micrófonos); los errores van al log del main. */
-export function startMicMonitor(source: RecordingSource, micId: string): void {
-  window.api.mic.startMonitor(source, micId).catch(console.error)
+/** Las salidas de sonido activas; vacío si el sidecar no contesta (queda la predeterminada). */
+export function listOutputs(): Promise<MicDevice[]> {
+  return window.api.mic.listOutputs().catch((err) => {
+    console.error(err)
+    return []
+  })
+}
+
+/** Los programas con sesión de audio; vacío si el sidecar no contesta. */
+export function listApps(): Promise<MicDevice[]> {
+  return window.api.mic.listApps().catch((err) => {
+    console.error(err)
+    return []
+  })
+}
+
+/** Los dispositivos abiertos solo para medir (menú de grabar); los errores van al log del main. */
+export function startMicMonitor(
+  source: RecordingSource,
+  micId: string,
+  outputId: string,
+  appExe: string
+): void {
+  window.api.mic.startMonitor(source, micId, outputId, appExe).catch(console.error)
 }
 
 export function stopMicMonitor(): void {

@@ -68,7 +68,8 @@ export class LiveControl {
         command.pcm,
         command.name,
         (finished) => this.forget(finished),
-        ownVoice
+        ownVoice,
+        command.app
       )
       this.origin = origin
       return

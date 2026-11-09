@@ -1,61 +1,24 @@
-import { Check, Eraser, FolderOpen, PanelLeftClose, PanelLeftOpen, Trash2, X } from 'lucide-react'
+import { Eraser, FolderInput, FolderOpen, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { usePorts } from '../application/ports'
-import type { MultiSelect } from '../application/useMultiSelect'
 import { Button } from '../../ui'
 
 interface SidebarActionsProps {
   collapsed: boolean
-  select: MultiSelect
-  /** Cuántas entradas pasan el filtro (para deshabilitar "Seleccionar todo"). */
-  filteredCount: number
   totalCount: number
   onAskClear: () => void
+  onOpenFolder: () => void
 }
 
-/** Barra superior: acciones habituales, o las de la selección múltiple cuando está activa. */
+/** Barra superior: acciones habituales (la selección múltiple tiene su barra al pie). */
 export function SidebarActions({
   collapsed,
-  select,
-  filteredCount,
   totalCount,
-  onAskClear
+  onAskClear,
+  onOpenFolder
 }: SidebarActionsProps): React.JSX.Element {
   const { t } = useTranslation()
   const { history, layout } = usePorts()
-
-  if (select.active) {
-    return (
-      <div className="sidebar-actions selection-bar">
-        <Button
-          aria-label={t('sidebar.cancelSelection')}
-          title={t('sidebar.cancelSelection')}
-          icon={<X size={16} strokeWidth={1.5} />}
-          onClick={select.end}
-        />
-        {!collapsed && (
-          <span className="selection-count" role="status">
-            {t('sidebar.selectedCount', { count: select.count })}
-          </span>
-        )}
-        <Button
-          aria-label={t('sidebar.selectAll')}
-          title={t('sidebar.selectAll')}
-          icon={<Check size={16} strokeWidth={1.5} />}
-          disabled={select.count === filteredCount}
-          onClick={select.selectAll}
-        />
-        <Button
-          variant="primary"
-          aria-label={t('sidebar.deleteSelected')}
-          title={t('sidebar.deleteSelected')}
-          icon={<Trash2 size={16} strokeWidth={1.5} />}
-          disabled={select.count === 0}
-          onClick={select.askRemove}
-        />
-      </div>
-    )
-  }
 
   return (
     <div className="sidebar-actions">
@@ -82,6 +45,12 @@ export function SidebarActions({
       >
         {collapsed ? null : t('sidebar.openFile')}
       </Button>
+      <Button
+        aria-label={t('sidebar.openFolder')}
+        title={t('sidebar.openFolder')}
+        icon={<FolderInput size={16} strokeWidth={1.5} />}
+        onClick={onOpenFolder}
+      />
       {!collapsed && (
         <Button
           aria-label={t('sidebar.clearHistory')}

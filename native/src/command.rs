@@ -15,6 +15,13 @@ pub enum Command {
         /// `render` is captured in loopback, `capture` as a normal input.
         kind: DeviceKind,
     },
+    /// Lists the programs that have an audio session.
+    Apps,
+    /// Captures the audio of one program (and its child processes) by executable name.
+    OpenApp {
+        stream_id: u8,
+        exe: String,
+    },
     Stop {
         stream_id: u8,
     },
@@ -46,6 +53,19 @@ mod tests {
                 kind: DeviceKind::Render
             })
         );
+    }
+
+    #[test]
+    fn parses_openapp() {
+        let line = r#"{"cmd":"openapp","streamId":4,"exe":"Spotify.exe"}"#;
+        assert_eq!(
+            parse_command(line),
+            Ok(Command::OpenApp {
+                stream_id: 4,
+                exe: "Spotify.exe".to_owned()
+            })
+        );
+        assert_eq!(parse_command(r#"{"cmd":"apps"}"#), Ok(Command::Apps));
     }
 
     #[test]

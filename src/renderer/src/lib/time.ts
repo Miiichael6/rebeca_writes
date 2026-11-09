@@ -13,3 +13,8 @@ export function formatClock(sec: number): string {
   const s = total % 60
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`
 }
+
+/** Duración total corta: `18 h` desde una hora, si no `42 min`. */
+export function formatTotal(sec: number): string {
+  return sec >= 3600 ? `${Math.round(sec / 3600)} h` : `${Math.round(sec / 60)} min`
+}

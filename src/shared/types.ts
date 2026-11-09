@@ -39,6 +39,8 @@ export interface HistoryEntry {
   progress?: number
   /** Grabación de Rebecca Listen que se transcribe mientras se graba (tarea 27). */
   live?: boolean
+  /** Programa cuyo sonido se grabó (Webex, Spotify…); solo en grabaciones de un programa. */
+  app?: string
   /** Nombres que el usuario dio a los hablantes (tarea 35): id → nombre. */
   speakers?: Record<string, string>
 }
@@ -247,6 +249,15 @@ export interface QueueDrainedEvent {
 export interface QueueAddResult {
   added: number
   /** Archivos de las carpetas soltadas que no son de audio ni video. */
+  ignored: number
+}
+
+/** Resultado de revisar una carpeta antes de transcribirla: cuántos audios y videos tiene. */
+export interface FolderScan {
+  folder: string
+  /** Audios y videos encontrados (subcarpetas incluidas). */
+  count: number
+  /** Archivos que no son de audio ni video. */
   ignored: number
 }
 
